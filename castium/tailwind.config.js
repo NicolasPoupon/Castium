@@ -1,14 +1,25 @@
+import colors from 'tailwindcss/colors'
+
 /** @type {import('tailwindcss').Config} */
 export default {
     content: [
-        "./components/**/*.{vue,js,ts}",
-        "./layouts/**/*.vue",
-        "./pages/**/*.vue",
-        "./app.vue",
-        "./plugins/**/*.{js,ts}",
+        './components/**/*.{vue,js,ts}',
+        './layouts/**/*.vue',
+        './pages/**/*.vue',
+        './app/**/*.{vue,js,ts}',
+        './plugins/**/*.{js,ts}',
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                'main-red': colors.red[800],
+                'main-green': '#00C16A',
+                'ui-text': '#E2E8F0',
+                'ui-text-dimmed': '#62748E',
+                'bg-grey': colors.gray[800],
+                'bg-blue': '#0F172B',
+            },
+        },
     },
     plugins: [],
 }
