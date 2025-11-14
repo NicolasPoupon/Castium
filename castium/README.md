@@ -30,6 +30,8 @@ npm run dev
 
 # pnpm
 pnpm dev
+or
+pnpm dev --host 0.0.0.0
 
 # yarn
 yarn dev
