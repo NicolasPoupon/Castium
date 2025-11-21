@@ -1,20 +1,41 @@
 <script setup lang="ts">
-import { useI18n, useCookie } from '#imports';
+import { useI18n } from '#imports';
+import * as locales from '@nuxt/ui/locale';
 
-const i18n = useI18n();
+// const i18n = useI18n();
+const { locale, setLocale } = useI18n();
+const props = defineProps({
+    mode: {
+        type: String,
+        default: 'landing', // landing | login | music | podcast
+    },
+});
+const modeClass = computed(() => {
+    switch (props.mode) {
+        case 'landing':
+            return 'fill-red-800';
+        case 'login':
+            return 'fill-gray-400';
+        case 'music':
+            return 'fill-castium-green';
+        case 'podcast':
+            return 'fill-orange-400';
+        default:
+            return 'fill-gray-300';
+    }
+});
 </script>
 
 <template>
-    <header
-        class="fixed inset-x-0 top-0 z-50 border-b border-gray-700 bg-[#0F172B]/90 backdrop-blur-md py-2"
-    >
+    <header class="fixed inset-x-0 top-0 z-50 bg-black/20 backdrop-blur-md py-2">
         <div
             class="flex items-center justify-between gap-3 h-[--header-height] mx-auto px-4 md:px-6 lg:px-8"
         >
             <div class="flex items-center justify-start gap-4">
                 <NuxtLink to="/">
                     <svg
-                        class="h-9 fill-gray-600 dark:fill-base-light"
+                        class="h-10 transition-colors"
+                        :class="modeClass"
                         viewBox="0 0 147 40"
                         aria-label="Castium Logo"
                         xmlns="http://www.w3.org/2000/svg"
@@ -32,24 +53,31 @@ const i18n = useI18n();
                     </svg>
                 </NuxtLink>
             </div>
-            <div class="flex flex-row gap-2 items-center">
+            <div class="flex items-center gap-6">
+                <ULocaleSelect
+                    v-model="locale"
+                    :locales="[locales.en, locales.fr, locales.pl]"
+                    class="w-36"
+                    @update:model-value="setLocale($event)"
+                />
                 <UButton
-                    icon="i-heroicons-home"
-                    to="/"
+                    v-if="mode === 'app'"
+                    class="rounded-full [&_svg]:h-7 [&_svg]:w-7"
+                    icon="i-heroicons-cog-6-tooth"
                     size="lg"
                     color="neutral"
                     variant="ghost"
-                    label="Home"
+                    href="/settings"
                 />
-            </div>
-            <div class="flex gap-2 items-center">
                 <UButton
-                    icon="i-heroicons-arrow-right-on-rectangle"
-                    to="/"
-                    color="gray-800"
-                    variant="solid"
-                    aria-label="signIn"
-                    label="signIn"
+                    v-if="mode === 'landing'"
+                    class="[&_svg]:h-7 [&_svg]:w-7"
+                    icon="i-heroicons-user-circle"
+                    size="md"
+                    color="neutral"
+                    variant="outline"
+                    label="Login"
+                    :to="$localePath('/auth/login')"
                 />
             </div>
         </div>

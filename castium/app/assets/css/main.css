@@ -1,8 +1,13 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-/* html,
-body {
-  margin: 0;
-  padding: 0;
-} */
+.gradient-text {
+  background: linear-gradient(
+    90deg,
+    var(--ui-primary, #fff) 0%,
+    var(--Red-800, #991B1B) 61.06%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
