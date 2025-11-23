@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from '@nuxt/ui';
+import { useI18n } from '#imports';
+const { t } = useI18n();
 const props = defineProps({
     mode: {
         type: String,
@@ -8,27 +10,27 @@ const props = defineProps({
 });
 const items: NavigationMenuItem[] = [
     {
-        label: 'Releases',
+        label: t('footer.links.releases'),
         to: 'https://github.com/NicolasPoupon/Castium/releases',
         target: '_blank',
     },
     {
-        label: 'Support',
+        label: t('footer.links.support'),
         to: 'https://github.com/NicolasPoupon/Castium/releases',
         target: '_blank',
     },
     {
-        label: 'Documentation',
+        label: t('footer.links.documentation'),
         to: 'https://github.com/NicolasPoupon/Castium/releases',
         target: '_blank',
     },
     {
-        label: 'Legal',
+        label: t('footer.links.legal'),
         to: 'https://github.com/NicolasPoupon/Castium/releases',
         target: '_blank',
     },
     {
-        label: 'Contact',
+        label: t('footer.links.contact'),
         to: 'https://github.com/NicolasPoupon/Castium/releases',
         target: '_blank',
     },
@@ -39,13 +41,11 @@ const items: NavigationMenuItem[] = [
     <UFooter>
         <template #left>
             <p class="text-muted text-sm">
-                © {{ new Date().getFullYear() }} Castium. Tous droits réservés • Made with ❤️
+                © {{ new Date().getFullYear() }} {{ t('footer.rights') }}
             </p>
         </template>
 
-        <UNavigationMenu
-:items="items" variant="link"
-/>
+        <UNavigationMenu :items="items" variant="link" />
 
         <template #right>
             <UButton
@@ -53,7 +53,7 @@ const items: NavigationMenuItem[] = [
                 icon="i-simple-icons-discord"
                 color="neutral"
                 variant="ghost"
-                to="https://go.nuxt.com/discord"
+                to="https://discord.com"
                 target="_blank"
                 aria-label="Discord"
             />
@@ -61,7 +61,7 @@ const items: NavigationMenuItem[] = [
                 icon="i-simple-icons-x"
                 color="neutral"
                 variant="ghost"
-                to="https://go.nuxt.com/x"
+                to="https://x.com"
                 target="_blank"
                 aria-label="X"
             />

@@ -1,0 +1,65 @@
+{
+  "landing": {
+    "hero": {
+      "titleMain": "Your multimedia universe",
+      "titleHighlight": "brought together in one place",
+      "description": "Castium is a personal and modern platform that centralizes your movies, series, music, podcasts and personal content in a single elegant interface, accessible from anywhere.",
+      "cta": "Sign up for the beta"
+    },
+    "features": {
+      "title": "Simple. Fast. Powerful.",
+      "description": "Everything you need to manage your personal media library.",
+      "cards": {
+        "organized": {
+          "title": "Organized movies and series",
+          "description": "Import your collection and automatically retrieve posters, descriptions, genres, actors and more."
+        },
+        "music": {
+          "title": "Music & Podcasts",
+          "description": "Access your tracks, albums and playlists in one click. Discover your podcasts and resume where you left off."
+        },
+        "sync": {
+          "title": "Synced everywhere",
+          "description": "PC, mobile, tablet or TV — Castium stays smooth and intuitive, accessible wherever you are."
+        },
+        "privacy": {
+          "title": "Your content, your rules",
+          "description": "Castium does not sell your data, track your activity or impose ads on you."
+        },
+        "interface": {
+          "title": "Polished interface",
+          "description": "An experience inspired by Kodi and others, but designed for the cloud with a clean and modern interface."
+        },
+        "auto": {
+          "title": "Automatic import",
+          "description": "Metadata is automatically retrieved for all your content. No more manual work."
+        }
+      }
+    },
+    "beta": {
+      "badge": "Coming soon in beta!",
+      "title": "Castium is coming soon",
+      "description": "We’re putting the finishing touches on an elegant, modern platform built to last. Join us and be among the first to try Castium.",
+      "emailPlaceholder": "Enter your email address",
+      "emailLabel": "Email address",
+      "cta": "Sign up",
+      "helper": "Get early access to the beta"
+    }
+  },
+  "common": {
+    "buttons": {
+      "signUpBeta": "Sign up for the beta",
+      "signUp": "Sign up"
+    }
+  },
+  "footer": {
+    "rights": "Castium. All rights reserved • Made with ❤️",
+    "links": {
+      "releases": "Releases",
+      "support": "Support",
+      "documentation": "Documentation",
+      "legal": "Legal",
+      "contact": "Contact"
+    }
+  }
+}

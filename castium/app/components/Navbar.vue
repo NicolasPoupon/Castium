@@ -2,8 +2,16 @@
 import { useI18n } from '#imports';
 import * as locales from '@nuxt/ui/locale';
 
-// const i18n = useI18n();
 const { locale, setLocale } = useI18n();
+
+const onLocaleChange = async (value: string) => {
+    await setLocale(value);
+
+    // Reload the page to ensure all content is updated (this has to be improved in the future)
+    if (process.client) {
+        window.location.reload();
+    }
+};
 const props = defineProps({
     mode: {
         type: String,
@@ -58,7 +66,7 @@ const modeClass = computed(() => {
                     v-model="locale"
                     :locales="[locales.en, locales.fr, locales.pl]"
                     class="w-36"
-                    @update:model-value="setLocale($event)"
+                    @update:model-value="onLocaleChange"
                 />
                 <UButton
                     v-if="mode === 'app'"

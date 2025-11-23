@@ -21,10 +21,11 @@ export default defineNuxtConfig({
         ],
     },
     i18n: {
+        legacy: false,
         strategy: 'prefix',
-        defaultLocale: 'en',
-        lazy: true,
-        langDir: 'locales',
+        defaultLocale: 'fr',
+        lazy: false,
+        langDir: '../locales',
         locales: [
             { code: 'en', name: 'English', file: 'en.json' },
             { code: 'fr', name: 'Français', file: 'fr.json' },

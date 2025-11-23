@@ -1,54 +1,44 @@
 <script setup lang="ts">
+import { useI18n } from '#imports';
+const { t } = useI18n();
 const cards = ref([
     {
-        title: 'Films et séries organisés',
-        description:
-            'Importez votre collection, retrouvez automatiquement les affiches, descriptions, genres, acteurs et bien plus.',
+        key: 'organized',
         icon: 'i-heroicons-play-circle',
         iconColor: 'error',
         spotlight: true,
         spotlightColor: 'error',
     },
     {
-        title: 'Musique & Podcasts',
-        description:
-            'Accédez à vos morceaux, albums et playlists en un clic. Découvrez vos podcasts et reprenez là où vous vous êtes arrêté.',
+        key: 'music',
         icon: 'i-heroicons-musical-note',
         iconColor: 'primary',
         spotlight: true,
         spotlightColor: 'primary',
     },
     {
-        title: 'Synchronisé partout',
-        description:
-            'PC, mobile, tablette ou TV - Castium reste fluide et intuitif. Votre médiathèque est accessible où que vous soyez.',
+        key: 'sync',
         icon: 'i-lucide-cloud',
         iconColor: 'secondary',
         spotlight: true,
         spotlightColor: 'secondary',
     },
     {
-        title: 'Votre contenu, vos règles',
-        description:
-            'Castium ne vend pas vos données, ne piste pas votre activité et ne vous impose aucune publicité.',
+        key: 'privacy',
         icon: 'i-heroicons-lock-closed',
         iconColor: 'neutral',
         spotlight: true,
         spotlightColor: 'neutral',
     },
     {
-        title: 'Interface soignée',
-        description:
-            "Une expérience inspirée de Kodi et bien d'autres, mais pensée pour le cloud avec une interface moderne et minimaliste.",
+        key: 'interface',
         icon: 'i-heroicons-bolt',
         iconColor: 'info',
         spotlight: true,
         spotlightColor: 'info',
     },
     {
-        title: 'Import automatique',
-        description:
-            'Les métadonnées sont récupérées automatiquement pour tous vos contenus. Plus besoin de tout faire manuellement.',
+        key: 'auto',
         icon: 'i-heroicons-link',
         iconColor: 'warning',
         spotlight: true,
@@ -63,8 +53,12 @@ const cards = ref([
             <UPageCard
                 v-for="(card, index) in cards"
                 :key="index"
-                v-bind="card"
+                :title="t(`landing.features.cards.${card.key}.title`)"
+                :description="t(`landing.features.cards.${card.key}.description`)"
                 :icon="card.icon"
+                :spotlight="card.spotlight"
+                :color="card.iconColor"
+                :spotlight-color="card.spotlightColor"
             />
         </UPageGrid>
     </div>
