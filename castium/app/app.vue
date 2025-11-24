@@ -1,11 +1,32 @@
+<script setup lang="ts"></script>
+
 <template>
-    <div>
-        <h1
-            class="text-3xl font-bold underline italic text-center text-ui-text-dimmed bg-gray-800 p-2"
-        >
-            {{ $t('hello') }}
-        </h1>
-        <NuxtRouteAnnouncer />
-        <NuxtWelcome />
-    </div>
+    <NuxtLayout>
+        <main>
+            <NuxtLoadingIndicator />
+            <NuxtPage />
+        </main>
+    </NuxtLayout>
 </template>
+
+<style>
+.page-enter-active,
+.page-leave-active {
+    transition: all 0.2s;
+}
+.page-enter-from,
+.page-leave-to {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>
