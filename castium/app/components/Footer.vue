@@ -45,7 +45,9 @@ const items: NavigationMenuItem[] = [
             </p>
         </template>
 
-        <UNavigationMenu :items="items" variant="link" />
+        <UNavigationMenu
+:items="items" variant="link"
+/>
 
         <template #right>
             <UButton

@@ -2,6 +2,10 @@
 import { useI18n } from '#imports';
 const { t, locale } = useI18n();
 watch(locale, () => {});
+
+useHead({
+    title: 'Castium — Your multimedia universe',
+});
 </script>
 
 <template>
@@ -24,14 +28,16 @@ watch(locale, () => {});
             </p>
             <UButton
                 to="/auth/login"
-                trailing-icon="i-lucide-arrow-right"
+                trailing-icon="i-heroicons-arrow-right"
                 class="mt-8 px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-md text-lg font-bold transition-colors"
             >
                 {{ t('landing.hero.cta') }}
             </UButton>
         </div>
         <div class="w-full mt-8 py-8 flex flex-col items-center">
-            <h2 class="text-white text-4xl font-bold mb-6">{{ t('landing.features.title') }}</h2>
+            <h2 class="text-white text-4xl font-bold mb-6">
+                {{ t('landing.features.title') }}
+            </h2>
             <p class="text-gray-300 max-w-3xl text-center text-lg px-4">
                 {{ t('landing.features.description') }}
             </p>
@@ -46,13 +52,15 @@ watch(locale, () => {});
             >
                 {{ t('landing.beta.badge') }}
             </UButton>
-            <h2 class="text-white mt-12 text-6xl font-bold">{{ t('landing.beta.title') }}</h2>
+            <h2 class="text-white mt-12 text-6xl font-bold">
+                {{ t('landing.beta.title') }}
+            </h2>
             <p class="text-gray-300 mt-6 max-w-2xl text-lg text-center px-4">
                 {{ t('landing.beta.description') }}
             </p>
             <div class="mt-8 mx-auto flex items-center gap-4">
                 <UInput
-                    trailing-icon="i-lucide-at-sign"
+                    trailing-icon="i-heroicons-at-symbol"
                     :placeholder="t('landing.beta.emailPlaceholder')"
                     size="md"
                     color="neutral"

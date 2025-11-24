@@ -2,23 +2,23 @@
 @import "@nuxt/ui";
 
 .gradient-text {
-  background: linear-gradient(
-    90deg,
-    var(--white, #fff) 0%,
-    var(--Red-800, #991B1B) 61.06%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+    background: linear-gradient(
+        90deg,
+        var(--white, #fff) 0%,
+        var(--Red-800, #991b1b) 61.06%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .gradient-text-reverse {
-  background: linear-gradient(
-    90deg,
-    var(--Red-800, #991B1B) 0%,
-    var(--white, #fff) 61.06%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+    background: linear-gradient(
+        90deg,
+        var(--Red-800, #991b1b) 0%,
+        var(--white, #fff) 61.06%
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }

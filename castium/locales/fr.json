@@ -1,65 +1,95 @@
 {
-  "landing": {
-    "hero": {
-      "titleMain": "Votre univers multimédia",
-      "titleHighlight": "réuni au même endroit",
-      "description": "Castium est une plateforme personnelle et moderne qui centralise vos films, séries, musiques, podcasts et contenus personnels dans une seule interface élégante, accessible depuis n'importe où.",
-      "cta": "Inscrivez-vous pour la bêta"
-    },
-    "features": {
-      "title": "Simple. Rapide. Puissant.",
-      "description": "Tout ce dont vous avez besoin pour gérer votre bibliothèque multimédia personnelle.",
-      "cards": {
-        "organized": {
-          "title": "Films et séries organisés",
-          "description": "Importez votre collection, retrouvez automatiquement les affiches, descriptions, genres, acteurs et bien plus."
+    "landing": {
+        "hero": {
+            "titleMain": "Votre univers multimédia",
+            "titleHighlight": "réuni au même endroit",
+            "description": "Castium est une plateforme personnelle et moderne qui centralise vos films, séries, musiques, podcasts et contenus personnels dans une seule interface élégante, accessible depuis n'importe où.",
+            "cta": "Inscrivez-vous pour la bêta"
         },
-        "music": {
-          "title": "Musique & Podcasts",
-          "description": "Accédez à vos morceaux, albums et playlists en un clic. Découvrez vos podcasts et reprenez là où vous vous êtes arrêté."
+        "features": {
+            "title": "Simple. Rapide. Puissant.",
+            "description": "Tout ce dont vous avez besoin pour gérer votre bibliothèque multimédia personnelle.",
+            "cards": {
+                "organized": {
+                    "title": "Films et séries organisés",
+                    "description": "Importez votre collection, retrouvez automatiquement les affiches, descriptions, genres, acteurs et bien plus."
+                },
+                "music": {
+                    "title": "Musique & Podcasts",
+                    "description": "Accédez à vos morceaux, albums et playlists en un clic. Découvrez vos podcasts et reprenez là où vous vous êtes arrêté."
+                },
+                "sync": {
+                    "title": "Synchronisé partout",
+                    "description": "PC, mobile, tablette ou TV - Castium reste fluide et intuitif. Votre médiathèque est accessible où que vous soyez."
+                },
+                "privacy": {
+                    "title": "Votre contenu, vos règles",
+                    "description": "Castium ne vend pas vos données, ne piste pas votre activité et ne vous impose aucune publicité."
+                },
+                "interface": {
+                    "title": "Interface soignée",
+                    "description": "Une expérience inspirée de Kodi et bien d'autres, mais pensée pour le cloud avec une interface moderne et minimaliste."
+                },
+                "auto": {
+                    "title": "Import automatique",
+                    "description": "Les métadonnées sont récupérées automatiquement pour tous vos contenus. Plus besoin de tout faire manuellement."
+                }
+            }
         },
-        "sync": {
-          "title": "Synchronisé partout",
-          "description": "PC, mobile, tablette ou TV - Castium reste fluide et intuitif. Votre médiathèque est accessible où que vous soyez."
-        },
-        "privacy": {
-          "title": "Votre contenu, vos règles",
-          "description": "Castium ne vend pas vos données, ne piste pas votre activité et ne vous impose aucune publicité."
-        },
-        "interface": {
-          "title": "Interface soignée",
-          "description": "Une expérience inspirée de Kodi et bien d'autres, mais pensée pour le cloud avec une interface moderne et minimaliste."
-        },
-        "auto": {
-          "title": "Import automatique",
-          "description": "Les métadonnées sont récupérées automatiquement pour tous vos contenus. Plus besoin de tout faire manuellement."
+        "beta": {
+            "badge": "Bientôt disponible en version bêta !",
+            "title": "Castium arrive bientôt",
+            "description": "Nous mettons la touche finale à une plateforme élégante, moderne, et pensée pour durer. Rejoignez-nous et soyez parmi les premiers à tester Castium.",
+            "emailPlaceholder": "Entrez votre adresse email",
+            "emailLabel": "Adresse email",
+            "cta": "S'inscrire",
+            "helper": "Accédez à la version bêta en avant-première"
         }
-      }
     },
-    "beta": {
-      "badge": "Bientôt disponible en version bêta !",
-      "title": "Castium arrive bientôt",
-      "description": "Nous mettons la touche finale à une plateforme élégante, moderne, et pensée pour durer. Rejoignez-nous et soyez parmi les premiers à tester Castium.",
-      "emailPlaceholder": "Entrez votre adresse email",
-      "emailLabel": "Adresse email",
-      "cta": "S'inscrire",
-      "helper": "Accédez à la version bêta en avant-première"
+    "common": {
+        "buttons": {
+            "signUpBeta": "Inscrivez-vous pour la bêta",
+            "signUp": "S'inscrire"
+        }
+    },
+    "footer": {
+        "rights": "Castium. Tous droits réservés • Made with ❤️",
+        "links": {
+            "releases": "Versions",
+            "support": "Support",
+            "documentation": "Documentation",
+            "legal": "Mentions légales",
+            "contact": "Contact"
+        }
+    },
+    "auth": {
+        "login": {
+            "title": "Connexion",
+            "description": "Entrez vos identifiants pour accéder à votre compte.",
+            "fields": {
+                "email": {
+                    "label": "Email",
+                    "placeholder": "Entrez votre email",
+                    "error": {
+                        "invalid": "Email invalide"
+                    }
+                },
+                "password": {
+                    "label": "Mot de passe",
+                    "placeholder": "Entrez votre mot de passe",
+                    "error": {
+                        "required": "Le mot de passe est obligatoire",
+                        "min": "Doit contenir au moins 8 caractères"
+                    }
+                },
+                "remember": {
+                    "label": "Se souvenir de moi"
+                }
+            },
+            "providers": {
+                "google": "Connexion avec Google"
+            },
+            "submit": "Connexion"
+        }
     }
-  },
-  "common": {
-    "buttons": {
-      "signUpBeta": "Inscrivez-vous pour la bêta",
-      "signUp": "S'inscrire"
-    }
-  },
-  "footer": {
-    "rights": "Castium. Tous droits réservés • Made with ❤️",
-    "links": {
-      "releases": "Versions",
-      "support": "Support",
-      "documentation": "Documentation",
-      "legal": "Mentions légales",
-      "contact": "Contact"
-    }
-  }
 }

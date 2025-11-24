@@ -18,7 +18,7 @@ const cards = ref([
     },
     {
         key: 'sync',
-        icon: 'i-lucide-cloud',
+        icon: 'i-heroicons-cloud',
         iconColor: 'secondary',
         spotlight: true,
         spotlightColor: 'secondary',
