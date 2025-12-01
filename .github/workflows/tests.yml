@@ -1,0 +1,36 @@
+name: Run tests front
+
+on:
+    # Déclenche le workflow sur chaque push (toutes branches)
+    push:
+        branches:
+            - '**'
+
+jobs:
+    test:
+        # Utilise la dernière image Ubuntu GitHub Actions
+        runs-on: ubuntu-latest
+
+        steps:
+            # 1. Récupère le code du dépôt
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            # 2. Installe Node.js (runtime JavaScript pour exécuter npm / tests)
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  # Active le cache npm pour accélérer les installs
+                  cache: 'npm'
+
+            # 3. Installe les dépendances du projet avec npm
+            - name: Install dependencies
+              run: npm install
+              working-directory: ./castium
+            # 4. Lance la suite de tests (script "test" de package.json)
+            - name: Run tests
+              run: npm test
+              working-directory: ./castium
+
+
