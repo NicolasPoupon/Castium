@@ -10,7 +10,12 @@
         "start": "node .output/server/index.mjs",
         "postinstall": "nuxt prepare",
         "lint": "eslint . --ext .ts,.js,.vue",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "test": "vitest --run",
+        "test:unit": "vitest --run tests/unit",
+        "test:integration": "vitest --run tests/integration",
+        "test:functional": "vitest --run tests/functional",
+        "test:component": "vitest --run tests/component"
     },
     "dependencies": {
         "@nuxtjs/i18n": "^10.2.0",
@@ -26,6 +31,7 @@
         "@nuxt/fonts": "^0.12.1",
         "@nuxt/ui": "^4.2.0",
         "@tailwindcss/postcss": "^4.1.17",
+        "@vue/test-utils": "^2.4.6",
         "autoprefixer": "^10.4.22",
         "eslint": "^9.39.1",
         "eslint-config-prettier": "^10.1.8",
@@ -33,9 +39,11 @@
         "eslint-plugin-vue": "^10.5.1",
         "globals": "^16.5.0",
         "jiti": "^2.6.1",
+        "jsdom": "^25.0.0",
         "prettier": "^3.6.2",
         "tailwindcss": "^4.1.17",
         "typescript-eslint": "^8.46.4",
+        "vitest": "^2.1.8",
         "vue-eslint-parser": "^10.2.0",
         "zod": "^4.1.12"
     },
