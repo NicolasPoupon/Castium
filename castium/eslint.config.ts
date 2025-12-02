@@ -6,34 +6,38 @@ import prettier from 'eslint-plugin-prettier'
 import vueParser from 'vue-eslint-parser'
 import { defineConfig } from 'eslint/config'
 
-export default defineConfig([
-    { ignores: ['node_modules/**', '.nuxt/**', '.output/**', 'dist/**'] },
+const prettierOptions = {
+    singleQuote: true,
+    semi: false,
+    trailingComma: 'es5',
+    printWidth: 100,
+}
 
-    // JS / TS standards
+export default defineConfig([
+    {
+        ignores: ['node_modules/**', '.nuxt/**', '.output/**', 'dist/**'],
+    },
+
+    // JS / TS
     {
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         languageOptions: {
             parser: tseslint.parser,
-            parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+            parserOptions: {
+                ecmaVersion: 'latest',
+                sourceType: 'module',
+            },
             globals: globals.browser,
         },
         plugins: { prettier },
         extends: [js.configs.recommended, ...tseslint.configs.recommended],
         rules: {
             '@typescript-eslint/no-explicit-any': 'off',
-            'prettier/prettier': [
-                'warn',
-                {
-                    singleQuote: true,
-                    semi: false,
-                    trailingComma: 'es5',
-                    printWidth: 100,
-                },
-            ],
+            'prettier/prettier': ['warn', prettierOptions],
         },
     },
 
-    // Vue standards
+    // Vue
     {
         files: ['**/*.vue'],
         languageOptions: {
@@ -51,22 +55,19 @@ export default defineConfig([
         rules: {
             'vue/multi-word-component-names': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
-            'vue/html-indent': ['error', 4],
+
+            // Let Prettier handle formatting
+            'vue/html-indent': 'off',
+            'vue/max-attributes-per-line': 'off',
+            'vue/html-self-closing': 'off',
             'vue/singleline-html-element-content-newline': 'off',
             'vue/multiline-html-element-content-newline': 'off',
-            'prettier/prettier': [
-                'warn',
-                {
-                    singleQuote: true,
-                    semi: true,
-                    trailingComma: 'es5',
-                    printWidth: 100,
-                },
-            ],
+
+            'prettier/prettier': ['warn', prettierOptions],
         },
     },
 
-    // Declaration files
+    // .d.ts files
     {
         files: ['**/*.d.ts'],
         rules: {
