@@ -1,15 +1,15 @@
 <script setup lang="ts">
 const props = defineProps<{
-    label: string;
-}>();
+    label: string
+}>()
 
 const emit = defineEmits<{
-    click: [];
-}>();
+    click: []
+}>()
 
 const handleClick = () => {
-    emit('click');
-};
+    emit('click')
+}
 </script>
 
 <template>
@@ -21,5 +21,3 @@ const handleClick = () => {
         {{ props.label }}
     </button>
 </template>
-
-

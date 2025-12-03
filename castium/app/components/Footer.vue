@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui';
-import { useI18n } from '#imports';
-const { t } = useI18n();
+import type { NavigationMenuItem } from '@nuxt/ui'
+import { useI18n } from '#imports'
+const { t } = useI18n()
 const props = defineProps({
     mode: {
         type: String,
         default: 'landing', // landing | login | music | podcast
     },
-});
+})
 const items: NavigationMenuItem[] = [
     {
         label: t('footer.links.releases'),
@@ -34,7 +34,7 @@ const items: NavigationMenuItem[] = [
         to: 'https://github.com/NicolasPoupon/Castium/releases',
         target: '_blank',
     },
-];
+]
 </script>
 
 <template>
@@ -45,9 +45,7 @@ const items: NavigationMenuItem[] = [
             </p>
         </template>
 
-        <UNavigationMenu
-:items="items" variant="link"
-/>
+        <UNavigationMenu :items="items" variant="link" />
 
         <template #right>
             <UButton

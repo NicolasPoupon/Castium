@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import * as z from 'zod';
-import { useI18n } from '#imports';
-import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui';
+import * as z from 'zod'
+import { useI18n } from '#imports'
+import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
 
 definePageMeta({
     title: 'Login',
-});
+})
 
-const toast = useToast();
-const { t } = useI18n();
+const toast = useToast()
+const { t } = useI18n()
 
 const fields: AuthFormField[] = [
     {
@@ -30,7 +30,7 @@ const fields: AuthFormField[] = [
         label: t('auth.login.fields.remember.label'),
         type: 'checkbox',
     },
-];
+]
 
 const providers = [
     {
@@ -40,22 +40,22 @@ const providers = [
             toast.add({
                 title: t('auth.login.providers.google'),
                 description: t('auth.login.providers.google'),
-            });
+            })
         },
     },
-];
+]
 
 const schema = z.object({
     email: z.email(t('auth.login.fields.email.error.invalid')),
     password: z
         .string(t('auth.login.fields.password.error.required'))
         .min(8, t('auth.login.fields.password.error.min')),
-});
+})
 
-type Schema = z.output<typeof schema>;
+type Schema = z.output<typeof schema>
 
 function onSubmit(payload: FormSubmitEvent<Schema>) {
-    console.log('Submitted', payload);
+    console.log('Submitted', payload)
 }
 </script>
 

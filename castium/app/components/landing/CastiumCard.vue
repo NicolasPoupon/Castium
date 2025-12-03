@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useI18n } from '#imports';
-const { t } = useI18n();
+import { useI18n } from '#imports'
+const { t } = useI18n()
 const cards = ref([
     {
         key: 'organized',
@@ -44,7 +44,7 @@ const cards = ref([
         spotlight: true,
         spotlightColor: 'warning',
     },
-]);
+])
 </script>
 
 <template>

@@ -1,37 +1,37 @@
 <script setup lang="ts">
-import { useI18n } from '#imports';
-import * as locales from '@nuxt/ui/locale';
+import { useI18n } from '#imports'
+import * as locales from '@nuxt/ui/locale'
 
-const { locale, setLocale } = useI18n();
+const { locale, setLocale } = useI18n()
 
 const onLocaleChange = async (value: string) => {
-    await setLocale(value);
+    await setLocale(value)
 
     // Reload the page to ensure all content is updated (this has to be improved in the future)
     if (process.client) {
-        window.location.reload();
+        window.location.reload()
     }
-};
+}
 const props = defineProps({
     mode: {
         type: String,
         default: 'landing', // landing | login | music | podcast
     },
-});
+})
 const modeClass = computed(() => {
     switch (props.mode) {
         case 'landing':
-            return 'fill-red-800';
+            return 'fill-red-800'
         case 'login':
-            return 'fill-gray-400';
+            return 'fill-gray-400'
         case 'music':
-            return 'fill-castium-green';
+            return 'fill-castium-green'
         case 'podcast':
-            return 'fill-orange-400';
+            return 'fill-orange-400'
         default:
-            return 'fill-gray-300';
+            return 'fill-gray-300'
     }
-});
+})
 </script>
 
 <template>

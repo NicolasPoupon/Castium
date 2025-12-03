@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 
-const email = ref('');
-const password = ref('');
+const email = ref('')
+const password = ref('')
 
 const emit = defineEmits<{
-    submit: [payload: { email: string; password: string }];
-}>();
+    submit: [payload: { email: string; password: string }]
+}>()
 
 const handleSubmit = () => {
     emit('submit', {
         email: email.value,
         password: password.value,
-    });
-};
+    })
+}
 </script>
 
 <template>
@@ -48,5 +48,3 @@ const handleSubmit = () => {
         </button>
     </form>
 </template>
-
-

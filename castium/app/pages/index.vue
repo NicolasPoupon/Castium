@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useI18n } from '#imports';
-const { t, locale } = useI18n();
-watch(locale, () => {});
+import { useI18n } from '#imports'
+const { t, locale } = useI18n()
+watch(locale, () => {})
 
 useHead({
     title: 'Castium — Your multimedia universe',
-});
+})
 </script>
 
 <template>
@@ -66,8 +66,7 @@ useHead({
                     color="neutral"
                     variant="outline"
                 />
-                <UButton trailing-icon="i-heroicons-arrow-right"
-color="neutral" variant="outline">
+                <UButton trailing-icon="i-heroicons-arrow-right" color="neutral" variant="outline">
                     {{ t('landing.beta.cta') }}
                 </UButton>
             </div>
