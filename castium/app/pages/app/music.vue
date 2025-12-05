@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useI18n } from '#imports'
+const { t } = useI18n()
 const { getAuthUrl, isAuthenticated, getUserPlaylists, getFeaturedPlaylists, play } = useSpotify()
 
 const userPlaylists = ref<any[]>([])
@@ -48,7 +50,7 @@ watch(isAuthenticated, (newValue) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-900">
+    <div class="min-h-screen bg-gray-900 flex flex-col">
         <Navbar mode="app" />
         <AppNav />
 
@@ -62,34 +64,35 @@ watch(isAuthenticated, (newValue) => {
                         <div class="mb-8">
                             <UIcon
                                 name="i-heroicons-musical-note"
-                                class="w-24 h-24 text-castium-green mx-auto mb-6"
+                                class="w-24 h-24 text-green-600 mx-auto mb-6"
                             />
                             <h1 class="text-4xl font-bold text-white mb-4">
-                                Connectez votre compte Spotify
+                                {{ t('music.hero.connectToSpotify') }}
                             </h1>
                             <p class="text-gray-400 text-lg mb-8">
-                                Accédez à vos playlists, albums et artistes préférés. Écoutez votre
-                                musique directement depuis Castium.
+                                {{ t('music.hero.description') }}
                             </p>
                         </div>
 
                         <UButton
                             icon="i-simple-icons-spotify"
                             size="xl"
-                            label="Connecter Spotify"
+                            :label="t('music.hero.connectButton')"
                             class="bg-castium-green hover:bg-green-600 text-white font-semibold"
                             @click="connectSpotify"
                         />
 
                         <p class="text-gray-500 text-sm mt-6">
-                            Vous serez redirigé vers Spotify pour autoriser l'accès
+                            {{ t('music.hero.redirectNotice') }}
                         </p>
                     </div>
                 </div>
 
                 <div v-else>
                     <div class="mb-8">
-                        <h1 class="text-4xl font-bold text-white mb-6">Votre musique</h1>
+                        <h1 class="text-4xl font-bold text-white mb-6">
+                            {{ t('music.hero.yourMusic') }}
+                        </h1>
                         <UInput
                             v-model="searchQuery"
                             icon="i-heroicons-magnifying-glass"
@@ -108,7 +111,9 @@ watch(isAuthenticated, (newValue) => {
 
                     <div v-else class="space-y-12">
                         <section v-if="userPlaylists.length > 0">
-                            <h2 class="text-2xl font-bold text-white mb-6">Vos playlists</h2>
+                            <h2 class="text-2xl font-bold text-white mb-6">
+                                {{ t('music.hero.playlists') }}
+                            </h2>
                             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 <MusicPlaylistCard
                                     v-for="playlist in userPlaylists"
@@ -121,7 +126,7 @@ watch(isAuthenticated, (newValue) => {
 
                         <section v-if="featuredPlaylists.length > 0">
                             <h2 class="text-2xl font-bold text-white mb-6">
-                                Playlists recommandées
+                                {{ t('music.hero.recommendedPlaylists') }}
                             </h2>
                             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 <MusicPlaylistCard

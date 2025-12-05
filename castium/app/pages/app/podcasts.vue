@@ -1,7 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useI18n } from '#imports'
+const { t } = useI18n()
+
+</script>
 
 <template>
-    <div class="min-h-screen bg-gray-900">
+    <div class="min-h-screen bg-gray-900 flex flex-col">
         <Navbar mode="app" />
         <AppNav />
 
@@ -13,10 +17,11 @@
                             name="i-heroicons-microphone"
                             class="w-24 h-24 text-orange-400 mx-auto mb-6"
                         />
-                        <h1 class="text-4xl font-bold text-white mb-4">Podcasts à venir</h1>
+                        <h1 class="text-4xl font-bold text-white mb-4">
+                            {{ t('podcasts.hero.title') }}
+                        </h1>
                         <p class="text-gray-400 text-lg">
-                            La section podcasts sera bientôt disponible. Vous pourrez écouter et
-                            gérer vos podcasts préférés.
+                            {{ t('podcasts.hero.description') }}
                         </p>
                     </div>
                 </div>

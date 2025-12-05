@@ -2,7 +2,7 @@
 import { useI18n } from '#imports'
 import * as locales from '@nuxt/ui/locale'
 
-const { locale, setLocale } = useI18n()
+const { t, locale, setLocale } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
@@ -18,11 +18,11 @@ const props = defineProps({
     },
 })
 
-const items = [
-    { label: 'Movies', value: 'movies', to: '/app/movies' },
-    { label: 'Music', value: 'music', to: '/app/music' },
-    { label: 'Podcasts', value: 'podcasts', to: '/app/podcasts' },
-]
+const items = computed(() => [
+    { label: t('navbar.selector.movies'), value: 'movies', to: '/app/movies' },
+    { label: t('navbar.selector.music'), value: 'music', to: '/app/music' },
+    { label: t('navbar.selector.podcasts'), value: 'podcasts', to: '/app/podcasts' },
+])
 
 const activeTab = computed({
     get() {
@@ -31,24 +31,17 @@ const activeTab = computed({
         return 'movies'
     },
     set(value: string) {
-        const item = items.find((i) => i.value === value)
+        const item = items.value.find((i) => i.value === value)
         if (item?.to) router.push(item.to)
     },
 })
 
 const modeClass = computed(() => {
-    switch (props.mode) {
-        case 'landing':
-            return 'fill-red-800'
-        case 'login':
-            return 'fill-gray-400'
-        case '/music':
-            return 'fill-castium-green'
-        case '/podcasts':
-            return 'fill-orange-400'
-        default:
-            return 'fill-gray-300'
-    }
+    if (route.path.includes('/movies')) return 'fill-red-800'
+    if (route.path.includes('/music')) return 'fill-green-600'
+    if (route.path.includes('/podcasts')) return 'fill-orange-400'
+
+    return 'fill-gray-300'
 })
 </script>
 

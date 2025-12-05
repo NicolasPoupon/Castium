@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from '#imports'
-
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const { getTrending, getPopular, getTopRated } = useTMDB()
 
 const heroMovie = ref<any>(null)
@@ -12,12 +11,46 @@ const isLoading = ref(true)
 
 const searchQuery = ref('')
 
+const tmdbLanguage = computed(() => {
+    switch (locale.value) {
+        case 'fr':
+            return 'fr-FR'
+        case 'pl':
+            return 'pl-PL'
+        default:
+            return 'en-US'
+    }
+})
+
+const loadMovies = async () => {
+    isLoading.value = true
+    try {
+        const lang = tmdbLanguage.value
+        const [trending, popular, topRated] = await Promise.all([
+            getTrending('movie', 'week', lang),
+            getPopular('movie', lang),
+            getTopRated('movie', lang),
+        ])
+
+        trendingMovies.value = trending.results || []
+        popularMovies.value = popular.results || []
+        topRatedMovies.value = topRated.results || []
+
+        heroMovie.value = trendingMovies.value[0] ?? null
+    } catch (error) {
+        console.error('Error loading movies:', error)
+    } finally {
+        isLoading.value = false
+    }
+}
+
 onMounted(async () => {
     try {
+        const lang = tmdbLanguage.value
         const [trending, popular, topRated] = await Promise.all([
-            getTrending('movie', 'week'),
-            getPopular('movie'),
-            getTopRated('movie'),
+            getTrending('movie', 'week', lang),
+            getPopular('movie', lang),
+            getTopRated('movie', lang),
         ])
 
         trendingMovies.value = trending.results || []
@@ -32,6 +65,10 @@ onMounted(async () => {
     } finally {
         isLoading.value = false
     }
+})
+
+watch(tmdbLanguage, () => {
+    loadMovies()
 })
 </script>
 
@@ -54,13 +91,15 @@ onMounted(async () => {
                         icon="i-heroicons-magnifying-glass"
                         size="lg"
                         color="neutral"
-                        placeholder="Rechercher un film ou une série..."
+                        :placeholder="t('movies.search.placeholder')"
                         class="w-full max-w-md bg-gray-800 text-white placeholder-gray-400"
                     />
                 </div>
 
                 <section v-if="trendingMovies.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">Tendances de la semaine</h2>
+                    <h2 class="text-2xl font-bold text-white mb-6">
+                        {{ t('movies.hero.trendingTitle') }}
+                    </h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         <MoviesMovieCard
                             v-for="movie in trendingMovies.slice(1, 13)"
@@ -71,7 +110,9 @@ onMounted(async () => {
                 </section>
 
                 <section v-if="popularMovies.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">Films populaires</h2>
+                    <h2 class="text-2xl font-bold text-white mb-6">
+                        {{ t('movies.hero.popularTitle') }}
+                    </h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         <MoviesMovieCard
                             v-for="movie in popularMovies.slice(0, 12)"
@@ -82,7 +123,9 @@ onMounted(async () => {
                 </section>
 
                 <section v-if="topRatedMovies.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">Les mieux notés</h2>
+                    <h2 class="text-2xl font-bold text-white mb-6">
+                        {{ t('movies.hero.topRatedTitle') }}
+                    </h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         <MoviesMovieCard
                             v-for="movie in topRatedMovies.slice(0, 12)"

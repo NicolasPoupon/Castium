@@ -38,7 +38,7 @@ const items: NavigationMenuItem[] = [
 </script>
 
 <template>
-    <UFooter>
+    <UFooter class="mt-auto w-full border-t border-gray-800">
         <template #left>
             <p class="text-muted text-sm">
                 © {{ new Date().getFullYear() }} {{ t('footer.rights') }}
