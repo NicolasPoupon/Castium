@@ -91,5 +91,39 @@
             },
             "submit": "Login"
         }
+    },
+    "navbar": {
+        "selector": {
+          "movies": "Movies",
+          "music": "Music",
+          "podcasts": "Podcasts"
+        }
+    },
+    "movies": {
+        "hero": {
+            "trendingTitle": "Trending this week",
+            "popularTitle": "Popular movies",
+            "topRatedTitle": "Top rated movies"
+        },
+        "search": {
+            "placeholder": "Search for movies, series..."
+        }
+    },
+    "music": {
+        "hero": {
+            "connectToSpotify": "Connect your Spotify account",
+            "description": "Access your favorite playlists, albums and artists. Listen to your music directly from Castium.",
+            "redirectNotice": "You will be redirected to Spotify to authorize access",
+            "connectButton": "Connect to Spotify",
+            "yourMusic": "Your music",
+            "playlists": "Your playlists",
+            "recommendedPlaylists": "Recommended playlists"
+        }
+    },
+    "podcasts": {
+        "hero": {
+            "title": "Podcasts coming soon",
+            "description": "The podcasts section will be available soon. You’ll be able to listen to and manage your favorite podcasts."
+        }
     }
 }

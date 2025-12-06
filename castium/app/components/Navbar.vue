@@ -2,35 +2,46 @@
 import { useI18n } from '#imports'
 import * as locales from '@nuxt/ui/locale'
 
-const { locale, setLocale } = useI18n()
+const { t, locale, setLocale } = useI18n()
+const route = useRoute()
+const router = useRouter()
 
 const onLocaleChange = async (value: string) => {
     await setLocale(value)
-
-    // Reload the page to ensure all content is updated (this has to be improved in the future)
-    if (process.client) {
-        window.location.reload()
-    }
+    if (process.client) window.location.reload()
 }
+
 const props = defineProps({
     mode: {
         type: String,
-        default: 'landing', // landing | login | music | podcast
+        default: 'landing', // landing | login | app
     },
 })
+
+const items = computed(() => [
+    { label: t('navbar.selector.movies'), value: 'movies', to: '/app/movies' },
+    { label: t('navbar.selector.music'), value: 'music', to: '/app/music' },
+    { label: t('navbar.selector.podcasts'), value: 'podcasts', to: '/app/podcasts' },
+])
+
+const activeTab = computed({
+    get() {
+        if (route.path.includes('/music')) return 'music'
+        if (route.path.includes('/podcasts')) return 'podcasts'
+        return 'movies'
+    },
+    set(value: string) {
+        const item = items.value.find((i) => i.value === value)
+        if (item?.to) router.push(item.to)
+    },
+})
+
 const modeClass = computed(() => {
-    switch (props.mode) {
-        case 'landing':
-            return 'fill-red-800'
-        case 'login':
-            return 'fill-gray-400'
-        case 'music':
-            return 'fill-castium-green'
-        case 'podcast':
-            return 'fill-orange-400'
-        default:
-            return 'fill-gray-300'
-    }
+    if (route.path.includes('/movies')) return 'fill-red-800'
+    if (route.path.includes('/music')) return 'fill-green-600'
+    if (route.path.includes('/podcasts')) return 'fill-orange-400'
+
+    return 'fill-gray-300'
 })
 </script>
 
@@ -61,6 +72,19 @@ const modeClass = computed(() => {
                     </svg>
                 </NuxtLink>
             </div>
+            <div class="flex-1 flex justify-center">
+                <UTabs
+                    v-if="mode === 'app'"
+                    v-model="activeTab"
+                    :items="items"
+                    :content="false"
+                    size="md"
+                    color="neutral"
+                    variant="pill"
+                    class="bg-gray-800/50 rounded-full"
+                />
+            </div>
+
             <div class="flex items-center gap-6">
                 <ULocaleSelect
                     v-model="locale"
