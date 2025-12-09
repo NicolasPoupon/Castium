@@ -75,5 +75,10 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
                 @submit="onSubmit"
             />
         </UPageCard>
+        <div class="mt-4 text-center">
+            <UButton variant="link" color="neutral" to="/auth/signup" class="text-sm">
+                {{ t('auth.login.noAccount') }}
+            </UButton>
+        </div>
     </div>
 </template>
