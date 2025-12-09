@@ -9,6 +9,15 @@ definePageMeta({
 
 const toast = useToast()
 const { t } = useI18n()
+const router = useRouter()
+const { signIn, signInWithGoogle, loading, isAuthenticated } = useAuth()
+
+// Redirect if already authenticated
+watch(isAuthenticated, (authenticated) => {
+    if (authenticated) {
+        router.push('/app/movies')
+    }
+})
 
 const fields: AuthFormField[] = [
     {
@@ -36,11 +45,15 @@ const providers = [
     {
         label: 'Google',
         icon: 'i-simple-icons-google',
-        onClick: () => {
-            toast.add({
-                title: t('auth.login.providers.google'),
-                description: t('auth.login.providers.google'),
-            })
+        onClick: async () => {
+            const { error } = await signInWithGoogle()
+            if (error) {
+                toast.add({
+                    title: t('auth.login.errors.google'),
+                    description: error.message,
+                    color: 'error',
+                })
+            }
         },
     },
 ]
@@ -54,8 +67,23 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-function onSubmit(payload: FormSubmitEvent<Schema>) {
-    console.log('Submitted', payload)
+async function onSubmit(payload: FormSubmitEvent<Schema>) {
+    const { error } = await signIn(payload.data.email, payload.data.password)
+
+    if (error) {
+        toast.add({
+            title: t('auth.login.errors.title'),
+            description: error.message || t('auth.login.errors.invalid'),
+            color: 'error',
+        })
+    } else {
+        toast.add({
+            title: t('auth.login.success'),
+            description: t('auth.login.successDescription'),
+            color: 'success',
+        })
+        router.push('/app/movies')
+    }
 }
 </script>
 
@@ -72,6 +100,7 @@ function onSubmit(payload: FormSubmitEvent<Schema>) {
                 icon="i-heroicons-user"
                 :fields="fields"
                 :providers="providers"
+                :loading="loading"
                 @submit="onSubmit"
             />
         </UPageCard>
