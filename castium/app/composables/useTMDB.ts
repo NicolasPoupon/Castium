@@ -54,6 +54,22 @@ export const useTMDB = () => {
         return fetchFromTMDB(`/${mediaType}/${id}`, language)
     }
 
+    const getCredits = async (
+        id: number,
+        mediaType: 'movie' | 'tv' = 'movie',
+        language: string = 'fr-FR'
+    ) => {
+        return fetchFromTMDB(`/${mediaType}/${id}/credits`, language)
+    }
+
+    const getSimilar = async (
+        id: number,
+        mediaType: 'movie' | 'tv' = 'movie',
+        language: string = 'fr-FR'
+    ) => {
+        return fetchFromTMDB(`/${mediaType}/${id}/similar`, language)
+    }
+
     const getImageUrl = (path: string | null, size: string = 'w500') => {
         if (!path) return '/placeholder-movie.jpg'
         return `${imageBaseUrl}/${size}${path}`
@@ -65,6 +81,8 @@ export const useTMDB = () => {
         getTopRated,
         search,
         getDetails,
+        getCredits,
+        getSimilar,
         getImageUrl,
     }
 }
