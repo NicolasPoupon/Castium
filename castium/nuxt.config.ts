@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     css: ['~/assets/css/main.css'],
     modules: ['@nuxtjs/i18n', '@nuxt/ui', '@nuxt/fonts'],
     runtimeConfig: {
-        spotifyClientSecret: process.env.NUXT_PUBLIC_SPOTIFY_CLIENT_SECRET,
+        spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET,
         public: {
             supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
             supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
