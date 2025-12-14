@@ -67,6 +67,13 @@
             "title": "Logowanie",
             "description": "Wprowadź dane, aby uzyskać dostęp do konta.",
             "fields": {
+                "username": {
+                    "label": "Nazwa użytkownika",
+                    "placeholder": "Wpisz swoją nazwę użytkownika",
+                    "error": {
+                        "required": "Nazwa użytkownika jest wymagana"
+                    }
+                },
                 "email": {
                     "label": "Email",
                     "placeholder": "Wpisz swój email",
@@ -82,6 +89,13 @@
                         "min": "Musi mieć co najmniej 8 znaków"
                     }
                 },
+                "confirmPassword": {
+                    "label": "Potwierdź hasło",
+                    "placeholder": "Wpisz ponownie swoje hasło",
+                    "error": {
+                        "mismatch": "Hasła nie pasują"
+                    }
+                },
                 "remember": {
                     "label": "Zapamiętaj mnie"
                 }
@@ -89,14 +103,20 @@
             "providers": {
                 "google": "Zaloguj przez Google"
             },
-            "submit": "Zaloguj się"
+            "submit": "Zaloguj się",
+            "noAccount": "Nie masz konta? Zarejestruj się"
+        },
+        "signUp": {
+            "title": "Rejestracja",
+            "description": "Utwórz konto, aby zacząć korzystać z Castium.",
+            "hasAccount": "Masz już konto? Zaloguj się"
         }
     },
     "navbar": {
         "selector": {
-          "movies": "Filmy",
-          "music": "Muzyka",
-          "podcasts": "Podcasty"
+            "movies": "Filmy",
+            "music": "Muzyka",
+            "podcasts": "Podcasty"
         }
     },
     "movies": {

@@ -67,6 +67,13 @@
             "title": "Connexion",
             "description": "Entrez vos identifiants pour accéder à votre compte.",
             "fields": {
+                "username": {
+                    "label": "Nom d'utilisateur",
+                    "placeholder": "Entrez votre nom d'utilisateur",
+                    "error": {
+                        "required": "Le nom d'utilisateur est obligatoire"
+                    }
+                },
                 "email": {
                     "label": "Email",
                     "placeholder": "Entrez votre email",
@@ -82,6 +89,13 @@
                         "min": "Doit contenir au moins 8 caractères"
                     }
                 },
+                "confirmPassword": {
+                    "label": "Confirmer le mot de passe",
+                    "placeholder": "Ressaisissez votre mot de passe",
+                    "error": {
+                        "mismatch": "Les mots de passe ne correspondent pas"
+                    }
+                },
                 "remember": {
                     "label": "Se souvenir de moi"
                 }
@@ -89,7 +103,13 @@
             "providers": {
                 "google": "Connexion avec Google"
             },
-            "submit": "Connexion"
+            "submit": "Connexion",
+            "noAccount": "Vous n'avez pas de compte ? Inscrivez-vous"
+        },
+        "signUp": {
+            "title": "Inscription",
+            "description": "Créez un compte pour commencer à utiliser Castium.",
+            "hasAccount": "Vous avez déjà un compte ? Connectez-vous"
         }
     },
     "navbar": {
@@ -107,6 +127,16 @@
         },
         "search": {
             "placeholder": "Rechercher des films, séries..."
+        },
+        "detail": {
+            "status": "État",
+            "budget": "Budget",
+            "revenue": "Recettes",
+            "language": "Langue originale",
+            "director": "Réalisateur",
+            "cast": "Distribution",
+            "mainActors": "Acteurs principaux",
+            "similar": "Films similaires"
         }
     },
     "music": {
@@ -125,5 +155,5 @@
             "title": "Podcasts à venir",
             "description": "La section podcasts sera bientôt disponible. Vous pourrez écouter et gérer vos podcasts préférés."
         }
-    }  
+    }
 }
