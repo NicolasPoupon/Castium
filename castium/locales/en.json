@@ -108,6 +108,12 @@
             "success": "Login successful",
             "successDescription": "You are now logged in."
         },
+        "signUp" : {
+            "title": "Sign Up",
+            "description": "Create an account to start using Castium.",
+            "submit": "Sign Up",
+            "hasAccount": "Already have an account? Log in"
+        },
         "callback": {
             "loading": "Verifying authentication...",
             "success": "Authentication successful",

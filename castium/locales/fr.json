@@ -108,6 +108,12 @@
             "success": "Connexion réussie",
             "successDescription": "Vous êtes maintenant connecté."
         },
+        "signUp" : {
+            "title": "Inscription",
+            "description": "Créez un compte pour commencer à utiliser Castium.",
+            "submit": "S'inscrire",
+            "hasAccount": "Vous avez déjà un compte ? Connectez-vous"
+        },
         "callback": {
             "loading": "Vérification de l'authentification...",
             "success": "Authentification réussie",

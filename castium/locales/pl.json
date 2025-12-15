@@ -108,6 +108,12 @@
             "success": "Logowanie udane",
             "successDescription": "Jesteś teraz zalogowany."
         },
+        "signUp" : {
+            "title": "Rejestracja",
+            "description": "Utwórz konto, aby zacząć korzystać z Castium.",
+            "submit": "Zarejestruj się",
+            "hasAccount": "Masz już konto? Zaloguj się"
+        },
         "callback": {
             "loading": "Weryfikacja uwierzytelnienia...",
             "success": "Uwierzytelnienie udane",
