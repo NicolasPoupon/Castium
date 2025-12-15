@@ -9,7 +9,8 @@ export default defineNuxtConfig({
         spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET,
         public: {
             supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
-            supabaseAnonKey: process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
+            supabaseAnonKey:
+                process.env.NUXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
             tmdbApiKey: process.env.NUXT_PUBLIC_TMDB_API_KEY,
             spotifyClientId: process.env.NUXT_PUBLIC_SPOTIFY_CLIENT_ID,
             spotifyRedirectUri: process.env.NUXT_PUBLIC_SPOTIFY_REDIRECT_URI,
@@ -43,6 +44,9 @@ export default defineNuxtConfig({
         ],
     },
     vite: {
+        ssr: {
+            noExternal: ['@supabase/supabase-js'],
+        },
         server: {
             host: '0.0.0.0',
             port: 3000,
@@ -50,6 +54,11 @@ export default defineNuxtConfig({
                 usePolling: true,
                 interval: 100,
             },
+        },
+    },
+    nitro: {
+        externals: {
+            inline: ['@supabase/supabase-js'],
         },
     },
     typescript: {
