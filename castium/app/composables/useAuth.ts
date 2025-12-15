@@ -3,8 +3,7 @@ import type { User, Session } from '@supabase/supabase-js'
 export const useAuth = () => {
     const supabase = useSupabase()
     const router = useRouter()
-    const toast = useToast()
-    const { t } = useI18n()
+
 
     const user = useState<User | null>('auth_user', () => null)
     const session = useState<Session | null>('auth_session', () => null)

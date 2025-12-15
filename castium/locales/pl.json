@@ -89,14 +89,43 @@
             "providers": {
                 "google": "Zaloguj przez Google"
             },
-            "submit": "Zaloguj się"
+            "submit": "Zaloguj się",
+            "noAccount": "Nie masz jeszcze konta? Zarejestruj się",
+            "success": "Logowanie udane",
+            "successDescription": "Jesteś teraz zalogowany."
+        },
+        "callback": {
+            "loading": "Weryfikacja uwierzytelnienia...",
+            "success": "Uwierzytelnienie udane",
+            "error": "Błąd uwierzytelniania"
         }
     },
     "navbar": {
         "selector": {
-          "movies": "Filmy",
-          "music": "Muzyka",
-          "podcasts": "Podcasty"
+            "movies": "Filmy",
+            "music": "Muzyka",
+            "podcasts": "Podcasty"
+        },
+        "user": {
+            "settings": "Ustawienia",
+            "logout": "Wyloguj się"
+        }
+    },
+    "settings": {
+        "title": "Ustawienia",
+        "profile": {
+            "title": "Profil",
+            "name": "Imię",
+            "email": "Email"
+        },
+        "session": {
+            "title": "Sesja",
+            "description": "Wyloguj się z konta na tym urządzeniu."
+        },
+        "logout": {
+            "button": "Wyloguj się",
+            "success": "Wylogowano pomyślnie",
+            "error": "Błąd podczas wylogowywania"
         }
     },
     "movies": {
