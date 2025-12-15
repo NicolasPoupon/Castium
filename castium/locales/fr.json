@@ -67,6 +67,13 @@
             "title": "Connexion",
             "description": "Entrez vos identifiants pour accéder à votre compte.",
             "fields": {
+                "username": {
+                    "label": "Nom d'utilisateur",
+                    "placeholder": "Entrez votre nom d'utilisateur",
+                    "error": {
+                        "required": "Le nom d'utilisateur est obligatoire"
+                    }
+                },
                 "email": {
                     "label": "Email",
                     "placeholder": "Entrez votre email",
@@ -82,6 +89,13 @@
                         "min": "Doit contenir au moins 8 caractères"
                     }
                 },
+                "confirmPassword": {
+                    "label": "Confirmer le mot de passe",
+                    "placeholder": "Ressaisissez votre mot de passe",
+                    "error": {
+                        "mismatch": "Les mots de passe ne correspondent pas"
+                    }
+                },
                 "remember": {
                     "label": "Se souvenir de moi"
                 }
@@ -93,6 +107,12 @@
             "noAccount": "Pas encore de compte ? Inscrivez-vous",
             "success": "Connexion réussie",
             "successDescription": "Vous êtes maintenant connecté."
+        },
+        "signUp" : {
+            "title": "Inscription",
+            "description": "Créez un compte pour commencer à utiliser Castium.",
+            "submit": "S'inscrire",
+            "hasAccount": "Vous avez déjà un compte ? Connectez-vous"
         },
         "callback": {
             "loading": "Vérification de l'authentification...",
@@ -136,6 +156,21 @@
         },
         "search": {
             "placeholder": "Rechercher des films, séries..."
+        },
+        "detail": {
+            "status": "État",
+            "budget": "Budget",
+            "revenue": "Recettes",
+            "language": "Langue originale",
+            "director": "Réalisateur",
+            "cast": "Distribution",
+            "mainActors": "Acteurs principaux",
+            "similar": "Films similaires"
+        },
+        "selector" :{
+            "overview": "Aperçu",
+            "video": "Vidéo",
+            "trailer": "Bande-annonce"
         }
     },
     "music": {

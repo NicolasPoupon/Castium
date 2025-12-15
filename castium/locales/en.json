@@ -67,6 +67,13 @@
             "title": "Login",
             "description": "Enter your credentials to access your account.",
             "fields": {
+                "username": {
+                    "label": "Username",
+                    "placeholder": "Enter your username",
+                    "error": {
+                        "required": "Username is required"
+                    }
+                },
                 "email": {
                     "label": "Email",
                     "placeholder": "Enter your email",
@@ -82,6 +89,13 @@
                         "min": "Must be at least 8 characters"
                     }
                 },
+                "confirmPassword": {
+                    "label": "Confirm Password",
+                    "placeholder": "Re-enter your password",
+                    "error": {
+                        "mismatch": "Passwords do not match"
+                    }
+                },
                 "remember": {
                     "label": "Remember me"
                 }
@@ -93,6 +107,12 @@
             "noAccount": "No account yet? Sign up",
             "success": "Login successful",
             "successDescription": "You are now logged in."
+        },
+        "signUp" : {
+            "title": "Sign Up",
+            "description": "Create an account to start using Castium.",
+            "submit": "Sign Up",
+            "hasAccount": "Already have an account? Log in"
         },
         "callback": {
             "loading": "Verifying authentication...",
@@ -136,6 +156,21 @@
         },
         "search": {
             "placeholder": "Search for movies, series..."
+        },
+        "detail": {
+            "status": "Status",
+            "budget": "Budget",
+            "revenue": "Revenue",
+            "language": "Original language",
+            "director": "Director",
+            "cast": "Cast",
+            "mainActors": "Main actors",
+            "similar": "Similar movies"
+        },
+        "selector" :{
+            "overview": "Overview",
+            "video": "Video",
+            "trailer": "Trailer"
         }
     },
     "music": {

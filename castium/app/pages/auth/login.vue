@@ -88,9 +88,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 </script>
 
 <template>
-    <div
-        class="flex flex-col items-center justify-center gap-4 p-4 bg-gradient-to-br from-[#45556C] to-[#00C16A] min-h-screen"
-    >
+    <div class="flex flex-col items-center justify-center gap-4 p-4 bg-gray-900 min-h-screen">
         <Navbar mode="auth" />
         <UPageCard class="w-full max-w-md">
             <UAuthForm
@@ -104,7 +102,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
                 @submit="onSubmit"
             />
         </UPageCard>
-        <div class="mt-4 text-center">
+        <div class="text-center">
             <UButton variant="link" color="neutral" to="/auth/signup" class="text-sm">
                 {{ t('auth.login.noAccount') }}
             </UButton>

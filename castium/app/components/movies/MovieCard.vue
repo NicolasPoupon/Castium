@@ -23,8 +23,9 @@ const releaseYear = computed(() => {
 </script>
 
 <template>
-    <div
-        class="group relative overflow-hidden rounded-lg bg-gray-800/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer"
+    <NuxtLink
+        :to="`/app/movies/${movie.id}`"
+        class="group relative overflow-hidden rounded-lg bg-gray-800/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer block"
     >
         <div class="aspect-[2/3] overflow-hidden">
             <img
@@ -45,14 +46,18 @@ const releaseYear = computed(() => {
                     <span>{{ movie.vote_average.toFixed(1) }}</span>
                 </div>
             </div>
-            <p class="text-gray-400 text-xs line-clamp-3">{{ movie.overview }}</p>
+            <p class="text-gray-400 text-xs line-clamp-3">
+                {{ movie.overview }}
+            </p>
         </div>
 
         <div
             class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1"
         >
             <UIcon name="i-heroicons-star-solid" class="w-3 h-3 text-yellow-400" />
-            <span class="text-white text-xs font-medium">{{ movie.vote_average.toFixed(1) }}</span>
+            <span class="text-white text-xs font-medium">
+                {{ movie.vote_average.toFixed(1) }}
+            </span>
         </div>
-    </div>
+    </NuxtLink>
 </template>

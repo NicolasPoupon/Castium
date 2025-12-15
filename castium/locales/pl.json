@@ -67,6 +67,13 @@
             "title": "Logowanie",
             "description": "Wprowadź dane, aby uzyskać dostęp do konta.",
             "fields": {
+                "username": {
+                    "label": "Nazwa użytkownika",
+                    "placeholder": "Wpisz swoją nazwę użytkownika",
+                    "error": {
+                        "required": "Nazwa użytkownika jest wymagana"
+                    }
+                },
                 "email": {
                     "label": "Email",
                     "placeholder": "Wpisz swój email",
@@ -82,6 +89,13 @@
                         "min": "Musi mieć co najmniej 8 znaków"
                     }
                 },
+                "confirmPassword": {
+                    "label": "Potwierdź hasło",
+                    "placeholder": "Wpisz ponownie swoje hasło",
+                    "error": {
+                        "mismatch": "Hasła nie pasują"
+                    }
+                },
                 "remember": {
                     "label": "Zapamiętaj mnie"
                 }
@@ -93,6 +107,12 @@
             "noAccount": "Nie masz jeszcze konta? Zarejestruj się",
             "success": "Logowanie udane",
             "successDescription": "Jesteś teraz zalogowany."
+        },
+        "signUp" : {
+            "title": "Rejestracja",
+            "description": "Utwórz konto, aby zacząć korzystać z Castium.",
+            "submit": "Zarejestruj się",
+            "hasAccount": "Masz już konto? Zaloguj się"
         },
         "callback": {
             "loading": "Weryfikacja uwierzytelnienia...",
@@ -136,6 +156,21 @@
         },
         "search": {
             "placeholder": "Wyszukaj filmy, seriale..."
+        },
+        "detail" : {
+            "status": "Status",
+            "budget": "Budżet",
+            "revenue": "Przychód",
+            "language": "Oryginalny język",
+            "director": "Reżyser",
+            "cast": "Obsada",
+            "mainActors": "Główni aktorzy",
+            "similar": "Podobne filmy"
+        },
+        "selector" :{
+            "overview": "Przegląd",
+            "video": "Wideo",
+            "trailer": "Trailer"
         }
     },
     "music": {

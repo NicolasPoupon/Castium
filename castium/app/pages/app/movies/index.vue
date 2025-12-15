@@ -140,3 +140,4 @@ watch(tmdbLanguage, () => {
         <Footer mode="app" />
     </div>
 </template>
+<NuxtPage />
