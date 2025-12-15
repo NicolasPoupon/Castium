@@ -104,12 +104,14 @@
                 "google": "Login with Google"
             },
             "submit": "Login",
-            "noAccount": "Don't have an account? Sign up"
+            "noAccount": "No account yet? Sign up",
+            "success": "Login successful",
+            "successDescription": "You are now logged in."
         },
-        "signUp": {
-            "title": "Sign Up",
-            "description": "Create an account to start using Castium.",
-            "hasAccount": "Already have an account? Log in"
+        "callback": {
+            "loading": "Verifying authentication...",
+            "success": "Authentication successful",
+            "error": "Authentication error"
         }
     },
     "navbar": {
@@ -117,6 +119,27 @@
             "movies": "Movies",
             "music": "Music",
             "podcasts": "Podcasts"
+        },
+        "user": {
+            "settings": "Settings",
+            "logout": "Log out"
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "profile": {
+            "title": "Profile",
+            "name": "Name",
+            "email": "Email"
+        },
+        "session": {
+            "title": "Session",
+            "description": "Log out from your account on this device."
+        },
+        "logout": {
+            "button": "Log out",
+            "success": "Logged out successfully",
+            "error": "Error logging out"
         }
     },
     "movies": {

@@ -5,6 +5,7 @@ import * as locales from '@nuxt/ui/locale'
 const { t, locale, setLocale } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const { user, isAuthenticated, signOut } = useAuth()
 
 const onLocaleChange = async (value: string) => {
     await setLocale(value)
@@ -43,6 +44,54 @@ const modeClass = computed(() => {
 
     return 'fill-gray-300'
 })
+
+// User profile helpers
+const userName = computed(() => {
+    if (!user.value) return ''
+    const meta = user.value.user_metadata
+    return meta?.full_name || meta?.name || user.value.email?.split('@')[0] || ''
+})
+
+const userInitials = computed(() => {
+    const name = userName.value
+    if (!name) return '?'
+    const parts = name.split(' ')
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+    return name.substring(0, 2).toUpperCase()
+})
+
+const userAvatar = computed(() => {
+    if (!user.value) return null
+    return user.value.user_metadata?.avatar_url || user.value.user_metadata?.picture || null
+})
+
+const userMenuItems = computed(() => [
+    [
+        {
+            label: userName.value,
+            slot: 'account',
+            disabled: true,
+        },
+    ],
+    [
+        {
+            label: t('navbar.user.settings'),
+            icon: 'i-heroicons-cog-6-tooth',
+            to: '/app/settings',
+        },
+    ],
+    [
+        {
+            label: t('navbar.user.logout'),
+            icon: 'i-heroicons-arrow-right-on-rectangle',
+            click: async () => {
+                await signOut()
+            },
+        },
+    ],
+])
 </script>
 
 <template>
@@ -92,15 +141,27 @@ const modeClass = computed(() => {
                     class="w-36"
                     @update:model-value="onLocaleChange"
                 />
-                <UButton
-                    v-if="mode === 'app'"
-                    class="rounded-full [&_svg]:h-7 [&_svg]:w-7"
-                    icon="i-heroicons-cog-6-tooth"
-                    size="lg"
-                    color="neutral"
-                    variant="ghost"
-                    href="/settings"
-                />
+                <!-- User Profile Dropdown (app mode only) -->
+                <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
+                    <UButton
+                        color="neutral"
+                        variant="ghost"
+                        class="rounded-full p-0"
+                    >
+                        <UAvatar
+                            v-if="userAvatar"
+                            :src="userAvatar"
+                            :alt="userName"
+                            size="md"
+                        />
+                        <UAvatar
+                            v-else
+                            :text="userInitials || '?'"
+                            size="md"
+                            class="bg-castium-green text-white"
+                        />
+                    </UButton>
+                </UDropdownMenu>
                 <UButton
                     v-if="mode === 'landing'"
                     class="[&_svg]:h-7 [&_svg]:w-7"
