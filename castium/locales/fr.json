@@ -89,7 +89,15 @@
             "providers": {
                 "google": "Connexion avec Google"
             },
-            "submit": "Connexion"
+            "submit": "Connexion",
+            "noAccount": "Pas encore de compte ? Inscrivez-vous",
+            "success": "Connexion réussie",
+            "successDescription": "Vous êtes maintenant connecté."
+        },
+        "callback": {
+            "loading": "Vérification de l'authentification...",
+            "success": "Authentification réussie",
+            "error": "Erreur d'authentification"
         }
     },
     "navbar": {
@@ -97,6 +105,27 @@
             "movies": "Films",
             "music": "Musiques",
             "podcasts": "Podcasts"
+        },
+        "user": {
+            "settings": "Paramètres",
+            "logout": "Se déconnecter"
+        }
+    },
+    "settings": {
+        "title": "Paramètres",
+        "profile": {
+            "title": "Profil",
+            "name": "Nom",
+            "email": "Email"
+        },
+        "session": {
+            "title": "Session",
+            "description": "Déconnectez-vous de votre compte sur cet appareil."
+        },
+        "logout": {
+            "button": "Se déconnecter",
+            "success": "Déconnexion réussie",
+            "error": "Erreur lors de la déconnexion"
         }
     },
     "movies": {
@@ -125,5 +154,5 @@
             "title": "Podcasts à venir",
             "description": "La section podcasts sera bientôt disponible. Vous pourrez écouter et gérer vos podcasts préférés."
         }
-    }  
+    }
 }

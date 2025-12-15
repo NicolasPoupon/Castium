@@ -18,7 +18,18 @@ onMounted(async () => {
             })
             await router.push('/app/movies')
         } else {
-            await router.push('/auth/login')
+            // Session is missing, likely due to clock skew or invalid token
+            console.warn('No session found in callback. Possible clock skew.')
+            toast.add({
+                title: t('auth.callback.error'),
+                description: "Impossible de valider la session. Vérifiez que votre horloge système est à l'heure.",
+                color: 'error',
+                timeout: 0 // Keep it visible
+            })
+            // Delay redirect to let user read the message
+            setTimeout(() => {
+                router.push('/auth/login')
+            }, 5000)
         }
     } catch (error: any) {
         console.error('Auth callback error:', error)
@@ -26,8 +37,12 @@ onMounted(async () => {
             title: t('auth.callback.error'),
             description: error.message,
             color: 'error',
+            timeout: 0
         })
-        await router.push('/auth/login')
+        // Delay redirect to let user read the message
+        setTimeout(() => {
+            router.push('/auth/login')
+        }, 5000)
     }
 })
 </script>
