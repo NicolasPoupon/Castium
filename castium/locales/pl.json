@@ -127,6 +127,21 @@
         },
         "search": {
             "placeholder": "Wyszukaj filmy, seriale..."
+        },
+        "detail" : {
+            "status": "Status",
+            "budget": "Budżet",
+            "revenue": "Przychód",
+            "language": "Oryginalny język",
+            "director": "Reżyser",
+            "cast": "Obsada",
+            "mainActors": "Główni aktorzy",
+            "similar": "Podobne filmy"
+        },
+        "selector" :{
+            "overview": "Przegląd",
+            "video": "Wideo",
+            "trailer": "Trailer"
         }
     },
     "music": {

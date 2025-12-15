@@ -137,6 +137,11 @@
             "cast": "Cast",
             "mainActors": "Main actors",
             "similar": "Similar movies"
+        },
+        "selector" :{
+            "overview": "Overview",
+            "video": "Video",
+            "trailer": "Trailer"
         }
     },
     "music": {

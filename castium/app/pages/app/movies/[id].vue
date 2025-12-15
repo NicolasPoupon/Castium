@@ -62,6 +62,14 @@ const loadMovieDetails = async () => {
     }
 }
 
+const items = computed(() => [
+    { label: t('movies.selector.overview'), value: 'overview' },
+    { label: t('movies.selector.video'), value: 'video' },
+    { label: t('movies.selector.trailer'), value: 'trailer' },
+])
+
+const activeTab = ref('overview')
+
 const goBack = () => router.back()
 
 onMounted(() => {
@@ -87,8 +95,12 @@ watch(tmdbLanguage, () => {
                     class="absolute inset-0 bg-cover bg-center"
                     :style="{ backgroundImage: `url(${backdropUrl})` }"
                 >
-                    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent" />
-                    <div class="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-transparent to-transparent" />
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"
+                    />
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-transparent to-transparent"
+                    />
                 </div>
 
                 <div class="absolute inset-0 flex items-end">
@@ -107,8 +119,8 @@ watch(tmdbLanguage, () => {
                                     icon="i-heroicons-arrow-left"
                                     color="gray"
                                     variant="ghost"
-                                    @click="goBack"
                                     class="mb-4"
+                                    @click="goBack"
                                 />
 
                                 <h1 class="text-5xl font-bold text-white mb-2">{{ title }}</h1>
@@ -117,8 +129,13 @@ watch(tmdbLanguage, () => {
                                     <span v-if="releaseYear">{{ releaseYear }}</span>
                                     <span v-if="runtime" class="text-gray-400">{{ runtime }}</span>
                                     <div class="flex items-center gap-2">
-                                        <UIcon name="i-heroicons-star-solid" class="w-5 h-5 text-yellow-400" />
-                                        <span class="font-semibold">{{ movie.vote_average?.toFixed(1) }}/10</span>
+                                        <UIcon
+                                            name="i-heroicons-star-solid"
+                                            class="w-5 h-5 text-yellow-400"
+                                        />
+                                        <span class="font-semibold">
+                                            {{ movie.vote_average?.toFixed(1) }}/10
+                                        </span>
                                     </div>
                                 </div>
 
@@ -140,7 +157,17 @@ watch(tmdbLanguage, () => {
                     </div>
                 </div>
             </div>
-
+            <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 space-y-12">
+                <UTabs
+                    v-model="activeTab"
+                    :items="items"
+                    :content="false"
+                    size="md"
+                    color="neutral"
+                    variant="pill"
+                    class="bg-gray-800/50 rounded-full"
+                />
+            </div>
             <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12 space-y-12">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="bg-gray-800/50 rounded-lg p-4">
@@ -160,7 +187,9 @@ watch(tmdbLanguage, () => {
                     <div class="bg-gray-800/50 rounded-lg p-4">
                         <p class="text-gray-400 text-sm mb-2">{{ t('movies.detail.revenue') }}</p>
                         <p class="text-white font-semibold">
-                            {{ movie.revenue ? `$${(movie.revenue / 1000000).toFixed(1)}M` : 'N/A' }}
+                            {{
+                                movie.revenue ? `$${(movie.revenue / 1000000).toFixed(1)}M` : 'N/A'
+                            }}
                         </p>
                     </div>
 
@@ -173,17 +202,23 @@ watch(tmdbLanguage, () => {
                 </div>
 
                 <section v-if="director || cast.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">{{ t('movies.detail.cast') }}</h2>
+                    <h2 class="text-2xl font-bold text-white mb-6">
+                        {{ t('movies.detail.cast') }}
+                    </h2>
 
                     <div v-if="director" class="mb-8">
-                        <h3 class="text-lg font-semibold text-white mb-4">{{ t('movies.detail.director') }}</h3>
+                        <h3 class="text-lg font-semibold text-white mb-4">
+                            {{ t('movies.detail.director') }}
+                        </h3>
                         <div class="bg-gray-800/50 rounded-lg p-4">
                             <p class="text-white font-medium">{{ director.name }}</p>
                         </div>
                     </div>
 
                     <div v-if="cast.length > 0">
-                        <h3 class="text-lg font-semibold text-white mb-4">{{ t('movies.detail.mainActors') }}</h3>
+                        <h3 class="text-lg font-semibold text-white mb-4">
+                            {{ t('movies.detail.mainActors') }}
+                        </h3>
                         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             <div
                                 v-for="actor in cast"
@@ -197,8 +232,14 @@ watch(tmdbLanguage, () => {
                                         :alt="actor.name"
                                         class="w-full h-full object-cover"
                                     />
-                                    <div v-else class="w-full h-full flex items-center justify-center">
-                                        <UIcon name="i-heroicons-user" class="w-8 h-8 text-gray-500" />
+                                    <div
+                                        v-else
+                                        class="w-full h-full flex items-center justify-center"
+                                    >
+                                        <UIcon
+                                            name="i-heroicons-user"
+                                            class="w-8 h-8 text-gray-500"
+                                        />
                                     </div>
                                 </div>
                                 <div class="p-3">
@@ -215,9 +256,15 @@ watch(tmdbLanguage, () => {
                 </section>
 
                 <section v-if="similar.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">{{ t('movies.detail.similar') }}</h2>
+                    <h2 class="text-2xl font-bold text-white mb-6">
+                        {{ t('movies.detail.similar') }}
+                    </h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        <MoviesMovieCard v-for="film in similar.slice(0, 12)" :key="film.id" :movie="film" />
+                        <MoviesMovieCard
+                            v-for="film in similar.slice(0, 12)"
+                            :key="film.id"
+                            :movie="film"
+                        />
                     </div>
                 </section>
             </div>

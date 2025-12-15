@@ -137,6 +137,11 @@
             "cast": "Distribution",
             "mainActors": "Acteurs principaux",
             "similar": "Films similaires"
+        },
+        "selector" :{
+            "overview": "Aperçu",
+            "video": "Vidéo",
+            "trailer": "Bande-annonce"
         }
     },
     "music": {
