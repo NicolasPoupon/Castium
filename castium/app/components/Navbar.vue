@@ -22,12 +22,14 @@ const props = defineProps({
 const items = computed(() => [
     { label: t('navbar.selector.movies'), value: 'movies', to: '/app/movies' },
     { label: t('navbar.selector.music'), value: 'music', to: '/app/music' },
+    { label: t('navbar.selector.videos'), value: 'videos', to: '/app/videos' },
     { label: t('navbar.selector.podcasts'), value: 'podcasts', to: '/app/podcasts' },
 ])
 
 const activeTab = computed({
     get() {
         if (route.path.includes('/music')) return 'music'
+        if (route.path.includes('/videos')) return 'videos'
         if (route.path.includes('/podcasts')) return 'podcasts'
         return 'movies'
     },
@@ -40,6 +42,7 @@ const activeTab = computed({
 const modeClass = computed(() => {
     if (route.path.includes('/movies')) return 'fill-red-800'
     if (route.path.includes('/music')) return 'fill-green-600'
+    if (route.path.includes('/videos')) return 'fill-purple-600'
     if (route.path.includes('/podcasts')) return 'fill-orange-400'
 
     return 'fill-gray-300'

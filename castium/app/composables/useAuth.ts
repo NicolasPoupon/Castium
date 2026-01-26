@@ -4,7 +4,6 @@ export const useAuth = () => {
     const supabase = useSupabase()
     const router = useRouter()
 
-
     const user = useState<User | null>('auth_user', () => null)
     const session = useState<Session | null>('auth_session', () => null)
     const loading = useState<boolean>('auth_loading', () => false)
@@ -27,34 +26,32 @@ export const useAuth = () => {
         }
     }
 
-    // Ensure profile exists, create if not
+    // Ensure profile exists (fallback si le trigger n'a pas fonctionné)
     const ensureProfile = async () => {
         if (!user.value) return
         try {
-            // Try to fetch profile
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.value.id)
-                .single()
-            if (data) {
-                profile.value = data
-                return
+            // D'abord essayer de récupérer le profil
+            await fetchProfile()
+
+            // Si le profil n'existe pas, le créer
+            if (!profile.value) {
+                const username = user.value.user_metadata?.username || user.value.email?.split('@')[0] || 'user'
+                const language = user.value.user_metadata?.language || 'fr'
+
+                const { data: newProfile, error: insertError } = await supabase
+                    .from('profiles')
+                    .insert({
+                        id: user.value.id,
+                        username,
+                        email: user.value.email,
+                        language,
+                    })
+                    .select()
+                    .single()
+
+                if (insertError) throw insertError
+                profile.value = newProfile
             }
-            // If not found, create profile
-            const username = user.value.user_metadata?.username || user.value.email?.split('@')[0] || 'user'
-            const language = user.value.user_metadata?.language || 'fr'
-            const { data: newProfile, error: insertError } = await supabase
-                .from('profiles')
-                .insert([{
-                    id: user.value.id,
-                    username,
-                    language,
-                }])
-                .select()
-                .single()
-            if (insertError) throw insertError
-            profile.value = newProfile
         } catch (error) {
             console.error('Error ensuring profile:', error)
             profile.value = null
@@ -129,6 +126,8 @@ export const useAuth = () => {
 
             if (error) throw error
 
+            // Note: Le profil sera créé automatiquement par le trigger lors de la confirmation email
+            // Pas besoin d'appeler ensureProfile ici
             return { data, error: null }
         } catch (error: any) {
             console.error('Sign up error:', error)

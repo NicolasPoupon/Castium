@@ -126,10 +126,15 @@
             "error": "Erreur d'authentification"
         }
     },
+    "common": {
+        "cancel": "Annuler",
+        "save": "Enregistrer"
+    },
     "navbar": {
         "selector": {
             "movies": "À voir",
             "music": "Musiques",
+            "videos": "Vidéos",
             "podcasts": "Podcasts"
         },
         "user": {
@@ -194,6 +199,20 @@
         "hero": {
             "title": "Podcasts à venir",
             "description": "La section podcasts sera bientôt disponible. Vous pourrez écouter et gérer vos podcasts préférés."
+        }
+    },
+    "videos": {
+        "hero": {
+            "title": "Vidéos",
+            "description": "Gérez votre collection de vidéos personnelles.",
+            "selectFolder": "Sélectionner un dossier",
+            "changeFolder": "Changer de dossier"
+        },
+        "library": {
+            "title": "Ma Bibliothèque Vidéo",
+            "videosFound": "vidéos trouvées",
+            "noVideos": "Aucune vidéo trouvée",
+            "noVideosDesc": "Aucun fichier vidéo (MP4, AVI, MKV, MOV) n'a été trouvé dans ce dossier. Essayez de sélectionner un autre dossier contenant vos vidéos."
         }
     }
 }
