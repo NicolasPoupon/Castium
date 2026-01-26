@@ -1,84 +1,40 @@
 <script setup lang="ts">
 import { useI18n } from '#imports'
+import { useMovieDetails } from '~/composables/useMovieDetails'
+import { useMovieViewModel } from '~/composables/useMovieViewModel'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { getDetails, getCredits, getSimilar, getImageUrl } = useTMDB()
-const movieId = computed(() => parseInt(route.params.id as string))
-const movie = ref<any>(null)
-const credits = ref<any>(null)
-const similar = ref<any[]>([])
-const isLoading = ref(true)
 
-const tmdbLanguage = computed(() => {
-    switch (locale.value) {
-        case 'fr':
-            return 'fr-FR'
-        case 'pl':
-            return 'pl-PL'
-        default:
-            return 'en-US'
-    }
+const movieId = computed(() => Number(route.params.id))
+
+const { movie, credits, similar, videos, isLoading, error } = useMovieDetails({
+    id: movieId,
+    mediaType: 'movie',
 })
 
-const backdropUrl = computed(() => getImageUrl(movie.value?.backdrop_path, 'original'))
-const posterUrl = computed(() => getImageUrl(movie.value?.poster_path, 'w500'))
-const title = computed(() => movie.value?.title || movie.value?.name || 'Sans titre')
-const releaseYear = computed(() => {
-    const date = movie.value?.release_date || movie.value?.first_air_date
-    return date ? new Date(date).getFullYear() : ''
-})
-const runtime = computed(() => {
-    if (!movie.value?.runtime) return 'N/A'
-    const hours = Math.floor(movie.value.runtime / 60)
-    const minutes = movie.value.runtime % 60
-    return `${hours}h ${minutes}m`
-})
-const director = computed(() => {
-    if (!credits.value?.crew) return null
-    return credits.value.crew.find((c: any) => c.job === 'Director')
-})
-const cast = computed(() => credits.value?.cast?.slice(0, 6) || [])
-const genreNames = computed(() => (movie.value?.genres || []).map((g: any) => g.name).join(', '))
+const {
+    title,
+    releaseYear,
+    runtime,
+    backdropUrl,
+    posterUrl,
+    genres,
+    director,
+    cast,
+    trailerUrl,
+    actorImageUrl,
+} = useMovieViewModel(movie, credits, videos)
 
-const loadMovieDetails = async () => {
-    isLoading.value = true
-    try {
-        const lang = tmdbLanguage.value
-        const [movieData, creditsData, similarData] = await Promise.all([
-            getDetails(movieId.value, 'movie', lang),
-            getCredits(movieId.value, 'movie', lang),
-            getSimilar(movieId.value, 'movie', lang),
-        ])
-
-        movie.value = movieData
-        credits.value = creditsData
-        similar.value = similarData.results || []
-    } catch (error) {
-        console.error('Error loading movie details:', error)
-    } finally {
-        isLoading.value = false
-    }
-}
+const activeTab = ref<'overview' | 'trailer'>('overview')
 
 const items = computed(() => [
     { label: t('movies.selector.overview'), value: 'overview' },
-    { label: t('movies.selector.video'), value: 'video' },
     { label: t('movies.selector.trailer'), value: 'trailer' },
 ])
 
-const activeTab = ref('overview')
-
 const goBack = () => router.back()
-
-onMounted(() => {
-    loadMovieDetails()
-})
-
-watch(tmdbLanguage, () => {
-    loadMovieDetails()
-})
 </script>
 
 <template>
@@ -139,9 +95,9 @@ watch(tmdbLanguage, () => {
                                     </div>
                                 </div>
 
-                                <div v-if="genreNames" class="flex flex-wrap gap-2 mb-6">
+                                <div v-if="genres.length" class="flex flex-wrap gap-2 mb-6">
                                     <span
-                                        v-for="genre in movie.genres"
+                                        v-for="genre in genres"
                                         :key="genre.id"
                                         class="px-3 py-1 bg-red-800/50 text-white rounded-full text-sm"
                                     >
@@ -169,7 +125,7 @@ watch(tmdbLanguage, () => {
                 />
             </div>
             <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12 space-y-12">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div v-if="activeTab === 'overview'" class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="bg-gray-800/50 rounded-lg p-4">
                         <p class="text-gray-400 text-sm mb-2">{{ t('movies.detail.status') }}</p>
                         <p class="text-white font-semibold">
@@ -200,60 +156,72 @@ watch(tmdbLanguage, () => {
                         </p>
                     </div>
                 </div>
+                <div v-if="activeTab === 'overview'">
+                    <section v-if="director || cast.length > 0">
+                        <h2 class="text-2xl font-bold text-white mb-6">
+                            {{ t('movies.detail.cast') }}
+                        </h2>
 
-                <section v-if="director || cast.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">
-                        {{ t('movies.detail.cast') }}
-                    </h2>
-
-                    <div v-if="director" class="mb-8">
-                        <h3 class="text-lg font-semibold text-white mb-4">
-                            {{ t('movies.detail.director') }}
-                        </h3>
-                        <div class="bg-gray-800/50 rounded-lg p-4">
-                            <p class="text-white font-medium">{{ director.name }}</p>
+                        <div v-if="director" class="mb-8">
+                            <h3 class="text-lg font-semibold text-white mb-4">
+                                {{ t('movies.detail.director') }}
+                            </h3>
+                            <div class="bg-gray-800/50 rounded-lg p-4">
+                                <p class="text-white font-medium">{{ director.name }}</p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div v-if="cast.length > 0">
-                        <h3 class="text-lg font-semibold text-white mb-4">
-                            {{ t('movies.detail.mainActors') }}
-                        </h3>
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                            <div
-                                v-for="actor in cast"
-                                :key="actor.id"
-                                class="bg-gray-800/50 rounded-lg overflow-hidden hover:bg-gray-800 transition-colors"
-                            >
-                                <div class="aspect-square bg-gray-700 overflow-hidden">
-                                    <img
-                                        v-if="actor.profile_path"
-                                        :src="getImageUrl(actor.profile_path, 'w185')"
-                                        :alt="actor.name"
-                                        class="w-full h-full object-cover"
-                                    />
-                                    <div
-                                        v-else
-                                        class="w-full h-full flex items-center justify-center"
-                                    >
-                                        <UIcon
-                                            name="i-heroicons-user"
-                                            class="w-8 h-8 text-gray-500"
+                        <div v-if="cast.length > 0">
+                            <h3 class="text-lg font-semibold text-white mb-4">
+                                {{ t('movies.detail.mainActors') }}
+                            </h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                <div
+                                    v-for="actor in cast"
+                                    :key="actor.id"
+                                    class="bg-gray-800/50 rounded-lg overflow-hidden hover:bg-gray-800 transition-colors"
+                                >
+                                    <div class="aspect-square bg-gray-700 overflow-hidden">
+                                        <img
+                                            v-if="actor.profile_path"
+                                            :src="actorImageUrl(actor.profile_path)"
+                                            :alt="actor.name"
+                                            class="w-full h-full object-cover"
                                         />
+                                        <div
+                                            v-else
+                                            class="w-full h-full flex items-center justify-center"
+                                        >
+                                            <UIcon
+                                                name="i-heroicons-user"
+                                                class="w-8 h-8 text-gray-500"
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="p-3">
-                                    <p class="text-white font-medium text-sm truncate">
-                                        {{ actor.name }}
-                                    </p>
-                                    <p class="text-gray-400 text-xs truncate">
-                                        {{ actor.character }}
-                                    </p>
+                                    <div class="p-3">
+                                        <p class="text-white font-medium text-sm truncate">
+                                            {{ actor.name }}
+                                        </p>
+                                        <p class="text-gray-400 text-xs truncate">
+                                            {{ actor.character }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </section>
+                </div>
+                <div v-if="activeTab === 'trailer'">
+                    <div class="relative aspect-video rounded-xl overflow-hidden shadow-xl">
+                        <iframe
+                            :src="trailerUrl"
+                            class="w-full aspect-video"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen
+                        />
                     </div>
-                </section>
+                </div>
 
                 <section v-if="similar.length > 0">
                     <h2 class="text-2xl font-bold text-white mb-6">

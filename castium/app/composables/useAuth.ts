@@ -4,7 +4,6 @@ export const useAuth = () => {
     const supabase = useSupabase()
     const router = useRouter()
 
-
     const user = useState<User | null>('auth_user', () => null)
     const session = useState<Session | null>('auth_session', () => null)
     const loading = useState<boolean>('auth_loading', () => false)
@@ -13,7 +12,9 @@ export const useAuth = () => {
     const initAuth = async () => {
         try {
             loading.value = true
-            const { data: { session: currentSession } } = await supabase.auth.getSession()
+            const {
+                data: { session: currentSession },
+            } = await supabase.auth.getSession()
             session.value = currentSession
             user.value = currentSession?.user ?? null
 
@@ -184,4 +185,3 @@ export const useAuth = () => {
         updatePassword,
     }
 }
-
