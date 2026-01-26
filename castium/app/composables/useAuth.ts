@@ -8,6 +8,58 @@ export const useAuth = () => {
     const user = useState<User | null>('auth_user', () => null)
     const session = useState<Session | null>('auth_session', () => null)
     const loading = useState<boolean>('auth_loading', () => false)
+    const profile = useState<any | null>('auth_profile', () => null)
+
+    // Fetch user profile
+    const fetchProfile = async () => {
+        if (!user.value) return
+        try {
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.value.id)
+                .single()
+            if (error) throw error
+            profile.value = data
+        } catch (error) {
+            console.error('Error fetching profile:', error)
+            profile.value = null
+        }
+    }
+
+    // Ensure profile exists, create if not
+    const ensureProfile = async () => {
+        if (!user.value) return
+        try {
+            // Try to fetch profile
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.value.id)
+                .single()
+            if (data) {
+                profile.value = data
+                return
+            }
+            // If not found, create profile
+            const username = user.value.user_metadata?.username || user.value.email?.split('@')[0] || 'user'
+            const language = user.value.user_metadata?.language || 'fr'
+            const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert([{
+                    id: user.value.id,
+                    username,
+                    language,
+                }])
+                .select()
+                .single()
+            if (insertError) throw insertError
+            profile.value = newProfile
+        } catch (error) {
+            console.error('Error ensuring profile:', error)
+            profile.value = null
+        }
+    }
 
     // Initialize auth state
     const initAuth = async () => {
@@ -17,10 +69,19 @@ export const useAuth = () => {
             session.value = currentSession
             user.value = currentSession?.user ?? null
 
+            if (user.value) {
+                await ensureProfile()
+            }
+
             // Listen for auth changes
-            supabase.auth.onAuthStateChange((_event, newSession) => {
+            supabase.auth.onAuthStateChange(async (_event, newSession) => {
                 session.value = newSession
                 user.value = newSession?.user ?? null
+                if (user.value) {
+                    await ensureProfile()
+                } else {
+                    profile.value = null
+                }
             })
         } catch (error) {
             console.error('Error initializing auth:', error)
@@ -42,6 +103,9 @@ export const useAuth = () => {
 
             session.value = data.session
             user.value = data.user
+            if (data.user) {
+                await ensureProfile()
+            }
             return { data, error: null }
         } catch (error: any) {
             console.error('Sign in error:', error)
@@ -52,14 +116,14 @@ export const useAuth = () => {
     }
 
     // Sign up with email and password
-    const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+    const signUp = async (email: string, password: string, username: string, language: string = 'fr', metadata?: Record<string, any>) => {
         try {
             loading.value = true
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
-                    data: metadata,
+                    data: { ...metadata, username, language },
                 },
             })
 
@@ -113,7 +177,8 @@ export const useAuth = () => {
 
             session.value = null
             user.value = null
-            await router.push('/auth/login')
+            profile.value = null
+            await router.push('/')
         } catch (error: any) {
             console.error('Sign out error:', error)
             throw error
@@ -173,6 +238,7 @@ export const useAuth = () => {
     return {
         user: readonly(user),
         session: readonly(session),
+        profile: readonly(profile),
         loading: readonly(loading),
         isAuthenticated,
         initAuth,
@@ -182,6 +248,6 @@ export const useAuth = () => {
         signOut,
         resetPassword,
         updatePassword,
+        fetchProfile,
     }
 }
-

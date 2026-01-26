@@ -85,9 +85,7 @@ const schema = z
 type Schema = z.output<typeof schema>
 
 async function onSubmit(payload: FormSubmitEvent<Schema>) {
-    const { error } = await signUp(payload.data.email, payload.data.password, {
-        username: payload.data.username,
-    })
+    const { error } = await signUp(payload.data.email, payload.data.password, payload.data.username)
 
     if (error) {
         toast.add({
