@@ -213,6 +213,12 @@
             "videosFound": "vidéos trouvées",
             "noVideos": "Aucune vidéo trouvée",
             "noVideosDesc": "Aucun fichier vidéo (MP4, AVI, MKV, MOV) n'a été trouvé dans ce dossier. Essayez de sélectionner un autre dossier contenant vos vidéos."
+        },
+        "tabs": {
+            "library": "Bibliothèque",
+            "watching": "En cours",
+            "watched": "Regardées",
+            "favorites": "Favorites"
         }
     }
 }
