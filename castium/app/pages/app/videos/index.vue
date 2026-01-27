@@ -18,6 +18,110 @@ const favoriteVideos = ref<any[]>([])
 
 const showReloadBanner = ref(false)
 
+// Vérifier si la File System Access API est supportée
+const isFileSystemAccessSupported = () => {
+  return 'showDirectoryPicker' in window
+}
+
+// Stocker les informations du dossier (pas le handle qui n'est pas sérialisable)
+const storeFolderInfo = async (folderName: string, fileNames: string[]) => {
+  try {
+    const db = await openDB('VideoAppDB', 1, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('folderInfo')) {
+          db.createObjectStore('folderInfo')
+        }
+      }
+    })
+    await db.put('folderInfo', { folderName, fileNames, timestamp: Date.now() }, 'videoFolder')
+    db.close()
+  } catch (error) {
+    console.error('Erreur lors du stockage des infos du dossier:', error)
+  }
+}
+
+// Récupérer les informations du dossier depuis IndexedDB
+const getStoredFolderInfo = async (): Promise<{folderName: string, fileNames: string[]} | null> => {
+  try {
+    const db = await openDB('VideoAppDB', 1, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains('folderInfo')) {
+          db.createObjectStore('folderInfo')
+        }
+      }
+    })
+    const info = await db.get('folderInfo', 'videoFolder')
+    db.close()
+    return info || null
+  } catch (error) {
+    console.error('Erreur lors de la récupération des infos du dossier:', error)
+    return null
+  }
+}
+
+// Demander la permission persistante pour un dossier
+const requestPersistentFolderAccess = async (): Promise<FileSystemDirectoryHandle | null> => {
+  try {
+    if (!isFileSystemAccessSupported()) return null
+
+    // Demander la permission avec accès persistant
+    const handle = await (window as any).showDirectoryPicker({
+      mode: 'read',
+      startIn: 'documents'
+    })
+
+    // Essayer de rendre la permission persistante
+    if ('requestPermission' in handle) {
+      await handle.requestPermission({ mode: 'read' })
+    }
+
+    return handle
+  } catch (error) {
+    if ((error as any).name !== 'AbortError') {
+      console.error('Erreur lors de la demande de permission:', error)
+    }
+    return null
+  }
+}
+
+// Ouvrir IndexedDB (fonction utilitaire)
+const openDB = (name: string, version: number, options?: any): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(name, version)
+    if (options?.upgrade) {
+      request.onupgradeneeded = (event) => {
+        options.upgrade((event.target as IDBOpenDBRequest).result)
+      }
+    }
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+  })
+}
+
+// Convertir un handle de dossier en liste de fichiers
+const getFilesFromHandle = async (handle: FileSystemDirectoryHandle): Promise<File[]> => {
+  const files: File[] = []
+
+  try {
+    for await (const [name, entry] of handle.entries()) {
+      if (entry.kind === 'file') {
+        const fileHandle = entry as FileSystemFileHandle
+        const file = await fileHandle.getFile()
+
+        // Filtrer seulement les vidéos
+        if (file.name.toLowerCase().match(/\.(mp4|avi|mkv|mov)$/)) {
+          files.push(file)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Erreur lors de la lecture des fichiers:', error)
+    throw error
+  }
+
+  return files
+}
+
 // Charger le dossier vidéo depuis le profil
 const loadVideoFolder = async () => {
   if (!profile.value) return
@@ -36,14 +140,37 @@ const loadVideoFolder = async () => {
 // Tenter de recharger automatiquement le dossier sauvegardé
 const tryReloadFolder = async () => {
   try {
-    // Cette approche ne fonctionnera que si l'utilisateur accorde la permission
-    // Pour l'instant, on affiche juste un message
-    console.log('Dossier sauvegardé détecté:', videoFolderPath.value)
-    showReloadBanner.value = true
-    // On pourrait essayer d'utiliser l'API File System Access API ici
-    // mais pour la simplicité, on laisse l'utilisateur re-sélectionner
+    // Récupérer les informations stockées du dossier
+    const storedInfo = await getStoredFolderInfo()
+
+    if (storedInfo && videoFolderPath.value && videoFileNames.value.length > 0) {
+      console.log('Informations de dossier trouvées:', storedInfo.folderName)
+
+      // Si on a les infos mais pas les fichiers, essayer de reconnecter automatiquement
+      if (videoFiles.value.length === 0) {
+        console.log('Tentative de reconnexion automatique...')
+        try {
+          await reconnectFolder()
+          // Si la reconnexion réussit, on n'affiche pas la bannière
+          if (videoFiles.value.length > 0) {
+            console.log('Reconnexion automatique réussie')
+            return
+          }
+        } catch (error) {
+          console.log('Reconnexion automatique échouée:', error)
+        }
+
+        // Si la reconnexion automatique échoue, afficher la bannière
+        showReloadBanner.value = true
+      }
+    } else if (videoFolderPath.value && videoFileNames.value.length > 0) {
+      // Dossier sauvegardé dans le profil mais pas d'infos locales
+      showReloadBanner.value = true
+    }
+
   } catch (error) {
-    console.log('Impossible de recharger automatiquement le dossier:', error)
+    console.log('Erreur lors du rechargement automatique:', error)
+    showReloadBanner.value = true
   }
 }
 
@@ -73,34 +200,126 @@ const saveVideoFolder = async () => {
 }
 
 // Sélectionner un dossier et scanner les MP4
-const selectFolder = () => {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.webkitdirectory = true
-  input.multiple = true
-  input.onchange = (e) => {
-    const files = (e.target as HTMLInputElement).files
-    if (files && files.length > 0) {
-      // Filtrer seulement les fichiers MP4
-      const mp4Files = Array.from(files).filter(file =>
-        file.name.toLowerCase().endsWith('.mp4') ||
-        file.name.toLowerCase().endsWith('.avi') ||
-        file.name.toLowerCase().endsWith('.mkv') ||
-        file.name.toLowerCase().endsWith('.mov')
-      )
+const selectFolder = async () => {
+  try {
+    if (isFileSystemAccessSupported()) {
+      // Utiliser la File System Access API moderne
+      const handle = await (window as any).showDirectoryPicker({
+        mode: 'read',
+        startIn: 'documents'
+      })
 
-      videoFiles.value = mp4Files
-      videoFileNames.value = mp4Files.map(file => file.name)
+      // Récupérer les fichiers
+      const files = await getFilesFromHandle(handle)
 
-      // Prendre le path du premier fichier comme base du dossier
-      const path = files[0].webkitRelativePath.split('/')[0]
-      videoFolderPath.value = path
+      videoFiles.value = files
+      videoFileNames.value = files.map(file => file.name)
+      videoFolderPath.value = handle.name
+
+      // Stocker les informations pour la reconnexion future
+      await storeFolderInfo(handle.name, videoFileNames.value)
 
       // Sauvegarder automatiquement
       saveVideoFolder()
+      showReloadBanner.value = false
+
+      console.log(`${files.length} vidéos chargées depuis ${handle.name}`)
+
+    } else {
+      // Fallback vers l'ancienne méthode
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.webkitdirectory = true
+      input.multiple = true
+      input.onchange = (e) => {
+        const files = (e.target as HTMLInputElement).files
+        if (files && files.length > 0) {
+          // Filtrer seulement les fichiers MP4
+          const mp4Files = Array.from(files).filter(file =>
+            file.name.toLowerCase().endsWith('.mp4') ||
+            file.name.toLowerCase().endsWith('.avi') ||
+            file.name.toLowerCase().endsWith('.mkv') ||
+            file.name.toLowerCase().endsWith('.mov')
+          )
+
+          videoFiles.value = mp4Files
+          videoFileNames.value = mp4Files.map(file => file.name)
+
+          // Prendre le path du premier fichier comme base du dossier
+          const path = files[0].webkitRelativePath.split('/')[0]
+          videoFolderPath.value = path
+
+          // Stocker les informations pour la reconnexion future
+          storeFolderInfo(path, videoFileNames.value)
+
+          // Sauvegarder automatiquement
+          saveVideoFolder()
+          showReloadBanner.value = false
+        }
+      }
+      input.click()
+    }
+  } catch (error) {
+    if ((error as any).name !== 'AbortError') {
+      console.error('Erreur lors de la sélection du dossier:', error)
+      alert('Erreur lors de la sélection du dossier. Veuillez réessayer.')
     }
   }
-  input.click()
+}
+
+// Reconnecter le dossier sauvegardé (appelée depuis la bannière)
+const reconnectFolder = async () => {
+  try {
+    const storedInfo = await getStoredFolderInfo()
+    if (!storedInfo) {
+      // Si pas d'infos stockées, faire une sélection normale
+      await selectFolder()
+      return
+    }
+
+    if (isFileSystemAccessSupported()) {
+      // Essayer de rouvrir le même dossier
+      const handle = await (window as any).showDirectoryPicker({
+        mode: 'read',
+        startIn: 'documents' // On pourrait utiliser un ID si disponible
+      })
+
+      // Vérifier que c'est le bon dossier
+      if (handle.name === storedInfo.folderName) {
+        const files = await getFilesFromHandle(handle)
+
+        // Vérifier que les fichiers correspondent
+        const storedFileNames = new Set(storedInfo.fileNames)
+        const currentFileNames = files.map(f => f.name)
+        const hasMatchingFiles = currentFileNames.some(name => storedFileNames.has(name))
+
+        if (hasMatchingFiles || files.length > 0) {
+          videoFiles.value = files
+          videoFileNames.value = files.map(file => file.name)
+          videoFolderPath.value = handle.name
+
+          // Mettre à jour les infos stockées
+          await storeFolderInfo(handle.name, videoFileNames.value)
+
+          saveVideoFolder()
+          showReloadBanner.value = false
+
+          console.log(`${files.length} vidéos reconnectées depuis ${handle.name}`)
+          return
+        }
+      }
+    }
+
+    // Si la reconnexion automatique échoue, faire une sélection normale
+    await selectFolder()
+
+  } catch (error) {
+    if ((error as any).name !== 'AbortError') {
+      console.error('Erreur lors de la reconnexion:', error)
+      // En cas d'erreur, faire une sélection normale
+      await selectFolder()
+    }
+  }
 }
 
 // Extraire les métadonnées d'un nom de fichier
@@ -123,7 +342,7 @@ const extractMetadata = (fileName: string) => {
 }
 
 // Jouer une vidéo
-const playVideo = (fileOrName: File | string) => {
+const playVideo = async (fileOrName: File | string) => {
   let file: File | undefined
   let fileName: string
 
@@ -164,9 +383,25 @@ const playVideo = (fileOrName: File | string) => {
 
     saveVideoFolder()
   } else {
-    // Fichier non disponible - afficher un message d'erreur
+    // Fichier non disponible - essayer de reconnecter ou sélectionner
+    console.log(`Fichier "${fileName}" non disponible, tentative de reconnexion...`)
+
+    // Essayer de reconnecter le dossier d'abord
+    const storedInfo = await getStoredFolderInfo()
+    if (storedInfo && storedInfo.fileNames.includes(fileName)) {
+      // On a des infos sauvegardées, essayer de reconnecter
+      await reconnectFolder()
+      // Après reconnexion, réessayer de jouer la vidéo
+      const reconnectedFile = videoFiles.value.find(f => f.name === fileName)
+      if (reconnectedFile) {
+        selectedVideo.value = reconnectedFile
+        showVideoPlayer.value = true
+        return
+      }
+    }
+
+    // Si la reconnexion échoue, demander une nouvelle sélection
     alert(`Le fichier "${fileName}" n'est plus accessible. Veuillez re-sélectionner votre dossier vidéo.`)
-    // Ouvrir automatiquement le sélecteur de dossier
     selectFolder()
   }
 }
@@ -293,7 +528,7 @@ onMounted(async () => {
                         </UButton>
                     </div>
                 </div>
-                <div class="aspect-video bg-black rounded-lg overflow-hidden">
+                <div class="aspect-video bg-black rounded-lg overflow-hidden" @click.stop>
                     <video
                         v-if="selectedVideo"
                         :src="getVideoUrl(selectedVideo)"
@@ -378,7 +613,7 @@ onMounted(async () => {
                                     color="blue"
                                     variant="solid"
                                     size="sm"
-                                    @click="selectFolder"
+                                    @click="reconnectFolder"
                                 >
                                     Recharger
                                 </UButton>
