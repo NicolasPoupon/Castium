@@ -10,12 +10,14 @@ definePageMeta({
 const toast = useToast()
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const { signIn, signInWithGoogle, loading, isAuthenticated } = useAuth()
+const redirect = (route.query.redirect as string) || '/app/movies'
 
 // Redirect if already authenticated
 watch(isAuthenticated, (authenticated) => {
     if (authenticated) {
-        router.push('/app/movies')
+        navigateTo(redirect)
     }
 })
 
