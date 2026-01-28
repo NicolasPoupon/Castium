@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useI18n } from '#imports'
-const { t, locale } = useI18n()
+
+const { t } = useI18n()
 const { getTrending, getPopular, getTopRated } = useTMDB()
+const { tmdbLanguage } = useTmdbLanguage()
 
 const heroMovie = ref<any>(null)
 const trendingMovies = ref<any[]>([])
@@ -10,17 +12,6 @@ const topRatedMovies = ref<any[]>([])
 const isLoading = ref(true)
 
 const searchQuery = ref('')
-
-const tmdbLanguage = computed(() => {
-    switch (locale.value) {
-        case 'fr':
-            return 'fr-FR'
-        case 'pl':
-            return 'pl-PL'
-        default:
-            return 'en-US'
-    }
-})
 
 const loadMovies = async () => {
     isLoading.value = true
@@ -35,7 +26,6 @@ const loadMovies = async () => {
         trendingMovies.value = trending.results || []
         popularMovies.value = popular.results || []
         topRatedMovies.value = topRated.results || []
-
         heroMovie.value = trendingMovies.value[0] ?? null
     } catch (error) {
         console.error('Error loading movies:', error)
@@ -44,32 +34,9 @@ const loadMovies = async () => {
     }
 }
 
-onMounted(async () => {
-    try {
-        const lang = tmdbLanguage.value
-        const [trending, popular, topRated] = await Promise.all([
-            getTrending('movie', 'week', lang),
-            getPopular('movie', lang),
-            getTopRated('movie', lang),
-        ])
+onMounted(loadMovies)
 
-        trendingMovies.value = trending.results || []
-        popularMovies.value = popular.results || []
-        topRatedMovies.value = topRated.results || []
-
-        if (trendingMovies.value.length > 0) {
-            heroMovie.value = trendingMovies.value[0]
-        }
-    } catch (error) {
-        console.error('Error loading movies:', error)
-    } finally {
-        isLoading.value = false
-    }
-})
-
-watch(tmdbLanguage, () => {
-    loadMovies()
-})
+watch(tmdbLanguage, loadMovies)
 </script>
 
 <template>

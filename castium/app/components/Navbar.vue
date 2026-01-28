@@ -7,10 +7,12 @@ const route = useRoute()
 const router = useRouter()
 const { user, isAuthenticated, signOut } = useAuth()
 
-const onLocaleChange = async (value: string) => {
-    await setLocale(value)
-    if (process.client) window.location.reload()
-}
+const selectedLocale = computed({
+    get: () => locale.value,
+    set: async (value: string) => {
+        await setLocale(value) // charge les messages si lazy
+    },
+})
 
 const props = defineProps({
     mode: {
@@ -136,24 +138,14 @@ const userMenuItems = computed(() => [
 
             <div class="flex items-center gap-6">
                 <ULocaleSelect
-                    v-model="locale"
+                    v-model="selectedLocale"
                     :locales="[locales.en, locales.fr, locales.pl]"
                     class="w-36"
-                    @update:model-value="onLocaleChange"
                 />
                 <!-- User Profile Dropdown (app mode only) -->
                 <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
-                    <UButton
-                        color="neutral"
-                        variant="ghost"
-                        class="rounded-full p-0"
-                    >
-                        <UAvatar
-                            v-if="userAvatar"
-                            :src="userAvatar"
-                            :alt="userName"
-                            size="md"
-                        />
+                    <UButton color="neutral" variant="ghost" class="rounded-full p-0">
+                        <UAvatar v-if="userAvatar" :src="userAvatar" :alt="userName" size="md" />
                         <UAvatar
                             v-else
                             :text="userInitials || '?'"

@@ -61,6 +61,7 @@ const releaseYear = computed(() => {
                     color="neutral"
                     label="Lire"
                     class="bg-white text-black hover:bg-gray-200"
+                    :to="`/app/movies/${movie.id}`"
                 />
                 <UButton
                     icon="i-heroicons-information-circle"
@@ -69,6 +70,7 @@ const releaseYear = computed(() => {
                     variant="outline"
                     label="Plus d'infos"
                     class="border-white text-white hover:bg-white/10"
+                    :to="`/app/movies/${movie.id}`"
                 />
             </div>
         </div>
