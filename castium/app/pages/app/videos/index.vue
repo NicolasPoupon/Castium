@@ -18,43 +18,240 @@ const favoriteVideos = ref<any[]>([])
 
 const showReloadBanner = ref(false)
 
+// Variable pour stocker le handle du dossier
+let folderHandle: FileSystemDirectoryHandle | null = null
+
 // Vérifier si la File System Access API est supportée
 const isFileSystemAccessSupported = () => {
-  return 'showDirectoryPicker' in window
+  if (typeof window === 'undefined') {
+    console.log('isFileSystemAccessSupported: window is undefined (SSR)')
+    return false
+  }
+
+  const hasAPI = typeof (window as any).showDirectoryPicker === 'function'
+  console.log('isFileSystemAccessSupported:', hasAPI, '- showDirectoryPicker type:', typeof (window as any).showDirectoryPicker)
+  return hasAPI
 }
 
-// Stocker les informations du dossier (pas le handle qui n'est pas sérialisable)
-const storeFolderInfo = async (folderName: string, fileNames: string[]) => {
+// Types
+type FolderInfo = { folderName: string, fileNames: string[] } | null
+
+// Ouvrir IndexedDB avec garantie de création des object stores
+const openDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('VideoAppDB', 2)
+
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result
+      console.log('Upgrade event - creating object stores if needed')
+
+      // Créer tous les object stores nécessaires
+      if (!db.objectStoreNames.contains('folderHandle')) {
+        db.createObjectStore('folderHandle')
+        console.log('Object store folderHandle créé')
+      }
+      if (!db.objectStoreNames.contains('folderInfo')) {
+        db.createObjectStore('folderInfo')
+        console.log('Object store folderInfo créé')
+      }
+    }
+
+    request.onsuccess = () => {
+      const db = request.result
+      console.log('IndexedDB ouvert avec succès. Objet stores:', Array.from(db.objectStoreNames))
+      resolve(db)
+    }
+
+    request.onerror = () => {
+      console.error("Erreur lors de l'ouverture de IndexedDB:", request.error)
+      reject(request.error)
+    }
+  })
+}
+
+// Sauvegarder le handle du dossier en IndexedDB
+const saveFolderHandle = async (handle: FileSystemDirectoryHandle) => {
+  let db: IDBDatabase | null = null
   try {
-    const db = await openDB('VideoAppDB', 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('folderInfo')) {
-          db.createObjectStore('folderInfo')
+    console.log('Sauvegarde du handle du dossier...')
+    db = await openDB()
+    console.log('DB ouverte, object stores:', Array.from(db.objectStoreNames))
+
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const tx = db!.transaction('folderHandle', 'readwrite')
+        const store = tx.objectStore('folderHandle')
+        const request = store.put(handle, 'currentFolder')
+
+        request.onsuccess = () => {
+          console.log('Handle du dossier sauvegardé en IndexedDB')
+          resolve()
         }
+
+        request.onerror = () => {
+          console.error('Erreur lors de la sauvegarde du handle:', request.error)
+          reject(request.error)
+        }
+
+        tx.onerror = () => {
+          console.error('Erreur dans la transaction:', tx.error)
+          reject(tx.error)
+        }
+
+        // Fermer la DB après la transaction complète
+        tx.oncomplete = () => {
+          console.log('Transaction sauvegarde complète, fermeture DB')
+          db?.close()
+        }
+      } catch (error) {
+        console.error('Erreur lors de la création de la transaction:', error)
+        reject(error)
       }
     })
-    await db.put('folderInfo', { folderName, fileNames, timestamp: Date.now() }, 'videoFolder')
-    db.close()
   } catch (error) {
-    console.error('Erreur lors du stockage des infos du dossier:', error)
+    console.error('Erreur lors du stockage du handle:', error)
+    db?.close()
+    throw error
+  }
+}
+
+// Charger le handle du dossier depuis IndexedDB
+const loadFolderHandle = async (): Promise<FileSystemDirectoryHandle | null> => {
+  let db: IDBDatabase | null = null
+  try {
+    console.log('Chargement du handle du dossier...')
+    db = await openDB()
+    console.log('DB ouverte, object stores:', Array.from(db.objectStoreNames))
+
+    return new Promise<FileSystemDirectoryHandle | null>((resolve, reject) => {
+      try {
+        const tx = db!.transaction('folderHandle', 'readonly')
+        const store = tx.objectStore('folderHandle')
+        const request = store.get('currentFolder')
+
+        request.onsuccess = () => {
+          const handle = request.result
+          if (handle) {
+            console.log('Handle du dossier chargé depuis IndexedDB')
+            resolve(handle)
+          } else {
+            console.log('Aucun handle trouvé en IndexedDB')
+            resolve(null)
+          }
+        }
+
+        request.onerror = () => {
+          console.error('Erreur lors de la lecture du handle:', request.error)
+          reject(request.error)
+        }
+
+        tx.onerror = () => {
+          console.error('Erreur dans la transaction de lecture:', tx.error)
+          reject(tx.error)
+        }
+
+        // Fermer la DB après la transaction complète
+        tx.oncomplete = () => {
+          console.log('Transaction lecture complète, fermeture DB')
+          db?.close()
+        }
+      } catch (error) {
+        console.error('Erreur lors de la création de la transaction:', error)
+        reject(error)
+      }
+    })
+  } catch (error) {
+    console.error('Erreur lors du chargement du handle:', error)
+    db?.close()
+    return null
+  }
+}
+
+// Supprimer le handle du dossier depuis IndexedDB
+const removeFolderHandle = async () => {
+  let db: IDBDatabase | null = null
+  try {
+    console.log('Suppression du handle du dossier...')
+    db = await openDB()
+
+    return new Promise<void>((resolve, reject) => {
+      try {
+        const tx = db!.transaction('folderHandle', 'readwrite')
+        const store = tx.objectStore('folderHandle')
+        const request = store.delete('currentFolder')
+
+        request.onsuccess = () => {
+          console.log('Handle du dossier supprimé')
+          resolve()
+        }
+
+        request.onerror = () => {
+          console.error('Erreur lors de la suppression du handle:', request.error)
+          reject(request.error)
+        }
+
+        tx.onerror = () => {
+          console.error('Erreur dans la transaction de suppression:', tx.error)
+          reject(tx.error)
+        }
+
+        // Fermer la DB après la transaction complète
+        tx.oncomplete = () => {
+          console.log('Transaction suppression complète, fermeture DB')
+          db?.close()
+        }
+      } catch (error) {
+        console.error('Erreur lors de la création de la transaction:', error)
+        reject(error)
+      }
+    })
+  } catch (error) {
+    console.error('Erreur lors de la suppression du handle:', error)
+    db?.close()
   }
 }
 
 // Récupérer les informations du dossier depuis IndexedDB
-const getStoredFolderInfo = async (): Promise<{folderName: string, fileNames: string[]} | null> => {
+const getStoredFolderInfo = async (): Promise<FolderInfo> => {
+  let db: IDBDatabase | null = null
   try {
-    const db = await openDB('VideoAppDB', 1, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains('folderInfo')) {
-          db.createObjectStore('folderInfo')
+    console.log('Récupération des infos du dossier depuis IndexedDB...')
+    db = await openDB()
+
+    const info = await new Promise<any>((resolve, reject) => {
+      try {
+        const tx = db!.transaction('folderInfo', 'readonly')
+        const store = tx.objectStore('folderInfo')
+        const request = store.get('videoFolder')
+
+        request.onsuccess = () => {
+          console.log('Infos du dossier récupérées:', request.result)
+          resolve(request.result)
         }
+
+        request.onerror = () => {
+          console.error('Erreur lors de la lecture des infos:', request.error)
+          reject(request.error)
+        }
+
+        tx.onerror = () => {
+          console.error('Erreur dans la transaction:', tx.error)
+          reject(tx.error)
+        }
+
+        tx.oncomplete = () => {
+          console.log('Fermeture DB après lecture des infos')
+          db?.close()
+        }
+      } catch (error) {
+        console.error('Erreur lors de la création de la transaction:', error)
+        reject(error)
       }
     })
-    const info = await db.get('folderInfo', 'videoFolder')
-    db.close()
-    return info || null
+    return info ?? null
   } catch (error) {
     console.error('Erreur lors de la récupération des infos du dossier:', error)
+    db?.close()
     return null
   }
 }
@@ -84,26 +281,13 @@ const requestPersistentFolderAccess = async (): Promise<FileSystemDirectoryHandl
   }
 }
 
-// Ouvrir IndexedDB (fonction utilitaire)
-const openDB = (name: string, version: number, options?: any): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(name, version)
-    if (options?.upgrade) {
-      request.onupgradeneeded = (event) => {
-        options.upgrade((event.target as IDBOpenDBRequest).result)
-      }
-    }
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
-}
-
 // Convertir un handle de dossier en liste de fichiers
 const getFilesFromHandle = async (handle: FileSystemDirectoryHandle): Promise<File[]> => {
   const files: File[] = []
 
   try {
-    for await (const [name, entry] of handle.entries()) {
+    // Utiliser directement le symbole iterator de FileSystemDirectoryHandle
+    for await (const entry of (handle as any)) {
       if (entry.kind === 'file') {
         const fileHandle = entry as FileSystemFileHandle
         const file = await fileHandle.getFile()
@@ -131,6 +315,8 @@ const loadVideoFolder = async () => {
   watchedVideos.value = profile.value.video_watched || []
   favoriteVideos.value = profile.value.video_favorites || []
 
+  console.log('loadVideoFolder: chemin du profil =', videoFolderPath.value)
+
   // Si un dossier est sauvegardé, essayer de le recharger automatiquement
   if (videoFolderPath.value && videoFileNames.value.length > 0) {
     await tryReloadFolder()
@@ -140,11 +326,33 @@ const loadVideoFolder = async () => {
 // Tenter de recharger automatiquement le dossier sauvegardé
 const tryReloadFolder = async () => {
   try {
-    // Récupérer les informations stockées du dossier
-    const storedInfo = await getStoredFolderInfo()
+    console.log('tryReloadFolder: Début')
+    // Vérifier si un dossier a été sauvegardé dans le profil
+    if (videoFolderPath.value && videoFileNames.value.length > 0) {
+      console.log('tryReloadFolder: Dossier sauvegardé trouvé:', videoFolderPath.value)
 
-    if (storedInfo && videoFolderPath.value && videoFileNames.value.length > 0) {
-      console.log('Informations de dossier trouvées:', storedInfo.folderName)
+      // Essayer d'abord de charger le handle depuis IndexedDB
+      if (!folderHandle) {
+        console.log('tryReloadFolder: Chargement du handle depuis IndexedDB...')
+        folderHandle = await loadFolderHandle()
+      }
+
+      // Si on a un handle, l'utiliser directement
+      if (folderHandle) {
+        console.log('tryReloadFolder: Handle chargé, utilisation pour charger les fichiers')
+        try {
+          const files = await getFilesFromHandle(folderHandle)
+          videoFiles.value = files
+          console.log('tryReloadFolder: Fichiers chargés depuis le handle:', files.length)
+          showReloadBanner.value = false
+          return
+        } catch (error) {
+          console.log('tryReloadFolder: Le handle sauvegardé n\'est plus valide:', error)
+          // Le handle n'est plus valide, supprimer et redemander
+          await removeFolderHandle()
+          folderHandle = null
+        }
+      }
 
       // Si on a les infos mais pas les fichiers, essayer de reconnecter automatiquement
       if (videoFiles.value.length === 0) {
@@ -163,9 +371,6 @@ const tryReloadFolder = async () => {
         // Si la reconnexion automatique échoue, afficher la bannière
         showReloadBanner.value = true
       }
-    } else if (videoFolderPath.value && videoFileNames.value.length > 0) {
-      // Dossier sauvegardé dans le profil mais pas d'infos locales
-      showReloadBanner.value = true
     }
 
   } catch (error) {
@@ -176,8 +381,12 @@ const tryReloadFolder = async () => {
 
 // Sauvegarder le dossier vidéo et les fichiers
 const saveVideoFolder = async () => {
-  if (!profile.value) return
+  if (!profile.value) {
+    console.warn('Profile not available, cannot save video folder')
+    return
+  }
   try {
+    console.log('Saving video folder:', { videoFolderPath: videoFolderPath.value })
     const { error } = await supabase
       .from('profiles')
       .update({
@@ -188,7 +397,12 @@ const saveVideoFolder = async () => {
         video_favorites: favoriteVideos.value
       })
       .eq('id', profile.value.id)
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
+    console.log('Video folder saved successfully')
+    // Mettre à jour le profil local
     profile.value.video_folder_path = videoFolderPath.value
     profile.value.video_files = videoFileNames.value
     profile.value.video_watching = watchingVideos.value
@@ -202,36 +416,48 @@ const saveVideoFolder = async () => {
 // Sélectionner un dossier et scanner les MP4
 const selectFolder = async () => {
   try {
+    console.log('selectFolder: Début de la sélection du dossier')
     if (isFileSystemAccessSupported()) {
+      console.log('selectFolder: File System Access API est supportée')
       // Utiliser la File System Access API moderne
       const handle = await (window as any).showDirectoryPicker({
         mode: 'read',
         startIn: 'documents'
       })
+      console.log('selectFolder: Dossier sélectionné:', handle.name)
+
+      // Sauvegarder le handle pour l'utiliser sans redemander la permission
+      folderHandle = handle
+      console.log('selectFolder: Sauvegarde du handle...')
+      await saveFolderHandle(handle)
+      console.log('selectFolder: Handle sauvegardé avec succès')
 
       // Récupérer les fichiers
+      console.log('selectFolder: Chargement des fichiers du dossier...')
       const files = await getFilesFromHandle(handle)
+      console.log(`selectFolder: ${files.length} vidéos trouvées`)
 
       videoFiles.value = files
       videoFileNames.value = files.map(file => file.name)
       videoFolderPath.value = handle.name
 
-      // Stocker les informations pour la reconnexion future
-      await storeFolderInfo(handle.name, videoFileNames.value)
-
-      // Sauvegarder automatiquement
-      saveVideoFolder()
+      // Sauvegarder automatiquement dans Supabase
+      console.log('selectFolder: Sauvegarde dans Supabase...')
+      await saveVideoFolder()
+      console.log('selectFolder: Données sauvegardées dans Supabase')
       showReloadBanner.value = false
 
-      console.log(`${files.length} vidéos chargées depuis ${handle.name}`)
+      console.log(`selectFolder: ${files.length} vidéos chargées depuis ${handle.name}`)
 
     } else {
+      console.log('selectFolder: File System Access API non supportée, utilisation du fallback')
       // Fallback vers l'ancienne méthode
       const input = document.createElement('input')
       input.type = 'file'
       input.webkitdirectory = true
       input.multiple = true
-      input.onchange = (e) => {
+      console.log('selectFolder: Ouverture du sélecteur de dossier fallback')
+      input.onchange = async (e) => {
         const files = (e.target as HTMLInputElement).files
         if (files && files.length > 0) {
           // Filtrer seulement les fichiers MP4
@@ -249,11 +475,8 @@ const selectFolder = async () => {
           const path = files[0].webkitRelativePath.split('/')[0]
           videoFolderPath.value = path
 
-          // Stocker les informations pour la reconnexion future
-          storeFolderInfo(path, videoFileNames.value)
-
           // Sauvegarder automatiquement
-          saveVideoFolder()
+          await saveVideoFolder()
           showReloadBanner.value = false
         }
       }
@@ -270,43 +493,48 @@ const selectFolder = async () => {
 // Reconnecter le dossier sauvegardé (appelée depuis la bannière)
 const reconnectFolder = async () => {
   try {
-    const storedInfo = await getStoredFolderInfo()
-    if (!storedInfo) {
-      // Si pas d'infos stockées, faire une sélection normale
-      await selectFolder()
-      return
+    // D'abord, essayer d'utiliser le handle sauvegardé
+    if (!folderHandle) {
+      folderHandle = await loadFolderHandle()
     }
 
-    if (isFileSystemAccessSupported()) {
-      // Essayer de rouvrir le même dossier
-      const handle = await (window as any).showDirectoryPicker({
+    let handle: FileSystemDirectoryHandle | null = folderHandle
+
+    // Si on n'a pas de handle valide, demander à l'utilisateur
+    if (!handle && isFileSystemAccessSupported()) {
+      console.log('Pas de handle sauvegardé, demander à l\'utilisateur de sélectionner le dossier')
+      handle = await (window as any).showDirectoryPicker({
         mode: 'read',
-        startIn: 'documents' // On pourrait utiliser un ID si disponible
+        startIn: 'documents'
       })
 
-      // Vérifier que c'est le bon dossier
-      if (handle.name === storedInfo.folderName) {
-        const files = await getFilesFromHandle(handle)
+      if (handle) {
+        folderHandle = handle
+        await saveFolderHandle(handle)
+      }
+    }
 
-        // Vérifier que les fichiers correspondent
-        const storedFileNames = new Set(storedInfo.fileNames)
-        const currentFileNames = files.map(f => f.name)
-        const hasMatchingFiles = currentFileNames.some(name => storedFileNames.has(name))
+    if (handle) {
+      try {
+        // Vérifier que c'est le bon dossier en comparant le nom
+        if (handle.name === videoFolderPath.value) {
+          const files = await getFilesFromHandle(handle)
 
-        if (hasMatchingFiles || files.length > 0) {
           videoFiles.value = files
           videoFileNames.value = files.map(file => file.name)
           videoFolderPath.value = handle.name
 
-          // Mettre à jour les infos stockées
-          await storeFolderInfo(handle.name, videoFileNames.value)
-
-          saveVideoFolder()
+          await saveVideoFolder()
           showReloadBanner.value = false
 
           console.log(`${files.length} vidéos reconnectées depuis ${handle.name}`)
           return
         }
+      } catch (error) {
+        console.log('Le handle sauvegardé n\'est plus valide:', error)
+        // Le handle n'est plus valide, le supprimer
+        await removeFolderHandle()
+        folderHandle = null
       }
     }
 
@@ -387,8 +615,7 @@ const playVideo = async (fileOrName: File | string) => {
     console.log(`Fichier "${fileName}" non disponible, tentative de reconnexion...`)
 
     // Essayer de reconnecter le dossier d'abord
-    const storedInfo = await getStoredFolderInfo()
-    if (storedInfo && storedInfo.fileNames.includes(fileName)) {
+    if (videoFileNames.value.includes(fileName)) {
       // On a des infos sauvegardées, essayer de reconnecter
       await reconnectFolder()
       // Après reconnexion, réessayer de jouer la vidéo
@@ -470,7 +697,22 @@ onUnmounted(() => {
   })
 })
 
+// Watcher pour charger les données quand le profil devient disponible
+watch(profile, async (newProfile) => {
+  if (newProfile) {
+    console.log('Profile loaded, calling loadVideoFolder')
+    await loadVideoFolder()
+  }
+}, { immediate: false })
+
 onMounted(async () => {
+  console.log('Video page mounted')
+
+  // Essayer de charger le handle au démarrage
+  if (!folderHandle) {
+    folderHandle = await loadFolderHandle()
+  }
+
   await loadVideoFolder()
 })
 </script>
