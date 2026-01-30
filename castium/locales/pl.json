@@ -50,7 +50,11 @@
         "buttons": {
             "signUpBeta": "Zapisz się do bety",
             "signUp": "Zapisz się"
-        }
+        },
+        "close": "Zamknij",
+        "cancel": "Anuluj",
+        "delete": "Usuń",
+        "save": "Zapisz"
     },
     "footer": {
         "rights": "Castium. Wszystkie prawa zastrzeżone • Made with ❤️",
@@ -114,7 +118,7 @@
                 "invalid": "Nieprawidłowy email lub hasło"
             }
         },
-        "signUp" : {
+        "signUp": {
             "title": "Rejestracja",
             "description": "Utwórz konto, aby zacząć korzystać z Castium.",
             "submit": "Zarejestruj się",
@@ -164,7 +168,7 @@
         "search": {
             "placeholder": "Wyszukaj filmy, seriale..."
         },
-        "detail" : {
+        "detail": {
             "status": "Status",
             "budget": "Budżet",
             "revenue": "Przychód",
@@ -174,7 +178,7 @@
             "mainActors": "Główni aktorzy",
             "similar": "Podobne filmy"
         },
-        "selector" :{
+        "selector": {
             "overview": "Przegląd",
             "video": "Wideo",
             "trailer": "Trailer"
@@ -198,6 +202,11 @@
         }
     },
     "lectures": {
+        "tabs": {
+            "local": "Lokalne wideo",
+            "youtube": "YouTube",
+            "upload": "Przesyłanie"
+        },
         "hero": {
             "title": "Twoje lokalne wideo",
             "description": "Wybierz folder z filmami, aby odtwarzać je bezpośrednio w Castium. Twoje pliki pozostają na Twoim urządzeniu.",
@@ -210,7 +219,8 @@
         "fallback": {
             "title": "Tryb zgodności",
             "description": "Twoja przeglądarka nie obsługuje interfejsu File System Access API. Wybrane filmy nie będą zapamiętywane między sesjami. Użyj Chrome lub Edge dla lepszego doświadczenia."
-        },        "library": {
+        },
+        "library": {
             "title": "Moja wideoteka",
             "search": "Szukaj wideo...",
             "noVideos": "Nie znaleziono filmów w tym folderze"
@@ -219,6 +229,57 @@
             "continueWatching": "Kontynuuj oglądanie",
             "favorites": "Moje ulubione",
             "allVideos": "Wszystkie wideo"
+        },
+        "youtube": {
+            "title": "Połącz swoje konto YouTube",
+            "description": "Uzyskaj dostęp do playlist, polubionych filmów i oglądaj treści bezpośrednio w Castium.",
+            "connect": "Połącz z YouTube",
+            "permissionNotice": "Zostaniesz przekierowany do Google, aby autoryzować dostęp do konta YouTube",
+            "connected": "Konto połączone",
+            "disconnect": "Rozłącz",
+            "error": "Wystąpił błąd",
+            "quickAccess": "Szybki dostęp",
+            "likedVideos": "Polubione filmy",
+            "playlists": "Twoje playlisty",
+            "noPlaylists": "Nie znaleziono playlist",
+            "noVideos": "Brak filmów w tej playliście",
+            "views": "wyświetleń"
+        },
+        "upload": {
+            "title": "Moje filmy w chmurze",
+            "search": "Szukaj wideo...",
+            "uploadButton": "Prześlij",
+            "uploading": "Przesyłanie...",
+            "error": "Błąd przesyłania",
+            "emptyTitle": "Brak przesłanych filmów",
+            "emptyDescription": "Prześlij filmy do chmury, aby mieć do nich dostęp z dowolnego miejsca.",
+            "uploadFirst": "Prześlij film",
+            "yourVideos": "Twoje filmy",
+            "noResults": "Żadne filmy nie pasują do wyszukiwania",
+            "videoDetails": "Szczegóły filmu",
+            "sortBy": "Sortuj według",
+            "sortOptions": {
+                "date": "Data",
+                "name": "Nazwa",
+                "size": "Rozmiar"
+            },
+            "metadata": {
+                "title": "Tytuł",
+                "artist": "Artysta",
+                "album": "Album",
+                "year": "Rok",
+                "genre": "Gatunek",
+                "duration": "Czas trwania",
+                "fileInfo": "Informacje o pliku",
+                "filename": "Nazwa pliku",
+                "size": "Rozmiar",
+                "format": "Format",
+                "resolution": "Rozdzielczość"
+            },
+            "deleteConfirm": {
+                "title": "Usunąć film?",
+                "message": "Ta akcja jest nieodwracalna. Film zostanie trwale usunięty."
+            }
         }
     }
 }

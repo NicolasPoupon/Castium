@@ -13,11 +13,15 @@ const props = defineProps<{
 }>()
 
 const { getImageUrl } = useTMDB()
-const backdropUrl = computed(() => getImageUrl(props.movie.backdrop_path, 'original'))
-const title = computed(() => props.movie.title || props.movie.name || 'Sans titre')
+const backdropUrl = computed(() =>
+    getImageUrl(props.movie.backdrop_path, "original"),
+)
+const title = computed(
+    () => props.movie.title || props.movie.name || "Sans titre",
+)
 const releaseYear = computed(() => {
     const date = props.movie.release_date || props.movie.first_air_date
-    return date ? new Date(date).getFullYear() : ''
+    return date ? new Date(date).getFullYear() : ""
 })
 </script>
 
@@ -44,10 +48,17 @@ const releaseYear = computed(() => {
 
             <div class="flex items-center gap-4 text-white mb-6">
                 <div class="flex items-center gap-2">
-                    <UIcon name="i-heroicons-star-solid" class="w-5 h-5 text-yellow-400" />
-                    <span class="text-lg font-semibold">{{ movie.vote_average.toFixed(1) }}</span>
+                    <UIcon
+                        name="i-heroicons-star-solid"
+                        class="w-5 h-5 text-yellow-400"
+                    />
+                    <span class="text-lg font-semibold">
+                        {{ movie.vote_average.toFixed(1) }}
+                    </span>
                 </div>
-                <span v-if="releaseYear" class="text-gray-300">{{ releaseYear }}</span>
+                <span v-if="releaseYear" class="text-gray-300">
+                    {{ releaseYear }}
+                </span>
             </div>
 
             <p class="text-gray-200 text-lg max-w-2xl mb-8 line-clamp-3">

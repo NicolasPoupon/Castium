@@ -1,24 +1,33 @@
 <script setup lang="ts">
-import { useI18n } from '#imports'
+import { useI18n } from "#imports"
 const { t } = useI18n()
-const { getAuthUrl, isAuthenticated, getUserPlaylists, getFeaturedPlaylists, play } = useSpotify()
+const {
+    getAuthUrl,
+    isAuthenticated,
+    getUserPlaylists,
+    getFeaturedPlaylists,
+    play,
+} = useSpotify()
 
 const userPlaylists = ref<any[]>([])
 const featuredPlaylists = ref<any[]>([])
 const isLoading = ref(false)
-const searchQuery = ref('')
+const searchQuery = ref("")
 
 const loadPlaylists = async () => {
     if (!isAuthenticated.value) return
 
     isLoading.value = true
     try {
-        const [user, featured] = await Promise.all([getUserPlaylists(20), getFeaturedPlaylists()])
+        const [user, featured] = await Promise.all([
+            getUserPlaylists(20),
+            getFeaturedPlaylists(),
+        ])
 
         userPlaylists.value = user.items || []
         featuredPlaylists.value = featured.playlists?.items || []
     } catch (error) {
-        console.error('Error loading playlists:', error)
+        console.error("Error loading playlists:", error)
     } finally {
         isLoading.value = false
     }
@@ -28,7 +37,7 @@ const handlePlayPlaylist = async (playlistId: string) => {
     try {
         await play(`spotify:playlist:${playlistId}`)
     } catch (error) {
-        console.error('Error playing playlist:', error)
+        console.error("Error playing playlist:", error)
     }
 }
 
@@ -67,10 +76,10 @@ watch(isAuthenticated, (newValue) => {
                                 class="w-24 h-24 text-green-600 mx-auto mb-6"
                             />
                             <h1 class="text-4xl font-bold text-white mb-4">
-                                {{ t('music.hero.connectToSpotify') }}
+                                {{ t("music.hero.connectToSpotify") }}
                             </h1>
                             <p class="text-gray-400 text-lg mb-8">
-                                {{ t('music.hero.description') }}
+                                {{ t("music.hero.description") }}
                             </p>
                         </div>
 
@@ -83,7 +92,7 @@ watch(isAuthenticated, (newValue) => {
                         />
 
                         <p class="text-gray-500 text-sm mt-6">
-                            {{ t('music.hero.redirectNotice') }}
+                            {{ t("music.hero.redirectNotice") }}
                         </p>
                     </div>
                 </div>
@@ -91,7 +100,7 @@ watch(isAuthenticated, (newValue) => {
                 <div v-else>
                     <div class="mb-8">
                         <h1 class="text-4xl font-bold text-white mb-6">
-                            {{ t('music.hero.yourMusic') }}
+                            {{ t("music.hero.yourMusic") }}
                         </h1>
                         <UInput
                             v-model="searchQuery"
@@ -102,7 +111,10 @@ watch(isAuthenticated, (newValue) => {
                         />
                     </div>
 
-                    <div v-if="isLoading" class="flex items-center justify-center py-20">
+                    <div
+                        v-if="isLoading"
+                        class="flex items-center justify-center py-20"
+                    >
                         <UIcon
                             name="i-heroicons-arrow-path"
                             class="w-12 h-12 text-castium-green animate-spin"
@@ -112,9 +124,11 @@ watch(isAuthenticated, (newValue) => {
                     <div v-else class="space-y-12">
                         <section v-if="userPlaylists.length > 0">
                             <h2 class="text-2xl font-bold text-white mb-6">
-                                {{ t('music.hero.playlists') }}
+                                {{ t("music.hero.playlists") }}
                             </h2>
-                            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <div
+                                class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"
+                            >
                                 <MusicPlaylistCard
                                     v-for="playlist in userPlaylists"
                                     :key="playlist.id"
@@ -126,9 +140,11 @@ watch(isAuthenticated, (newValue) => {
 
                         <section v-if="featuredPlaylists.length > 0">
                             <h2 class="text-2xl font-bold text-white mb-6">
-                                {{ t('music.hero.recommendedPlaylists') }}
+                                {{ t("music.hero.recommendedPlaylists") }}
                             </h2>
-                            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            <div
+                                class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"
+                            >
                                 <MusicPlaylistCard
                                     v-for="playlist in featuredPlaylists"
                                     :key="playlist.id"

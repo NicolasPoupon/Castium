@@ -50,7 +50,11 @@
         "buttons": {
             "signUpBeta": "Sign up for the beta",
             "signUp": "Sign up"
-        }
+        },
+        "close": "Close",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "save": "Save"
     },
     "footer": {
         "rights": "Castium. All rights reserved • Made with ❤️",
@@ -114,7 +118,7 @@
                 "invalid": "Invalid email or password"
             }
         },
-        "signUp" : {
+        "signUp": {
             "title": "Sign Up",
             "description": "Create an account to start using Castium.",
             "submit": "Sign Up",
@@ -174,7 +178,7 @@
             "mainActors": "Main actors",
             "similar": "Similar movies"
         },
-        "selector" :{
+        "selector": {
             "overview": "Overview",
             "video": "Video",
             "trailer": "Trailer"
@@ -195,8 +199,14 @@
         "hero": {
             "title": "Podcasts coming soon",
             "description": "The podcasts section will be available soon. You’ll be able to listen to and manage your favorite podcasts."
-        }    },
+        }
+    },
     "lectures": {
+        "tabs": {
+            "local": "Local videos",
+            "youtube": "YouTube",
+            "upload": "Upload"
+        },
         "hero": {
             "title": "Your local videos",
             "description": "Select a folder containing your videos to play them directly from Castium. Your files stay on your device.",
@@ -219,5 +229,57 @@
             "continueWatching": "Continue watching",
             "favorites": "My favorites",
             "allVideos": "All videos"
-        }    }
+        },
+        "youtube": {
+            "title": "Connect your YouTube account",
+            "description": "Access your playlists, liked videos and watch your content directly from Castium.",
+            "connect": "Connect to YouTube",
+            "permissionNotice": "You will be redirected to Google to authorize access to your YouTube account",
+            "connected": "Account connected",
+            "disconnect": "Disconnect",
+            "error": "An error occurred",
+            "quickAccess": "Quick access",
+            "likedVideos": "Liked videos",
+            "playlists": "Your playlists",
+            "noPlaylists": "No playlists found",
+            "noVideos": "No videos in this playlist",
+            "views": "views"
+        },
+        "upload": {
+            "title": "My cloud videos",
+            "search": "Search for a video...",
+            "uploadButton": "Upload",
+            "uploading": "Uploading...",
+            "error": "Upload error",
+            "emptyTitle": "No videos uploaded",
+            "emptyDescription": "Upload your videos to the cloud to access them from anywhere.",
+            "uploadFirst": "Upload a video",
+            "yourVideos": "Your videos",
+            "noResults": "No videos match your search",
+            "videoDetails": "Video details",
+            "sortBy": "Sort by",
+            "sortOptions": {
+                "date": "Date",
+                "name": "Name",
+                "size": "Size"
+            },
+            "metadata": {
+                "title": "Title",
+                "artist": "Artist",
+                "album": "Album",
+                "year": "Year",
+                "genre": "Genre",
+                "duration": "Duration",
+                "fileInfo": "File information",
+                "filename": "Filename",
+                "size": "Size",
+                "format": "Format",
+                "resolution": "Resolution"
+            },
+            "deleteConfirm": {
+                "title": "Delete video?",
+                "message": "This action cannot be undone. The video will be permanently deleted."
+            }
+        }
+    }
 }

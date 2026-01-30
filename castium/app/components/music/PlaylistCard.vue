@@ -15,7 +15,9 @@ const emit = defineEmits<{
     play: [playlistId: string]
 }>()
 
-const imageUrl = computed(() => props.playlist.images?.[0]?.url || '/placeholder-music.jpg')
+const imageUrl = computed(
+    () => props.playlist.images?.[0]?.url || "/placeholder-music.jpg",
+)
 </script>
 
 <template>
@@ -35,7 +37,10 @@ const imageUrl = computed(() => props.playlist.images?.[0]?.url || '/placeholder
                 <div
                     class="w-14 h-14 bg-castium-green rounded-full flex items-center justify-center shadow-xl"
                 >
-                    <UIcon name="i-heroicons-play-solid" class="w-6 h-6 text-white ml-1" />
+                    <UIcon
+                        name="i-heroicons-play-solid"
+                        class="w-6 h-6 text-white ml-1"
+                    />
                 </div>
             </div>
         </div>
@@ -44,7 +49,10 @@ const imageUrl = computed(() => props.playlist.images?.[0]?.url || '/placeholder
             {{ playlist.name }}
         </h3>
 
-        <p v-if="playlist.description" class="text-gray-400 text-sm line-clamp-2 mb-2">
+        <p
+            v-if="playlist.description"
+            class="text-gray-400 text-sm line-clamp-2 mb-2"
+        >
             {{ playlist.description }}
         </p>
 

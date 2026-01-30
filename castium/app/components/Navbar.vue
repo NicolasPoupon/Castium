@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useI18n } from '#imports'
-import * as locales from '@nuxt/ui/locale'
+import { useI18n } from "#imports"
+import * as locales from "@nuxt/ui/locale"
 
 const { t, locale, setLocale } = useI18n()
 const route = useRoute()
@@ -8,7 +8,7 @@ const router = useRouter()
 const { user, isAuthenticated, signOut, loading } = useAuth()
 const toast = useToast()
 
-const onLocaleChange = async (value: 'en' | 'fr' | 'pl') => {
+const onLocaleChange = async (value: "en" | "fr" | "pl") => {
     await setLocale(value as any)
     if (process.client) window.location.reload()
 }
@@ -17,10 +17,10 @@ const handleLogout = async () => {
     try {
         await signOut()
     } catch (error) {
-        console.error('Logout error:', error)
+        console.error("Logout error:", error)
         toast.add({
-            title: t('navbar.user.logoutError') || 'Erreur de déconnexion',
-            color: 'error',
+            title: t("navbar.user.logoutError") || "Erreur de déconnexion",
+            color: "error",
         })
     }
 }
@@ -28,23 +28,31 @@ const handleLogout = async () => {
 const props = defineProps({
     mode: {
         type: String,
-        default: 'landing', // landing | login | app
+        default: "landing", // landing | login | app
     },
 })
 
 const items = computed(() => [
-    { label: t('navbar.selector.movies'), value: 'movies', to: '/app/movies' },
-    { label: t('navbar.selector.music'), value: 'music', to: '/app/music' },
-    { label: t('navbar.selector.podcasts'), value: 'podcasts', to: '/app/podcasts' },
-    { label: t('navbar.selector.lectures'), value: 'lectures', to: '/app/lectures' },
+    { label: t("navbar.selector.movies"), value: "movies", to: "/app/movies" },
+    { label: t("navbar.selector.music"), value: "music", to: "/app/music" },
+    {
+        label: t("navbar.selector.podcasts"),
+        value: "podcasts",
+        to: "/app/podcasts",
+    },
+    {
+        label: t("navbar.selector.lectures"),
+        value: "lectures",
+        to: "/app/lectures",
+    },
 ])
 
 const activeTab = computed({
     get() {
-        if (route.path.includes('/music')) return 'music'
-        if (route.path.includes('/podcasts')) return 'podcasts'
-        if (route.path.includes('/lectures')) return 'lectures'
-        return 'movies'
+        if (route.path.includes("/music")) return "music"
+        if (route.path.includes("/podcasts")) return "podcasts"
+        if (route.path.includes("/lectures")) return "lectures"
+        return "movies"
     },
     set(value: string) {
         const item = items.value.find((i) => i.value === value)
@@ -53,25 +61,27 @@ const activeTab = computed({
 })
 
 const modeClass = computed(() => {
-    if (route.path.includes('/movies')) return 'fill-red-800'
-    if (route.path.includes('/music')) return 'fill-green-600'
-    if (route.path.includes('/podcasts')) return 'fill-orange-400'
-    if (route.path.includes('/lectures')) return 'fill-purple-500'
+    if (route.path.includes("/movies")) return "fill-red-800"
+    if (route.path.includes("/music")) return "fill-green-600"
+    if (route.path.includes("/podcasts")) return "fill-orange-400"
+    if (route.path.includes("/lectures")) return "fill-purple-500"
 
-    return 'fill-gray-300'
+    return "fill-gray-300"
 })
 
 // User profile helpers
 const userName = computed(() => {
-    if (!user.value) return ''
+    if (!user.value) return ""
     const meta = user.value.user_metadata
-    return meta?.full_name || meta?.name || user.value.email?.split('@')[0] || ''
+    return (
+        meta?.full_name || meta?.name || user.value.email?.split("@")[0] || ""
+    )
 })
 
 const userInitials = computed(() => {
     const name = userName.value
-    if (!name) return '?'
-    const parts = name.split(' ')
+    if (!name) return "?"
+    const parts = name.split(" ")
     if (parts.length >= 2) {
         return (parts[0][0] + parts[1][0]).toUpperCase()
     }
@@ -80,28 +90,32 @@ const userInitials = computed(() => {
 
 const userAvatar = computed(() => {
     if (!user.value) return null
-    return user.value.user_metadata?.avatar_url || user.value.user_metadata?.picture || null
+    return (
+        user.value.user_metadata?.avatar_url ||
+        user.value.user_metadata?.picture ||
+        null
+    )
 })
 
 const userMenuItems = computed(() => [
     [
         {
             label: userName.value,
-            slot: 'account',
+            slot: "account",
             disabled: true,
         },
     ],
     [
         {
-            label: t('navbar.user.settings'),
-            icon: 'i-heroicons-cog-6-tooth',
-            to: '/app/settings',
+            label: t("navbar.user.settings"),
+            icon: "i-heroicons-cog-6-tooth",
+            to: "/app/settings",
         },
     ],
     [
         {
-            label: t('navbar.user.logout'),
-            icon: 'i-heroicons-arrow-right-on-rectangle',
+            label: t("navbar.user.logout"),
+            icon: "i-heroicons-arrow-right-on-rectangle",
             click: handleLogout,
         },
     ],
@@ -109,7 +123,9 @@ const userMenuItems = computed(() => [
 </script>
 
 <template>
-    <header class="fixed inset-x-0 top-0 z-50 bg-black/20 backdrop-blur-md py-2">
+    <header
+        class="fixed inset-x-0 top-0 z-50 bg-black/20 backdrop-blur-md py-2"
+    >
         <div
             class="flex items-center justify-between gap-3 h-[--header-height] mx-auto px-4 md:px-6 lg:px-8"
         >
@@ -157,8 +173,17 @@ const userMenuItems = computed(() => [
                 />
                 <!-- User Profile Dropdown (app mode only) -->
                 <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
-                    <UButton color="neutral" variant="ghost" class="rounded-full p-0">
-                        <UAvatar v-if="userAvatar" :src="userAvatar" :alt="userName" size="md" />
+                    <UButton
+                        color="neutral"
+                        variant="ghost"
+                        class="rounded-full p-0"
+                    >
+                        <UAvatar
+                            v-if="userAvatar"
+                            :src="userAvatar"
+                            :alt="userName"
+                            size="md"
+                        />
                         <UAvatar
                             v-else
                             :text="userInitials || '?'"

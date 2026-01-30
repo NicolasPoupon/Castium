@@ -50,7 +50,11 @@
         "buttons": {
             "signUpBeta": "Inscrivez-vous pour la bêta",
             "signUp": "S'inscrire"
-        }
+        },
+        "close": "Fermer",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "save": "Enregistrer"
     },
     "footer": {
         "rights": "Castium. Tous droits réservés • Made with ❤️",
@@ -112,7 +116,7 @@
                 "invalid": "Email ou mot de passe invalide"
             }
         },
-        "signUp" : {
+        "signUp": {
             "title": "Inscription",
             "description": "Créez un compte pour commencer à utiliser Castium.",
             "submit": "S'inscrire",
@@ -172,7 +176,7 @@
             "mainActors": "Acteurs principaux",
             "similar": "Films similaires"
         },
-        "selector" :{
+        "selector": {
             "overview": "Aperçu",
             "video": "Vidéo",
             "trailer": "Bande-annonce"
@@ -196,6 +200,11 @@
         }
     },
     "lectures": {
+        "tabs": {
+            "local": "Vidéos locales",
+            "youtube": "YouTube",
+            "upload": "Téléchargement"
+        },
         "hero": {
             "title": "Vos vidéos locales",
             "description": "Sélectionnez un dossier contenant vos vidéos pour les lire directement depuis Castium. Vos fichiers restent sur votre appareil.",
@@ -218,6 +227,57 @@
             "continueWatching": "Reprendre la lecture",
             "favorites": "Mes favoris",
             "allVideos": "Toutes les vidéos"
+        },
+        "youtube": {
+            "title": "Connectez votre compte YouTube",
+            "description": "Accédez à vos playlists, vidéos aimées et regardez vos contenus directement depuis Castium.",
+            "connect": "Connecter à YouTube",
+            "permissionNotice": "Vous serez redirigé vers Google pour autoriser l'accès à votre compte YouTube",
+            "connected": "Compte connecté",
+            "disconnect": "Déconnecter",
+            "error": "Une erreur est survenue",
+            "quickAccess": "Accès rapide",
+            "likedVideos": "Vidéos aimées",
+            "playlists": "Vos playlists",
+            "noPlaylists": "Aucune playlist trouvée",
+            "noVideos": "Aucune vidéo dans cette playlist",
+            "views": "vues"
+        },
+        "upload": {
+            "title": "Mes vidéos cloud",
+            "search": "Rechercher une vidéo...",
+            "uploadButton": "Téléverser",
+            "uploading": "Téléversement en cours...",
+            "error": "Erreur lors du téléversement",
+            "emptyTitle": "Aucune vidéo téléversée",
+            "emptyDescription": "Téléversez vos vidéos sur le cloud pour y accéder depuis n'importe où.",
+            "uploadFirst": "Téléverser une vidéo",
+            "yourVideos": "Vos vidéos",
+            "noResults": "Aucune vidéo ne correspond à votre recherche",
+            "videoDetails": "Détails de la vidéo",
+            "sortBy": "Trier par",
+            "sortOptions": {
+                "date": "Date",
+                "name": "Nom",
+                "size": "Taille"
+            },
+            "metadata": {
+                "title": "Titre",
+                "artist": "Artiste",
+                "album": "Album",
+                "year": "Année",
+                "genre": "Genre",
+                "duration": "Durée",
+                "fileInfo": "Informations du fichier",
+                "filename": "Nom du fichier",
+                "size": "Taille",
+                "format": "Format",
+                "resolution": "Résolution"
+            },
+            "deleteConfirm": {
+                "title": "Supprimer la vidéo ?",
+                "message": "Cette action est irréversible. La vidéo sera définitivement supprimée."
+            }
         }
     }
 }

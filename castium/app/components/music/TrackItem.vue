@@ -19,13 +19,17 @@ const emit = defineEmits<{
 }>()
 
 const albumArt = computed(
-    () => props.track.album.images?.[2]?.url || props.track.album.images?.[0]?.url
+    () =>
+        props.track.album.images?.[2]?.url ||
+        props.track.album.images?.[0]?.url,
 )
-const artistNames = computed(() => props.track.artists.map((a) => a.name).join(', '))
+const artistNames = computed(() =>
+    props.track.artists.map((a) => a.name).join(", "),
+)
 const duration = computed(() => {
     const minutes = Math.floor(props.track.duration_ms / 60000)
     const seconds = Math.floor((props.track.duration_ms % 60000) / 1000)
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`
 })
 </script>
 
@@ -35,7 +39,9 @@ const duration = computed(() => {
         @click="emit('play', track.uri)"
     >
         <div class="flex items-center gap-3 w-12">
-            <span class="text-gray-400 text-sm group-hover:hidden">{{ index }}</span>
+            <span class="text-gray-400 text-sm group-hover:hidden">
+                {{ index }}
+            </span>
             <UIcon
                 name="i-heroicons-play-solid"
                 class="w-4 h-4 text-white hidden group-hover:block"

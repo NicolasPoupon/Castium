@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-    title: 'Settings',
+    title: "Settings",
 })
 
 const { t } = useI18n()
@@ -8,32 +8,36 @@ const { user, signOut, loading } = useAuth()
 const toast = useToast()
 
 const userName = computed(() => {
-    if (!user.value) return ''
+    if (!user.value) return ""
     const meta = user.value.user_metadata
-    return meta?.full_name || meta?.name || ''
+    return meta?.full_name || meta?.name || ""
 })
 
 const userEmail = computed(() => {
-    return user.value?.email || ''
+    return user.value?.email || ""
 })
 
 const userAvatar = computed(() => {
     if (!user.value) return null
-    return user.value.user_metadata?.avatar_url || user.value.user_metadata?.picture || null
+    return (
+        user.value.user_metadata?.avatar_url ||
+        user.value.user_metadata?.picture ||
+        null
+    )
 })
 
 const handleLogout = async () => {
     try {
         await signOut()
         toast.add({
-            title: t('settings.logout.success'),
-            color: 'success',
+            title: t("settings.logout.success"),
+            color: "success",
         })
     } catch (error: any) {
         toast.add({
-            title: t('settings.logout.error'),
+            title: t("settings.logout.error"),
             description: error.message,
-            color: 'error',
+            color: "error",
         })
     }
 }
@@ -43,17 +47,24 @@ const handleLogout = async () => {
     <div class="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
         <Navbar mode="app" />
         <div class="pt-20 px-4 md:px-8 lg:px-16 max-w-4xl mx-auto">
-            <h1 class="text-3xl font-bold text-white mb-8">{{ t('settings.title') }}</h1>
+            <h1 class="text-3xl font-bold text-white mb-8">
+                {{ t("settings.title") }}
+            </h1>
 
             <!-- Profile Section -->
             <UCard class="mb-6">
                 <template #header>
                     <h2 class="text-xl font-semibold text-white">
-                        {{ t('settings.profile.title') }}
+                        {{ t("settings.profile.title") }}
                     </h2>
                 </template>
                 <div class="flex items-center gap-6">
-                    <UAvatar v-if="userAvatar" :src="userAvatar" :alt="userName" size="xl" />
+                    <UAvatar
+                        v-if="userAvatar"
+                        :src="userAvatar"
+                        :alt="userName"
+                        size="xl"
+                    />
                     <UAvatar
                         v-else
                         :text="userName.substring(0, 2).toUpperCase()"
@@ -63,13 +74,15 @@ const handleLogout = async () => {
                     <div class="flex-1">
                         <div class="mb-4">
                             <label class="text-sm text-gray-400">
-                                {{ t('settings.profile.name') }}
+                                {{ t("settings.profile.name") }}
                             </label>
-                            <p class="text-lg text-white">{{ userName || '-' }}</p>
+                            <p class="text-lg text-white">
+                                {{ userName || "-" }}
+                            </p>
                         </div>
                         <div>
                             <label class="text-sm text-gray-400">
-                                {{ t('settings.profile.email') }}
+                                {{ t("settings.profile.email") }}
                             </label>
                             <p class="text-lg text-white">{{ userEmail }}</p>
                         </div>
@@ -81,11 +94,13 @@ const handleLogout = async () => {
             <UCard>
                 <template #header>
                     <h2 class="text-xl font-semibold text-white">
-                        {{ t('settings.session.title') }}
+                        {{ t("settings.session.title") }}
                     </h2>
                 </template>
                 <div class="flex items-center justify-between">
-                    <p class="text-gray-400">{{ t('settings.session.description') }}</p>
+                    <p class="text-gray-400">
+                        {{ t("settings.session.description") }}
+                    </p>
                     <UButton
                         :loading="loading"
                         color="error"
@@ -93,7 +108,7 @@ const handleLogout = async () => {
                         icon="i-heroicons-arrow-right-on-rectangle"
                         @click="handleLogout"
                     >
-                        {{ t('settings.logout.button') }}
+                        {{ t("settings.logout.button") }}
                     </UButton>
                 </div>
             </UCard>
