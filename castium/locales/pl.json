@@ -280,6 +280,21 @@
                 "title": "Usunąć film?",
                 "message": "Ta akcja jest nieodwracalna. Film zostanie trwale usunięty."
             }
+        },
+        "local": {
+            "videoDetails": "Szczegóły filmu",
+            "play": "Odtwórz",
+            "addToFavorites": "Dodaj do ulubionych",
+            "removeFromFavorites": "Usuń z ulubionych",
+            "metadata": {
+                "name": "Nazwa",
+                "size": "Rozmiar",
+                "type": "Typ",
+                "lastModified": "Ostatnia modyfikacja",
+                "path": "Ścieżka",
+                "progress": "Postęp",
+                "favorite": "Ulubiony"
+            }
         }
     }
 }

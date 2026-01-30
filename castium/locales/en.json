@@ -280,6 +280,21 @@
                 "title": "Delete video?",
                 "message": "This action cannot be undone. The video will be permanently deleted."
             }
+        },
+        "local": {
+            "videoDetails": "Video details",
+            "play": "Play",
+            "addToFavorites": "Add to favorites",
+            "removeFromFavorites": "Remove from favorites",
+            "metadata": {
+                "name": "Name",
+                "size": "Size",
+                "type": "Type",
+                "lastModified": "Last modified",
+                "path": "Path",
+                "progress": "Progress",
+                "favorite": "Favorite"
+            }
         }
     }
 }

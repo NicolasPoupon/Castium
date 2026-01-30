@@ -278,6 +278,21 @@
                 "title": "Supprimer la vidéo ?",
                 "message": "Cette action est irréversible. La vidéo sera définitivement supprimée."
             }
+        },
+        "local": {
+            "videoDetails": "Détails de la vidéo",
+            "play": "Lire",
+            "addToFavorites": "Ajouter aux favoris",
+            "removeFromFavorites": "Retirer des favoris",
+            "metadata": {
+                "name": "Nom",
+                "size": "Taille",
+                "type": "Type",
+                "lastModified": "Dernière modification",
+                "path": "Chemin",
+                "progress": "Progression",
+                "favorite": "Favori"
+            }
         }
     }
 }

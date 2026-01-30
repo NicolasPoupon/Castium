@@ -92,6 +92,15 @@ const showDeleteConfirm = ref(false)
 const videoToDelete = ref<string | null>(null)
 const uploadSearchQuery = ref("")
 
+// Cloud video player state
+const showCloudPlayer = ref(false)
+const currentCloudVideo = ref<any>(null)
+const cloudVideoRef = ref<HTMLVideoElement | null>(null)
+
+// Local video details modal state
+const showLocalVideoDetails = ref(false)
+const selectedLocalVideo = ref<any>(null)
+
 const videoRef = ref<HTMLVideoElement | null>(null)
 const videoUrl = ref<string | null>(null)
 const showPlayer = ref(false)
@@ -457,6 +466,35 @@ const cancelDelete = () => {
 const handleUpdateMetadata = async (videoId: string, metadata: any) => {
     await updateVideoMetadata(videoId, metadata)
     closeVideoDetails()
+}
+
+// Cloud video player functions
+const playCloudVideo = (video: any) => {
+    if (!video.publicUrl) {
+        console.error("[Lectures] No public URL for video:", video)
+        return
+    }
+    currentCloudVideo.value = video
+    showCloudPlayer.value = true
+}
+
+const closeCloudPlayer = () => {
+    showCloudPlayer.value = false
+    currentCloudVideo.value = null
+    if (cloudVideoRef.value) {
+        cloudVideoRef.value.pause()
+    }
+}
+
+// Local video details functions
+const openLocalVideoDetails = (video: any) => {
+    selectedLocalVideo.value = video
+    showLocalVideoDetails.value = true
+}
+
+const closeLocalVideoDetails = () => {
+    showLocalVideoDetails.value = false
+    selectedLocalVideo.value = null
 }
 
 // Filter uploaded videos by search
@@ -830,11 +868,23 @@ watch(activeTab, async (tab) => {
                                         </div>
                                         <!-- Play overlay -->
                                         <div
-                                            class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                            class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3"
                                         >
-                                            <UIcon
-                                                name="i-heroicons-play"
-                                                class="w-12 h-12 text-white"
+                                            <UButton
+                                                icon="i-heroicons-play"
+                                                color="neutral"
+                                                variant="solid"
+                                                size="lg"
+                                                class="!rounded-full"
+                                                @click.stop="handleVideoClick(video)"
+                                            />
+                                            <UButton
+                                                icon="i-heroicons-information-circle"
+                                                color="neutral"
+                                                variant="solid"
+                                                size="sm"
+                                                class="!rounded-full"
+                                                @click.stop="openLocalVideoDetails(video)"
                                             />
                                         </div>
                                     </div>
@@ -853,24 +903,34 @@ watch(activeTab, async (tab) => {
                                                 {{ formatSize(video.size) }}
                                             </p>
                                         </div>
-                                        <UButton
-                                            :icon="
-                                                isFavorite(video.path)
-                                                    ? 'i-heroicons-heart-solid'
-                                                    : 'i-heroicons-heart'
-                                            "
-                                            size="xs"
-                                            color="neutral"
-                                            variant="ghost"
-                                            :class="
-                                                isFavorite(video.path)
-                                                    ? 'text-red-500'
-                                                    : 'text-gray-400'
-                                            "
-                                            @click.stop="
-                                                toggleFavorite(video.path)
-                                            "
-                                        />
+                                        <div class="flex items-center gap-1">
+                                            <UButton
+                                                icon="i-heroicons-information-circle"
+                                                size="xs"
+                                                color="neutral"
+                                                variant="ghost"
+                                                class="text-gray-400"
+                                                @click.stop="openLocalVideoDetails(video)"
+                                            />
+                                            <UButton
+                                                :icon="
+                                                    isFavorite(video.path)
+                                                        ? 'i-heroicons-heart-solid'
+                                                        : 'i-heroicons-heart'
+                                                "
+                                                size="xs"
+                                                color="neutral"
+                                                variant="ghost"
+                                                :class="
+                                                    isFavorite(video.path)
+                                                        ? 'text-red-500'
+                                                        : 'text-gray-400'
+                                                "
+                                                @click.stop="
+                                                    toggleFavorite(video.path)
+                                                "
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1409,7 +1469,7 @@ watch(activeTab, async (tab) => {
                             >
                                 <div
                                     class="aspect-video rounded-lg overflow-hidden relative bg-gray-800 cursor-pointer"
-                                    @click="openVideoDetails(video)"
+                                    @click="playCloudVideo(video)"
                                 >
                                     <!-- Thumbnail -->
                                     <img
@@ -1441,7 +1501,15 @@ watch(activeTab, async (tab) => {
                                         class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
                                     >
                                         <UButton
-                                            icon="i-heroicons-eye"
+                                            icon="i-heroicons-play"
+                                            color="neutral"
+                                            variant="solid"
+                                            size="lg"
+                                            class="!rounded-full"
+                                            @click.stop="playCloudVideo(video)"
+                                        />
+                                        <UButton
+                                            icon="i-heroicons-information-circle"
                                             color="neutral"
                                             variant="solid"
                                             size="sm"
@@ -1896,6 +1964,174 @@ watch(activeTab, async (tab) => {
                                 :label="t('common.delete')"
                                 :loading="uploadLoading"
                                 @click="handleDeleteVideo"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Cloud Video Player Modal -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div
+                    v-if="showCloudPlayer && currentCloudVideo"
+                    class="fixed inset-0 z-[100] bg-black flex flex-col"
+                >
+                    <!-- Top bar -->
+                    <div class="flex items-center justify-between p-4 bg-gray-900/90">
+                        <div class="flex items-center gap-4">
+                            <UButton
+                                icon="i-heroicons-arrow-left"
+                                color="neutral"
+                                variant="ghost"
+                                size="lg"
+                                @click="closeCloudPlayer"
+                            />
+                            <div>
+                                <h3 class="text-white font-semibold text-lg line-clamp-1">
+                                    {{ currentCloudVideo.title || currentCloudVideo.fileName }}
+                                </h3>
+                                <p v-if="currentCloudVideo.artist" class="text-gray-400 text-sm">
+                                    {{ currentCloudVideo.artist }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <UButton
+                                icon="i-heroicons-information-circle"
+                                color="neutral"
+                                variant="ghost"
+                                size="lg"
+                                @click="openVideoDetails(currentCloudVideo); closeCloudPlayer()"
+                            />
+                            <UButton
+                                icon="i-heroicons-trash"
+                                color="neutral"
+                                variant="ghost"
+                                size="lg"
+                                class="text-red-400 hover:text-red-500"
+                                @click="confirmDeleteVideo(currentCloudVideo.id); closeCloudPlayer()"
+                            />
+                        </div>
+                    </div>
+
+                    <!-- Video player -->
+                    <div class="flex-1 relative flex items-center justify-center">
+                        <video
+                            ref="cloudVideoRef"
+                            :src="currentCloudVideo.publicUrl"
+                            class="max-w-full max-h-full"
+                            controls
+                            autoplay
+                        />
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Local Video Details Modal -->
+        <Teleport to="body">
+            <Transition name="fade">
+                <div
+                    v-if="showLocalVideoDetails && selectedLocalVideo"
+                    class="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4"
+                    @click.self="closeLocalVideoDetails"
+                >
+                    <div class="bg-gray-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <!-- Header -->
+                        <div class="sticky top-0 bg-gray-900 p-6 border-b border-gray-800 flex items-center justify-between">
+                            <h2 class="text-xl font-bold text-white">
+                                {{ t("lectures.local.videoDetails") }}
+                            </h2>
+                            <UButton
+                                icon="i-heroicons-x-mark"
+                                color="neutral"
+                                variant="ghost"
+                                @click="closeLocalVideoDetails"
+                            />
+                        </div>
+
+                        <!-- Content -->
+                        <div class="p-6 space-y-6">
+                            <!-- Video preview with color -->
+                            <div
+                                class="aspect-video rounded-lg overflow-hidden flex items-center justify-center"
+                                :style="{ backgroundColor: getVideoThumbnail(selectedLocalVideo) }"
+                            >
+                                <UIcon
+                                    name="i-heroicons-film"
+                                    class="w-24 h-24 text-white/30"
+                                />
+                            </div>
+
+                            <!-- Metadata -->
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="col-span-2">
+                                        <label class="text-gray-400 text-sm">{{ t("lectures.local.metadata.name") }}</label>
+                                        <p class="text-white text-lg font-medium">{{ formatVideoName(selectedLocalVideo.name) }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-400 text-sm">{{ t("lectures.local.metadata.size") }}</label>
+                                        <p class="text-white">{{ formatSize(selectedLocalVideo.size) }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-400 text-sm">{{ t("lectures.local.metadata.type") }}</label>
+                                        <p class="text-white">{{ selectedLocalVideo.type || selectedLocalVideo.name.split('.').pop()?.toUpperCase() }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-400 text-sm">{{ t("lectures.local.metadata.lastModified") }}</label>
+                                        <p class="text-white">{{ selectedLocalVideo.lastModified ? new Date(selectedLocalVideo.lastModified).toLocaleDateString() : '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="text-gray-400 text-sm">{{ t("lectures.local.metadata.path") }}</label>
+                                        <p class="text-gray-300 text-sm truncate" :title="selectedLocalVideo.path">{{ selectedLocalVideo.path }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Progress info -->
+                                <div v-if="getProgress(selectedLocalVideo.path) > 0" class="border-t border-gray-800 pt-4">
+                                    <label class="text-gray-400 text-sm">{{ t("lectures.local.metadata.progress") }}</label>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <div class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+                                            <div
+                                                class="h-full bg-purple-500"
+                                                :style="{ width: `${Math.min((getProgress(selectedLocalVideo.path) / 100) * 100, 100)}%` }"
+                                            />
+                                        </div>
+                                        <span class="text-white text-sm">{{ formatDuration(getProgress(selectedLocalVideo.path)) }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Favorite status -->
+                                <div class="border-t border-gray-800 pt-4 flex items-center justify-between">
+                                    <span class="text-gray-400">{{ t("lectures.local.metadata.favorite") }}</span>
+                                    <UButton
+                                        :icon="isFavorite(selectedLocalVideo.path) ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                                        :color="isFavorite(selectedLocalVideo.path) ? 'error' : 'neutral'"
+                                        variant="ghost"
+                                        :label="isFavorite(selectedLocalVideo.path) ? t('lectures.local.removeFromFavorites') : t('lectures.local.addToFavorites')"
+                                        @click="toggleFavorite(selectedLocalVideo.path)"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="p-6 border-t border-gray-800 flex justify-end gap-3">
+                            <UButton
+                                color="neutral"
+                                variant="ghost"
+                                :label="t('common.close')"
+                                @click="closeLocalVideoDetails"
+                            />
+                            <UButton
+                                icon="i-heroicons-play"
+                                color="primary"
+                                variant="solid"
+                                :label="t('lectures.local.play')"
+                                @click="handleVideoClick(selectedLocalVideo); closeLocalVideoDetails()"
                             />
                         </div>
                     </div>
