@@ -104,6 +104,43 @@ export const useSpotify = () => {
         })
     }
 
+    const getCurrentlyPlaying = async () => {
+        return fetchFromSpotify('/me/player/currently-playing')
+    }
+
+    const getPlaybackState = async () => {
+        return fetchFromSpotify('/me/player')
+    }
+
+    const setVolume = async (volumePercent: number) => {
+        return fetchFromSpotify(`/me/player/volume?volume_percent=${Math.min(100, Math.max(0, volumePercent))}`, {
+            method: 'PUT',
+        })
+    }
+
+    const seek = async (positionMs: number) => {
+        return fetchFromSpotify(`/me/player/seek?position_ms=${positionMs}`, {
+            method: 'PUT',
+        })
+    }
+
+    const getAvailableDevices = async () => {
+        return fetchFromSpotify('/me/player/devices')
+    }
+
+    const playTrack = async (trackUri: string, deviceId?: string) => {
+        const body: any = { uris: [trackUri] }
+        const url = deviceId ? `/me/player/play?device_id=${deviceId}` : '/me/player/play'
+        return fetchFromSpotify(url, {
+            method: 'PUT',
+            body,
+        })
+    }
+
+    const getTrackInfo = async (trackId: string) => {
+        return fetchFromSpotify(`/tracks/${trackId}`)
+    }
+
     const isAuthenticated = computed(() => !!accessToken.value)
 
     return {
@@ -118,6 +155,14 @@ export const useSpotify = () => {
         pause,
         next,
         previous,
+        getCurrentlyPlaying,
+        getPlaybackState,
+        setVolume,
+        seek,
+        getAvailableDevices,
+        playTrack,
+        getTrackInfo,
         isAuthenticated,
+        accessToken,
     }
 }
