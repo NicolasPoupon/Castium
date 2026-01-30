@@ -108,7 +108,11 @@
             "submit": "Zaloguj się",
             "noAccount": "Nie masz jeszcze konta? Zarejestruj się",
             "success": "Logowanie udane",
-            "successDescription": "Jesteś teraz zalogowany."
+            "successDescription": "Jesteś teraz zalogowany.",
+            "errors": {
+                "title": "Logowanie nie powiodło się",
+                "invalid": "Nieprawidłowy email lub hasło"
+            }
         },
         "signUp" : {
             "title": "Rejestracja",
@@ -198,9 +202,15 @@
             "title": "Twoje lokalne wideo",
             "description": "Wybierz folder z filmami, aby odtwarzać je bezpośrednio w Castium. Twoje pliki pozostają na Twoim urządzeniu.",
             "selectFolder": "Wybierz folder",
-            "permissionNotice": "Musisz udzielić dostępu do odczytu wybranego folderu"
+            "permissionNotice": "Musisz udzielić dostępu do odczytu wybranego folderu",
+            "previousFolder": "Wcześniej wybrany folder",
+            "reauthorize": "Ponownie autoryzuj dostęp",
+            "orSelectNew": "Lub wybierz nowy folder"
         },
-        "library": {
+        "fallback": {
+            "title": "Tryb zgodności",
+            "description": "Twoja przeglądarka nie obsługuje interfejsu File System Access API. Wybrane filmy nie będą zapamiętywane między sesjami. Użyj Chrome lub Edge dla lepszego doświadczenia."
+        },        "library": {
             "title": "Moja wideoteka",
             "search": "Szukaj wideo...",
             "noVideos": "Nie znaleziono filmów w tym folderze"

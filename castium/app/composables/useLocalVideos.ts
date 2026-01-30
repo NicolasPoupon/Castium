@@ -47,6 +47,8 @@ export const useLocalVideos = () => {
     const loading = useState<boolean>('videos_loading', () => false)
     const hasPermission = useState<boolean>('folder_permission', () => false)
     const usesFallback = useState<boolean>('videos_uses_fallback', () => false)
+    const needsReauthorization = useState<boolean>('videos_needs_reauth', () => false)
+    const savedFolderName = useState<string | null>('saved_folder_name', () => null)
 
     // Check if File System Access API is available
     const isFileSystemAPISupported = computed(() => {
@@ -104,21 +106,6 @@ export const useLocalVideos = () => {
         }
     }
 
-    // Check if we have permission to access the folder
-    const checkPermission = async (handle: FileSystemDirectoryHandle): Promise<boolean> => {
-        try {
-            const permission = await handle.queryPermission({ mode: 'read' })
-            if (permission === 'granted') {
-                return true
-            }
-            // Try to request permission
-            const newPermission = await handle.requestPermission({ mode: 'read' })
-            return newPermission === 'granted'
-        } catch {
-            return false
-        }
-    }
-
     // Fallback: use input[type=file] with webkitdirectory
     const selectFolderFallback = (): Promise<boolean> => {
         return new Promise((resolve) => {
@@ -151,7 +138,8 @@ export const useLocalVideos = () => {
                             name: file.name,
                             path: file.webkitRelativePath || file.name,
                             size: file.size,
-                            lastModified: new Date(file.lastModified),
+                            lastModified: file.lastModified,
+                            type: file.type || 'video/mp4',
                             file: file,
                         })
                     }
@@ -217,34 +205,87 @@ export const useLocalVideos = () => {
     const restoreFolderAccess = async (): Promise<boolean> => {
         try {
             loading.value = true
+            needsReauthorization.value = false
 
-            // Fallback mode doesn't support restoration
-            if (usesFallback.value) {
+            // Check if File System API is supported
+            if (!isFileSystemAPISupported.value) {
+                // Load saved folder name from profile for display
+                if (profile.value?.video_folder_path) {
+                    savedFolderName.value = profile.value.video_folder_path
+                    needsReauthorization.value = true
+                }
                 loading.value = false
                 return false
             }
 
             const savedHandle = await loadFolderHandle()
             if (!savedHandle) {
+                // Check if we have folder info in profile (user had selected a folder before)
+                if (profile.value?.video_folder_path) {
+                    savedFolderName.value = profile.value.video_folder_path
+                    needsReauthorization.value = true
+                }
                 loading.value = false
                 return false
             }
 
-            const permitted = await checkPermission(savedHandle)
-            if (permitted) {
+            // Save the folder name for display
+            savedFolderName.value = savedHandle.name
+
+            // Check current permission without prompting
+            const currentPermission = await savedHandle.queryPermission({ mode: 'read' })
+            
+            if (currentPermission === 'granted') {
                 folderHandle.value = savedHandle
                 hasPermission.value = true
+                needsReauthorization.value = false
                 await scanForVideos()
+                loading.value = false
                 return true
             }
 
+            // Permission needs to be re-requested (requires user interaction)
+            // Store the handle for later use when user clicks the button
+            folderHandle.value = savedHandle
+            needsReauthorization.value = true
             loading.value = false
             return false
         } catch (error) {
             console.error('Error restoring folder access:', error)
-            return false
-        } finally {
+            // Check if we have folder info in profile
+            if (profile.value?.video_folder_path) {
+                savedFolderName.value = profile.value.video_folder_path
+                needsReauthorization.value = true
+            }
             loading.value = false
+            return false
+        }
+    }
+
+    // Re-authorize access to previously selected folder (requires user interaction)
+    const reauthorizeAccess = async (): Promise<boolean> => {
+        try {
+            loading.value = true
+
+            if (folderHandle.value) {
+                // Try to request permission on saved handle
+                const permission = await folderHandle.value.requestPermission({ mode: 'read' })
+                if (permission === 'granted') {
+                    hasPermission.value = true
+                    needsReauthorization.value = false
+                    await scanForVideos()
+                    loading.value = false
+                    return true
+                }
+            }
+
+            // If no handle or permission denied, ask user to select folder again
+            loading.value = false
+            return await selectFolder()
+        } catch (error) {
+            console.error('Error reauthorizing access:', error)
+            loading.value = false
+            return false
         }
     }
 
@@ -446,5 +487,8 @@ export const useLocalVideos = () => {
         isFavorite,
         formatSize,
         formatDuration,
+        needsReauthorization: readonly(needsReauthorization),
+        savedFolderName: readonly(savedFolderName),
+        reauthorizeAccess,
     }
 }

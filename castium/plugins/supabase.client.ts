@@ -1,13 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-
+// Supabase client is now handled by useSupabase composable for proper initialization order
 export default defineNuxtPlugin(() => {
-    const config = useRuntimeConfig()
-
-    const supabase = createClient(config.public.supabaseUrl, config.public.supabaseAnonKey)
-
-    return {
-        provide: {
-            supabase,
-        },
-    }
+    // Empty plugin - kept for backwards compatibility
 })

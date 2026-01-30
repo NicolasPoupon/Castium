@@ -26,7 +26,9 @@ const {
     formatDuration,
     scanForVideos,
     usesFallback,
-    isFileSystemAPISupported,
+    needsReauthorization,
+    savedFolderName,
+    reauthorizeAccess,
 } = useLocalVideos()
 
 const videoRef = ref<HTMLVideoElement | null>(null)
@@ -52,6 +54,11 @@ const filteredVideos = computed(() => {
 onMounted(async () => {
     await restoreFolderAccess()
 })
+
+// Handle reauthorization
+const handleReauthorize = async () => {
+    await reauthorizeAccess()
+}
 
 // Handle folder selection
 const handleSelectFolder = async () => {
@@ -295,12 +302,30 @@ const formatVideoName = (name: string) => {
                             </p>
                         </div>
 
+                        <!-- Show reauthorization button if folder was previously selected -->
+                        <div v-if="needsReauthorization && savedFolderName" class="mb-6">
+                            <p class="text-gray-300 mb-4">
+                                {{ t('lectures.hero.previousFolder') }}: 
+                                <span class="text-purple-400 font-medium">{{ savedFolderName }}</span>
+                            </p>
+                            <UButton
+                                icon="i-heroicons-arrow-path"
+                                size="xl"
+                                :label="t('lectures.hero.reauthorize')"
+                                :loading="loading"
+                                class="bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+                                @click="handleReauthorize"
+                            />
+                            <p class="text-gray-500 text-sm mt-4">{{ t('lectures.hero.orSelectNew') }}</p>
+                        </div>
+
                         <UButton
                             icon="i-heroicons-folder-plus"
                             size="xl"
                             :label="t('lectures.hero.selectFolder')"
                             :loading="loading"
-                            class="bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+                            :variant="needsReauthorization ? 'outline' : 'solid'"
+                            :class="needsReauthorization ? 'border-purple-600 text-purple-400 hover:bg-purple-600/20' : 'bg-purple-600 hover:bg-purple-700 text-white font-semibold'"
                             @click="handleSelectFolder"
                         />
 

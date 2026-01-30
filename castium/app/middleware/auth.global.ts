@@ -22,11 +22,16 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     try {
-        const { isAuthenticated, initialized } = useAuth()
+        const { isAuthenticated, initialized, initAuth } = useAuth()
 
-        // Wait for auth to be initialized
+        // Ensure auth is initialized
+        if (!initialized.value) {
+            await initAuth()
+        }
+
+        // Wait for auth to be fully initialized
         let attempts = 0
-        while (!initialized.value && attempts < 50) {
+        while (!initialized.value && attempts < 100) {
             await new Promise((resolve) => setTimeout(resolve, 50))
             attempts++
         }

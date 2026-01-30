@@ -106,7 +106,11 @@
             "submit": "Connexion",
             "noAccount": "Pas encore de compte ? Inscrivez-vous",
             "success": "Connexion réussie",
-            "successDescription": "Vous êtes maintenant connecté."
+            "successDescription": "Vous êtes maintenant connecté.",
+            "errors": {
+                "title": "Échec de la connexion",
+                "invalid": "Email ou mot de passe invalide"
+            }
         },
         "signUp" : {
             "title": "Inscription",
@@ -196,7 +200,10 @@
             "title": "Vos vidéos locales",
             "description": "Sélectionnez un dossier contenant vos vidéos pour les lire directement depuis Castium. Vos fichiers restent sur votre appareil.",
             "selectFolder": "Sélectionner un dossier",
-            "permissionNotice": "Vous devrez autoriser l'accès en lecture au dossier sélectionné"
+            "permissionNotice": "Vous devrez autoriser l'accès en lecture au dossier sélectionné",
+            "previousFolder": "Dossier précédemment sélectionné",
+            "reauthorize": "Réautoriser l'accès",
+            "orSelectNew": "Ou sélectionnez un nouveau dossier"
         },
         "fallback": {
             "title": "Mode compatibilité",

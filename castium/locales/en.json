@@ -108,7 +108,11 @@
             "submit": "Login",
             "noAccount": "No account yet? Sign up",
             "success": "Login successful",
-            "successDescription": "You are now logged in."
+            "successDescription": "You are now logged in.",
+            "errors": {
+                "title": "Login failed",
+                "invalid": "Invalid email or password"
+            }
         },
         "signUp" : {
             "title": "Sign Up",
@@ -197,7 +201,14 @@
             "title": "Your local videos",
             "description": "Select a folder containing your videos to play them directly from Castium. Your files stay on your device.",
             "selectFolder": "Select a folder",
-            "permissionNotice": "You will need to grant read access to the selected folder"
+            "permissionNotice": "You will need to grant read access to the selected folder",
+            "previousFolder": "Previously selected folder",
+            "reauthorize": "Reauthorize access",
+            "orSelectNew": "Or select a new folder"
+        },
+        "fallback": {
+            "title": "Compatibility mode",
+            "description": "Your browser does not support the File System Access API. Selected videos will not be remembered between sessions. Use Chrome or Edge for a better experience."
         },
         "library": {
             "title": "My video library",
