@@ -56,10 +56,7 @@ async function onSubmit() {
         <Navbar mode="login" />
         <UPageCard class="w-full max-w-md">
             <div class="text-center mb-6">
-                <UIcon
-                    name="i-heroicons-key"
-                    class="w-12 h-12 mx-auto mb-4 text-castium-green"
-                />
+                <UIcon name="i-heroicons-key" class="w-12 h-12 mx-auto mb-4 text-castium-green" />
                 <h1 class="text-2xl font-bold mb-2">
                     {{ t('auth.forgotPassword.title') }}
                 </h1>
@@ -84,47 +81,27 @@ async function onSubmit() {
                         />
                     </UFormGroup>
 
-                    <UButton
-                        type="submit"
-                        block
-                        size="lg"
-                        :loading="loading"
-                        class="mt-4"
-                    >
+                    <UButton type="submit" block size="lg" :loading="loading" class="mt-4">
                         {{ t('auth.forgotPassword.submit') }}
                     </UButton>
                 </UForm>
 
                 <div class="text-center mt-4">
-                    <UButton
-                        variant="link"
-                        color="neutral"
-                        to="/auth/login"
-                        class="text-sm"
-                    >
+                    <UButton variant="link" color="neutral" to="/auth/login" class="text-sm">
                         {{ t('auth.forgotPassword.backToLogin') }}
                     </UButton>
                 </div>
             </div>
 
             <div v-else class="text-center space-y-4">
-                <UIcon
-                    name="i-heroicons-check-circle"
-                    class="w-16 h-16 mx-auto text-green-500"
-                />
+                <UIcon name="i-heroicons-check-circle" class="w-16 h-16 mx-auto text-green-500" />
                 <p class="text-gray-600 dark:text-gray-400">
                     {{ t('auth.forgotPassword.successDescription') }}
                 </p>
-                <UButton
-                    variant="outline"
-                    block
-                    to="/auth/login"
-                    class="mt-4"
-                >
+                <UButton variant="outline" block to="/auth/login" class="mt-4">
                     {{ t('auth.forgotPassword.backToLogin') }}
                 </UButton>
             </div>
         </UPageCard>
     </div>
 </template>
-

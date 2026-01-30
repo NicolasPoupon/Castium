@@ -1,62 +1,62 @@
 <script setup lang="ts">
 definePageMeta({
     title: 'Music',
-});
+})
 
 type Playlist = {
-    id: number;
-    name: string;
-    description: string;
-    tracks: number;
-};
+    id: number
+    name: string
+    description: string
+    tracks: number
+}
 
 const playlists = ref<Playlist[]>([
     { id: 1, name: 'Daily Mix', description: 'Un mélange personnalisé pour toi.', tracks: 42 },
     { id: 2, name: 'Focus & Code', description: 'Beats lo-fi pour rester concentré.', tracks: 27 },
     { id: 3, name: 'Night Drive', description: 'Ambiance nocturne et chill.', tracks: 35 },
-]);
+])
 
-const draggedId = ref<number | null>(null);
-const currentPlaylistId = ref<number | null>(null);
-const isPlaying = ref(false);
+const draggedId = ref<number | null>(null)
+const currentPlaylistId = ref<number | null>(null)
+const isPlaying = ref(false)
 
-const currentPlaylist = computed(() =>
-    playlists.value.find((p) => p.id === currentPlaylistId.value) ?? null,
-);
+const currentPlaylist = computed(
+    () => playlists.value.find((p) => p.id === currentPlaylistId.value) ?? null
+)
 
 function connectWithSpotify() {
     // TODO: Remplacer cette URL par l'endpoint OAuth réel (backend / callback Spotify)
     // Ex. redirection vers /api/auth/spotify ou directement vers accounts.spotify.com
-    console.log('Connect with Spotify clicked');
+    console.log('Connect with Spotify clicked')
 }
 
 function playPlaylist(playlist: Playlist) {
     if (currentPlaylistId.value === playlist.id && isPlaying.value) {
-        isPlaying.value = false;
-        return;
+        isPlaying.value = false
+        return
     }
 
-    currentPlaylistId.value = playlist.id;
-    isPlaying.value = true;
+    currentPlaylistId.value = playlist.id
+    isPlaying.value = true
 }
 
 function onDragStart(id: number) {
-    draggedId.value = id;
+    draggedId.value = id
 }
 
 function onDrop(targetId: number) {
-    if (draggedId.value === null || draggedId.value === targetId) return;
+    if (draggedId.value === null || draggedId.value === targetId) return
 
-    const sourceIndex = playlists.value.findIndex((p) => p.id === draggedId.value);
-    const targetIndex = playlists.value.findIndex((p) => p.id === targetId);
-    if (sourceIndex === -1 || targetIndex === -1) return;
+    const sourceIndex = playlists.value.findIndex((p) => p.id === draggedId.value)
+    const targetIndex = playlists.value.findIndex((p) => p.id === targetId)
+    if (sourceIndex === -1 || targetIndex === -1) return
 
-    const updated = [...playlists.value];
-    const [moved] = updated.splice(sourceIndex, 1);
-    updated.splice(targetIndex, 0, moved);
+    const updated = [...playlists.value]
+    const [moved] = updated.splice(sourceIndex, 1)
+    updated.splice(targetIndex, 0, moved)
 
-    playlists.value = updated;
-    draggedId.value = null;
+    playlists.value = updated
+    draggedId.value = null
 }
 </script>
 
@@ -109,7 +109,9 @@ function onDrop(targetId: number) {
                             Aucune playlist en cours. Choisis-en une pour commencer.
                         </p>
 
-                        <div class="flex items-center justify-between pt-3 border-t border-zinc-800">
+                        <div
+                            class="flex items-center justify-between pt-3 border-t border-zinc-800"
+                        >
                             <button
                                 type="button"
                                 class="inline-flex items-center justify-center rounded-full bg-emerald-500 text-black h-10 w-10 hover:bg-emerald-400 transition-colors"
@@ -193,5 +195,3 @@ function onDrop(targetId: number) {
         </main>
     </div>
 </template>
-
-

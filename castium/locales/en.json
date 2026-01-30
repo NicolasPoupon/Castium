@@ -93,6 +93,8 @@
                     "label": "Confirm Password",
                     "placeholder": "Re-enter your password",
                     "error": {
+                        "required": "Please confirm your password",
+                        "match": "Passwords do not match",
                         "mismatch": "Passwords do not match"
                     }
                 },
@@ -124,7 +126,8 @@
         "selector": {
             "movies": "Movies",
             "music": "Music",
-            "podcasts": "Podcasts"
+            "podcasts": "Podcasts",
+            "lectures": "Videos"
         },
         "user": {
             "settings": "Settings",
@@ -188,6 +191,22 @@
         "hero": {
             "title": "Podcasts coming soon",
             "description": "The podcasts section will be available soon. You’ll be able to listen to and manage your favorite podcasts."
-        }
-    }
+        }    },
+    "lectures": {
+        "hero": {
+            "title": "Your local videos",
+            "description": "Select a folder containing your videos to play them directly from Castium. Your files stay on your device.",
+            "selectFolder": "Select a folder",
+            "permissionNotice": "You will need to grant read access to the selected folder"
+        },
+        "library": {
+            "title": "My video library",
+            "search": "Search for a video...",
+            "noVideos": "No videos found in this folder"
+        },
+        "sections": {
+            "continueWatching": "Continue watching",
+            "favorites": "My favorites",
+            "allVideos": "All videos"
+        }    }
 }

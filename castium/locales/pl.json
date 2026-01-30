@@ -93,6 +93,8 @@
                     "label": "Potwierdź hasło",
                     "placeholder": "Wpisz ponownie swoje hasło",
                     "error": {
+                        "required": "Proszę potwierdzić hasło",
+                        "match": "Hasła nie pasują",
                         "mismatch": "Hasła nie pasują"
                     }
                 },
@@ -124,7 +126,8 @@
         "selector": {
             "movies": "Filmy",
             "music": "Muzyka",
-            "podcasts": "Podcasty"
+            "podcasts": "Podcasty",
+            "lectures": "Wideo"
         },
         "user": {
             "settings": "Ustawienia",
@@ -188,6 +191,24 @@
         "hero": {
             "title": "Podcasty już wkrótce",
             "description": "Sekcja podcastów będzie wkrótce dostępna. Będziesz mógł słuchać i zarządzać swoimi ulubionymi podcastami."
+        }
+    },
+    "lectures": {
+        "hero": {
+            "title": "Twoje lokalne wideo",
+            "description": "Wybierz folder z filmami, aby odtwarzać je bezpośrednio w Castium. Twoje pliki pozostają na Twoim urządzeniu.",
+            "selectFolder": "Wybierz folder",
+            "permissionNotice": "Musisz udzielić dostępu do odczytu wybranego folderu"
+        },
+        "library": {
+            "title": "Moja wideoteka",
+            "search": "Szukaj wideo...",
+            "noVideos": "Nie znaleziono filmów w tym folderze"
+        },
+        "sections": {
+            "continueWatching": "Kontynuuj oglądanie",
+            "favorites": "Moje ulubione",
+            "allVideos": "Wszystkie wideo"
         }
     }
 }

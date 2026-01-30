@@ -7,30 +7,44 @@ export default defineNuxtRouteMiddleware(async (to) => {
         '/auth/forgot-password',
         '/auth/reset-password',
         '/auth/callback',
-        '/auth/spotify/callback'
+        '/auth/spotify/callback',
     ]
 
     // Check if the route is public
-    const isPublicRoute = publicRoutes.some(route => {
-        if (to.path === route) return true
-        return false
-    })
+    const isPublicRoute = publicRoutes.some((route) => to.path === route)
 
     // Check if route starts with /app (protected area)
     const isAppRoute = to.path.startsWith('/app')
 
+    // Only run on client side to avoid hydration issues
+    if (import.meta.server) {
+        return
+    }
+
     try {
-        const supabase = useSupabase()
-        const { data: { session } } = await supabase.auth.getSession()
-        const isLoggedIn = !!session
+        const { isAuthenticated, initialized } = useAuth()
+
+        // Wait for auth to be initialized
+        let attempts = 0
+        while (!initialized.value && attempts < 50) {
+            await new Promise((resolve) => setTimeout(resolve, 50))
+            attempts++
+        }
+
+        const loggedIn = isAuthenticated.value
 
         // If user is logged in and tries to access auth pages (except callback), redirect to app
-        if (isLoggedIn && to.path.startsWith('/auth/') && to.path !== '/auth/callback' && !to.path.includes('/auth/spotify')) {
+        if (
+            loggedIn &&
+            to.path.startsWith('/auth/') &&
+            to.path !== '/auth/callback' &&
+            !to.path.includes('/auth/spotify')
+        ) {
             return navigateTo('/app/movies')
         }
 
         // If user is not logged in and tries to access /app routes, redirect to login
-        if (!isLoggedIn && isAppRoute) {
+        if (!loggedIn && isAppRoute) {
             return navigateTo('/auth/login')
         }
 
@@ -40,7 +54,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         }
 
         // For any other non-public route, require authentication
-        if (!isLoggedIn && !isPublicRoute) {
+        if (!loggedIn && !isPublicRoute) {
             return navigateTo('/auth/login')
         }
     } catch (error) {
@@ -55,4 +69,3 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return navigateTo('/auth/login')
     }
 })
-

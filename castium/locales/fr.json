@@ -124,7 +124,8 @@
         "selector": {
             "movies": "Films",
             "music": "Musiques",
-            "podcasts": "Podcasts"
+            "podcasts": "Podcasts",
+            "lectures": "Lectures"
         },
         "user": {
             "settings": "Paramètres",
@@ -188,6 +189,28 @@
         "hero": {
             "title": "Podcasts à venir",
             "description": "La section podcasts sera bientôt disponible. Vous pourrez écouter et gérer vos podcasts préférés."
+        }
+    },
+    "lectures": {
+        "hero": {
+            "title": "Vos vidéos locales",
+            "description": "Sélectionnez un dossier contenant vos vidéos pour les lire directement depuis Castium. Vos fichiers restent sur votre appareil.",
+            "selectFolder": "Sélectionner un dossier",
+            "permissionNotice": "Vous devrez autoriser l'accès en lecture au dossier sélectionné"
+        },
+        "fallback": {
+            "title": "Mode compatibilité",
+            "description": "Votre navigateur ne supporte pas l'API d'accès aux fichiers. Les vidéos sélectionnées ne seront pas mémorisées entre les sessions. Utilisez Chrome ou Edge pour une meilleure expérience."
+        },
+        "library": {
+            "title": "Ma vidéothèque",
+            "search": "Rechercher une vidéo...",
+            "noVideos": "Aucune vidéo trouvée dans ce dossier"
+        },
+        "sections": {
+            "continueWatching": "Reprendre la lecture",
+            "favorites": "Mes favoris",
+            "allVideos": "Toutes les vidéos"
         }
     }
 }

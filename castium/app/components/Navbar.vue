@@ -5,11 +5,24 @@ import * as locales from '@nuxt/ui/locale'
 const { t, locale, setLocale } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const { user, isAuthenticated, signOut } = useAuth()
+const { user, isAuthenticated, signOut, loading } = useAuth()
+const toast = useToast()
 
-const onLocaleChange = async (value: string) => {
-    await setLocale(value)
+const onLocaleChange = async (value: 'en' | 'fr' | 'pl') => {
+    await setLocale(value as any)
     if (process.client) window.location.reload()
+}
+
+const handleLogout = async () => {
+    try {
+        await signOut()
+    } catch (error) {
+        console.error('Logout error:', error)
+        toast.add({
+            title: t('navbar.user.logoutError') || 'Erreur de déconnexion',
+            color: 'error',
+        })
+    }
 }
 
 const props = defineProps({
@@ -23,12 +36,14 @@ const items = computed(() => [
     { label: t('navbar.selector.movies'), value: 'movies', to: '/app/movies' },
     { label: t('navbar.selector.music'), value: 'music', to: '/app/music' },
     { label: t('navbar.selector.podcasts'), value: 'podcasts', to: '/app/podcasts' },
+    { label: t('navbar.selector.lectures'), value: 'lectures', to: '/app/lectures' },
 ])
 
 const activeTab = computed({
     get() {
         if (route.path.includes('/music')) return 'music'
         if (route.path.includes('/podcasts')) return 'podcasts'
+        if (route.path.includes('/lectures')) return 'lectures'
         return 'movies'
     },
     set(value: string) {
@@ -41,6 +56,7 @@ const modeClass = computed(() => {
     if (route.path.includes('/movies')) return 'fill-red-800'
     if (route.path.includes('/music')) return 'fill-green-600'
     if (route.path.includes('/podcasts')) return 'fill-orange-400'
+    if (route.path.includes('/lectures')) return 'fill-purple-500'
 
     return 'fill-gray-300'
 })
@@ -86,9 +102,7 @@ const userMenuItems = computed(() => [
         {
             label: t('navbar.user.logout'),
             icon: 'i-heroicons-arrow-right-on-rectangle',
-            click: async () => {
-                await signOut()
-            },
+            click: handleLogout,
         },
     ],
 ])
@@ -143,17 +157,8 @@ const userMenuItems = computed(() => [
                 />
                 <!-- User Profile Dropdown (app mode only) -->
                 <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
-                    <UButton
-                        color="neutral"
-                        variant="ghost"
-                        class="rounded-full p-0"
-                    >
-                        <UAvatar
-                            v-if="userAvatar"
-                            :src="userAvatar"
-                            :alt="userName"
-                            size="md"
-                        />
+                    <UButton color="neutral" variant="ghost" class="rounded-full p-0">
+                        <UAvatar v-if="userAvatar" :src="userAvatar" :alt="userName" size="md" />
                         <UAvatar
                             v-else
                             :text="userInitials || '?'"

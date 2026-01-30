@@ -18,4 +18,3 @@ export const useSupabase = () => {
     }
     return supabase
 }
-

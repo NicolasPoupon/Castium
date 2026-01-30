@@ -13,10 +13,19 @@ export default defineConfig({
         globals: true,
         include: ['tests/**/*.test.ts', 'tests/**/*.spec.ts'],
         setupFiles: ['tests/test-setup.ts'],
+        pool: 'forks',
+        poolOptions: {
+            forks: {
+                singleFork: true,
+            },
+        },
     },
     resolve: {
         alias: {
             '@': resolve(__dirname, './app'),
+            '~': resolve(__dirname, './app'),
+            '#build': resolve(__dirname, './.nuxt'),
+            '#imports': resolve(__dirname, './.nuxt'),
         },
     },
 })

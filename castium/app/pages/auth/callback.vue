@@ -22,9 +22,10 @@ onMounted(async () => {
             console.warn('No session found in callback. Possible clock skew.')
             toast.add({
                 title: t('auth.callback.error'),
-                description: "Impossible de valider la session. Vérifiez que votre horloge système est à l'heure.",
+                description:
+                    "Impossible de valider la session. Vérifiez que votre horloge système est à l'heure.",
                 color: 'error',
-                timeout: 0 // Keep it visible
+                timeout: 0, // Keep it visible
             })
             // Delay redirect to let user read the message
             setTimeout(() => {
@@ -37,7 +38,7 @@ onMounted(async () => {
             title: t('auth.callback.error'),
             description: error.message,
             color: 'error',
-            timeout: 0
+            timeout: 0,
         })
         // Delay redirect to let user read the message
         setTimeout(() => {
@@ -61,4 +62,3 @@ onMounted(async () => {
         </div>
     </div>
 </template>
-

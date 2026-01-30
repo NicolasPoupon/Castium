@@ -48,15 +48,12 @@ const handleLogout = async () => {
             <!-- Profile Section -->
             <UCard class="mb-6">
                 <template #header>
-                    <h2 class="text-xl font-semibold text-white">{{ t('settings.profile.title') }}</h2>
+                    <h2 class="text-xl font-semibold text-white">
+                        {{ t('settings.profile.title') }}
+                    </h2>
                 </template>
                 <div class="flex items-center gap-6">
-                    <UAvatar
-                        v-if="userAvatar"
-                        :src="userAvatar"
-                        :alt="userName"
-                        size="xl"
-                    />
+                    <UAvatar v-if="userAvatar" :src="userAvatar" :alt="userName" size="xl" />
                     <UAvatar
                         v-else
                         :text="userName.substring(0, 2).toUpperCase()"
@@ -65,11 +62,15 @@ const handleLogout = async () => {
                     />
                     <div class="flex-1">
                         <div class="mb-4">
-                            <label class="text-sm text-gray-400">{{ t('settings.profile.name') }}</label>
+                            <label class="text-sm text-gray-400">
+                                {{ t('settings.profile.name') }}
+                            </label>
                             <p class="text-lg text-white">{{ userName || '-' }}</p>
                         </div>
                         <div>
-                            <label class="text-sm text-gray-400">{{ t('settings.profile.email') }}</label>
+                            <label class="text-sm text-gray-400">
+                                {{ t('settings.profile.email') }}
+                            </label>
                             <p class="text-lg text-white">{{ userEmail }}</p>
                         </div>
                     </div>
@@ -79,7 +80,9 @@ const handleLogout = async () => {
             <!-- Logout Section -->
             <UCard>
                 <template #header>
-                    <h2 class="text-xl font-semibold text-white">{{ t('settings.session.title') }}</h2>
+                    <h2 class="text-xl font-semibold text-white">
+                        {{ t('settings.session.title') }}
+                    </h2>
                 </template>
                 <div class="flex items-center justify-between">
                     <p class="text-gray-400">{{ t('settings.session.description') }}</p>

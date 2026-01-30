@@ -76,10 +76,7 @@ async function onSubmit() {
         <Navbar mode="login" />
         <UPageCard class="w-full max-w-md">
             <div class="text-center mb-6">
-                <UIcon
-                    name="i-heroicons-key"
-                    class="w-12 h-12 mx-auto mb-4 text-castium-green"
-                />
+                <UIcon name="i-heroicons-key" class="w-12 h-12 mx-auto mb-4 text-castium-green" />
                 <h1 class="text-2xl font-bold mb-2">
                     {{ t('auth.resetPassword.title') }}
                 </h1>
@@ -118,28 +115,16 @@ async function onSubmit() {
                     />
                 </UFormGroup>
 
-                <UButton
-                    type="submit"
-                    block
-                    size="lg"
-                    :loading="loading"
-                    class="mt-6"
-                >
+                <UButton type="submit" block size="lg" :loading="loading" class="mt-6">
                     {{ t('auth.resetPassword.submit') }}
                 </UButton>
             </UForm>
 
             <div class="text-center mt-4">
-                <UButton
-                    variant="link"
-                    color="neutral"
-                    to="/auth/login"
-                    class="text-sm"
-                >
+                <UButton variant="link" color="neutral" to="/auth/login" class="text-sm">
                     {{ t('auth.resetPassword.backToLogin') }}
                 </UButton>
             </div>
         </UPageCard>
     </div>
 </template>
-
