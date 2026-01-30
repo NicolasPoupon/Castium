@@ -5,6 +5,7 @@
     "scripts": {
         "build": "nuxt build",
         "dev": "nuxt dev --host 0.0.0.0 --port 3000",
+        "dev:https": "nuxt dev --host 0.0.0.0 --port 3000 --https",
         "generate": "nuxt generate",
         "preview": "nuxt preview",
         "start": "node .output/server/index.mjs",

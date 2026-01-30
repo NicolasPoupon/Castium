@@ -233,7 +233,9 @@ export const useLocalVideos = () => {
             savedFolderName.value = savedHandle.name
 
             // Check current permission without prompting
+            // Chrome 122+ with "Allow on every visit" will return 'granted' here
             const currentPermission = await savedHandle.queryPermission({ mode: 'read' })
+            console.log('[Castium] Folder permission status:', currentPermission)
 
             if (currentPermission === 'granted') {
                 folderHandle.value = savedHandle
@@ -242,6 +244,26 @@ export const useLocalVideos = () => {
                 await scanForVideos()
                 loading.value = false
                 return true
+            }
+
+            // For Chrome 122+ with persistent permissions, try verifying access
+            // by attempting to read the directory entries
+            if (currentPermission === 'prompt') {
+                try {
+                    // Try to iterate - this will work if permission is actually granted
+                    const entries = savedHandle.values()
+                    await entries.next()
+
+                    // If we get here, we have access!
+                    folderHandle.value = savedHandle
+                    hasPermission.value = true
+                    needsReauthorization.value = false
+                    await scanForVideos()
+                    loading.value = false
+                    return true
+                } catch {
+                    // No access, need reauthorization
+                }
             }
 
             // Permission needs to be re-requested (requires user interaction)
