@@ -37,12 +37,17 @@ export const useSpotify = () => {
     }
 
     const fetchFromSpotify = async (endpoint: string, options: any = {}) => {
-        if (!accessToken.value) {
-            throw new Error('No access token available')
-        }
+        if (!accessToken.value) throw new Error('No access token available')
 
-        return $fetch(`https://api.spotify.com/v1${endpoint}`, {
-            ...options,
+        const url = `https://api.spotify.com/v1${endpoint}`
+
+        console.log('[Spotify fetch] URL:', url)
+        if (options.query) console.log('[Spotify fetch] query:', options.query)
+
+        return $fetch(url, {
+            method: options.method,
+            body: options.body,
+            query: options.query,
             headers: {
                 Authorization: `Bearer ${accessToken.value}`,
                 ...options.headers,

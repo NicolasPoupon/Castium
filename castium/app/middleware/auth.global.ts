@@ -34,8 +34,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
             return navigateTo(redirect)
         }
 
-        console.log('[auth] path', to.path, 'session', session)
-
         // Not logged in + /app → login
         if (!isLoggedIn && isAppRoute) {
             return navigateTo('/auth/login')

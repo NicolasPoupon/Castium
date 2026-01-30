@@ -13,10 +13,30 @@ const loadPlaylists = async () => {
 
     isLoading.value = true
     try {
-        const [user, featured] = await Promise.all([getUserPlaylists(20), getFeaturedPlaylists()])
+        const [userRes, featuredRes] = await Promise.allSettled([
+            getUserPlaylists(20),
+            getFeaturedPlaylists(),
+        ])
 
-        userPlaylists.value = user.items || []
-        featuredPlaylists.value = featured.playlists?.items || []
+        console.log('[Spotify] userRes:', userRes)
+        console.log('[Spotify] featuredRes:', featuredRes)
+
+        if (userRes.status === 'fulfilled') {
+            userPlaylists.value = userRes.value?.items ?? []
+        } else {
+            console.error('[Spotify] getUserPlaylists failed:', userRes.reason)
+            userPlaylists.value = []
+        }
+
+        if (featuredRes.status === 'fulfilled') {
+            featuredPlaylists.value = featuredRes.value?.playlists?.items ?? []
+        } else {
+            console.error('[Spotify] getFeaturedPlaylists failed:', featuredRes.reason)
+            featuredPlaylists.value = []
+        }
+
+        console.log('[Spotify] userPlaylists parsed:', userPlaylists.value.length)
+        console.log('[Spotify] featuredPlaylists parsed:', featuredPlaylists.value.length)
     } catch (error) {
         console.error('Error loading playlists:', error)
     } finally {
