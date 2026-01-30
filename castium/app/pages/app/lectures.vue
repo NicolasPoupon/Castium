@@ -305,7 +305,7 @@ const formatVideoName = (name: string) => {
                         <!-- Show reauthorization button if folder was previously selected -->
                         <div v-if="needsReauthorization && savedFolderName" class="mb-6">
                             <p class="text-gray-300 mb-4">
-                                {{ t('lectures.hero.previousFolder') }}: 
+                                {{ t('lectures.hero.previousFolder') }}:
                                 <span class="text-purple-400 font-medium">{{ savedFolderName }}</span>
                             </p>
                             <UButton

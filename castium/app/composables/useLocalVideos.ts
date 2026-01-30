@@ -234,7 +234,7 @@ export const useLocalVideos = () => {
 
             // Check current permission without prompting
             const currentPermission = await savedHandle.queryPermission({ mode: 'read' })
-            
+
             if (currentPermission === 'granted') {
                 folderHandle.value = savedHandle
                 hasPermission.value = true
