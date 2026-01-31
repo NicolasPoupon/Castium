@@ -2,19 +2,13 @@
 declare global {
     interface Window {
         showDirectoryPicker(options?: {
-            mode?: "read" | "readwrite"
+            mode?: 'read' | 'readwrite'
         }): Promise<FileSystemDirectoryHandle>
     }
     interface FileSystemDirectoryHandle {
-        values(): AsyncIterableIterator<
-            FileSystemFileHandle | FileSystemDirectoryHandle
-        >
-        queryPermission(options?: {
-            mode?: "read" | "readwrite"
-        }): Promise<PermissionState>
-        requestPermission(options?: {
-            mode?: "read" | "readwrite"
-        }): Promise<PermissionState>
+        values(): AsyncIterableIterator<FileSystemFileHandle | FileSystemDirectoryHandle>
+        queryPermission(options?: { mode?: 'read' | 'readwrite' }): Promise<PermissionState>
+        requestPermission(options?: { mode?: 'read' | 'readwrite' }): Promise<PermissionState>
     }
 }
 
@@ -35,37 +29,30 @@ export interface VideoProgress {
     lastWatched: string
 }
 
-const DB_NAME = "castium-videos-db"
-const DB_VERSION = 1
-const FOLDER_STORE = "folder-handles"
-const FOLDER_KEY = "video-folder"
+const DB_NAME = 'castium-videos-db'
+const DB_VERSION = 2 // Bumped version for user-specific storage
+const FOLDER_STORE = 'folder-handles'
 
 export const useLocalVideos = () => {
-    const { profile, updateProfile } = useAuth()
+    const { profile, updateProfile, user } = useAuth()
 
     const folderHandle = useState<FileSystemDirectoryHandle | null>(
-        "video_folder_handle",
-        () => null,
+        'video_folder_handle',
+        () => null
     )
-    const videos = useState<VideoFile[]>("video_files", () => [])
-    const currentVideo = useState<VideoFile | null>("current_video", () => null)
-    const isPlaying = useState<boolean>("video_playing", () => false)
-    const loading = useState<boolean>("videos_loading", () => false)
-    const hasPermission = useState<boolean>("folder_permission", () => false)
-    const usesFallback = useState<boolean>("videos_uses_fallback", () => false)
-    const needsReauthorization = useState<boolean>(
-        "videos_needs_reauth",
-        () => false,
-    )
-    const savedFolderName = useState<string | null>(
-        "saved_folder_name",
-        () => null,
-    )
+    const videos = useState<VideoFile[]>('video_files', () => [])
+    const currentVideo = useState<VideoFile | null>('current_video', () => null)
+    const isPlaying = useState<boolean>('video_playing', () => false)
+    const loading = useState<boolean>('videos_loading', () => false)
+    const hasPermission = useState<boolean>('folder_permission', () => false)
+    const usesFallback = useState<boolean>('videos_uses_fallback', () => false)
+    const needsReauthorization = useState<boolean>('videos_needs_reauth', () => false)
+    const savedFolderName = useState<string | null>('saved_folder_name', () => null)
 
     // Check if File System Access API is available
     const isFileSystemAPISupported = computed(() => {
-        if (typeof window === "undefined") return false
-        return "showDirectoryPicker" in window
+        if (typeof window === 'undefined') return false
+        return 'showDirectoryPicker' in window
     })
 
     // Favorites and history from profile
@@ -73,7 +60,7 @@ export const useLocalVideos = () => {
     const watchingProgress = computed(() => profile.value?.video_watching || {})
     const watchedHistory = computed(() => profile.value?.video_watched || [])
 
-    // IndexedDB helpers for storing folder handle
+    // IndexedDB helpers for storing folder handle (per user)
     const openDB = (): Promise<IDBDatabase> => {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION)
@@ -90,46 +77,60 @@ export const useLocalVideos = () => {
         })
     }
 
-    const saveFolderHandle = async (
-        handle: FileSystemDirectoryHandle,
-    ): Promise<void> => {
+    // Get folder key for current user
+    const getFolderKey = (): string => {
+        return user.value?.id ? `video-folder-${user.value.id}` : 'video-folder-anonymous'
+    }
+
+    const saveFolderHandle = async (handle: FileSystemDirectoryHandle): Promise<void> => {
         const db = await openDB()
         return new Promise((resolve, reject) => {
-            const tx = db.transaction(FOLDER_STORE, "readwrite")
+            const tx = db.transaction(FOLDER_STORE, 'readwrite')
             const store = tx.objectStore(FOLDER_STORE)
-            const request = store.put(handle, FOLDER_KEY)
+            const request = store.put(handle, getFolderKey())
 
             request.onerror = () => reject(request.error)
             request.onsuccess = () => resolve()
         })
     }
 
-    const loadFolderHandle =
-        async (): Promise<FileSystemDirectoryHandle | null> => {
-            try {
-                const db = await openDB()
-                return new Promise((resolve, reject) => {
-                    const tx = db.transaction(FOLDER_STORE, "readonly")
-                    const store = tx.objectStore(FOLDER_STORE)
-                    const request = store.get(FOLDER_KEY)
+    const loadFolderHandle = async (): Promise<FileSystemDirectoryHandle | null> => {
+        try {
+            const db = await openDB()
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(FOLDER_STORE, 'readonly')
+                const store = tx.objectStore(FOLDER_STORE)
+                const request = store.get(getFolderKey())
 
-                    request.onerror = () => reject(request.error)
-                    request.onsuccess = () => resolve(request.result || null)
-                })
-            } catch {
-                return null
-            }
+                request.onerror = () => reject(request.error)
+                request.onsuccess = () => resolve(request.result || null)
+            })
+        } catch {
+            return null
         }
+    }
+
+    // Clear local state (called on logout)
+    const clearLocalState = (): void => {
+        folderHandle.value = null
+        videos.value = []
+        currentVideo.value = null
+        isPlaying.value = false
+        hasPermission.value = false
+        usesFallback.value = false
+        needsReauthorization.value = false
+        savedFolderName.value = null
+    }
 
     // Fallback: use input[type=file] with webkitdirectory
     const selectFolderFallback = (): Promise<boolean> => {
         return new Promise((resolve) => {
-            const input = document.createElement("input")
-            input.type = "file"
-            input.setAttribute("webkitdirectory", "")
-            input.setAttribute("directory", "")
+            const input = document.createElement('input')
+            input.type = 'file'
+            input.setAttribute('webkitdirectory', '')
+            input.setAttribute('directory', '')
             input.multiple = true
-            input.style.display = "none"
+            input.style.display = 'none'
 
             input.onchange = async () => {
                 const files = input.files
@@ -144,24 +145,17 @@ export const useLocalVideos = () => {
 
                 // Convert FileList to VideoFile array
                 const videoFiles: VideoFile[] = []
-                const videoExtensions = [
-                    ".mp4",
-                    ".mkv",
-                    ".avi",
-                    ".webm",
-                    ".mov",
-                    ".m4v",
-                ]
+                const videoExtensions = ['.mp4', '.mkv', '.avi', '.webm', '.mov', '.m4v']
 
                 for (const file of Array.from(files)) {
-                    const ext = "." + file.name.split(".").pop()?.toLowerCase()
+                    const ext = '.' + file.name.split('.').pop()?.toLowerCase()
                     if (videoExtensions.includes(ext)) {
                         videoFiles.push({
                             name: file.name,
                             path: file.webkitRelativePath || file.name,
                             size: file.size,
                             lastModified: file.lastModified,
-                            type: file.type || "video/mp4",
+                            type: file.type || 'video/mp4',
                             file: file,
                         })
                     }
@@ -196,7 +190,7 @@ export const useLocalVideos = () => {
             }
 
             const handle = await window.showDirectoryPicker({
-                mode: "read",
+                mode: 'read',
             })
 
             folderHandle.value = handle
@@ -214,8 +208,8 @@ export const useLocalVideos = () => {
 
             return true
         } catch (error: any) {
-            if (error.name !== "AbortError") {
-                console.error("Error selecting folder:", error)
+            if (error.name !== 'AbortError') {
+                console.error('Error selecting folder:', error)
             }
             return false
         } finally {
@@ -257,14 +251,11 @@ export const useLocalVideos = () => {
             // Check current permission without prompting
             // Chrome 122+ with "Allow on every visit" will return 'granted' here
             const currentPermission = await savedHandle.queryPermission({
-                mode: "read",
+                mode: 'read',
             })
-            console.log(
-                "[Castium] Folder permission status:",
-                currentPermission,
-            )
+            console.log('[Castium] Folder permission status:', currentPermission)
 
-            if (currentPermission === "granted") {
+            if (currentPermission === 'granted') {
                 folderHandle.value = savedHandle
                 hasPermission.value = true
                 needsReauthorization.value = false
@@ -275,7 +266,7 @@ export const useLocalVideos = () => {
 
             // For Chrome 122+ with persistent permissions, try verifying access
             // by attempting to read the directory entries
-            if (currentPermission === "prompt") {
+            if (currentPermission === 'prompt') {
                 try {
                     // Try to iterate - this will work if permission is actually granted
                     const entries = savedHandle.values()
@@ -300,7 +291,7 @@ export const useLocalVideos = () => {
             loading.value = false
             return false
         } catch (error) {
-            console.error("Error restoring folder access:", error)
+            console.error('Error restoring folder access:', error)
             // Check if we have folder info in profile
             if (profile.value?.video_folder_path) {
                 savedFolderName.value = profile.value.video_folder_path
@@ -319,9 +310,9 @@ export const useLocalVideos = () => {
             if (folderHandle.value) {
                 // Try to request permission on saved handle
                 const permission = await folderHandle.value.requestPermission({
-                    mode: "read",
+                    mode: 'read',
                 })
-                if (permission === "granted") {
+                if (permission === 'granted') {
                     hasPermission.value = true
                     needsReauthorization.value = false
                     await scanForVideos()
@@ -334,7 +325,7 @@ export const useLocalVideos = () => {
             loading.value = false
             return await selectFolder()
         } catch (error) {
-            console.error("Error reauthorizing access:", error)
+            console.error('Error reauthorizing access:', error)
             loading.value = false
             return false
         }
@@ -344,49 +335,30 @@ export const useLocalVideos = () => {
     const scanForVideos = async (): Promise<void> => {
         if (!folderHandle.value) return
 
-        const videoExtensions = [
-            ".mp4",
-            ".webm",
-            ".mkv",
-            ".avi",
-            ".mov",
-            ".m4v",
-            ".ogv",
-        ]
+        const videoExtensions = ['.mp4', '.webm', '.mkv', '.avi', '.mov', '.m4v', '.ogv']
         const foundVideos: VideoFile[] = []
 
-        const scanDirectory = async (
-            dirHandle: FileSystemDirectoryHandle,
-            path: string = "",
-        ) => {
+        const scanDirectory = async (dirHandle: FileSystemDirectoryHandle, path: string = '') => {
             for await (const entry of dirHandle.values()) {
-                if (entry.kind === "file") {
+                if (entry.kind === 'file') {
                     const fileName = entry.name.toLowerCase()
                     if (videoExtensions.some((ext) => fileName.endsWith(ext))) {
                         try {
                             const file = await entry.getFile()
                             foundVideos.push({
                                 name: entry.name,
-                                path: path
-                                    ? `${path}/${entry.name}`
-                                    : entry.name,
+                                path: path ? `${path}/${entry.name}` : entry.name,
                                 size: file.size,
                                 lastModified: file.lastModified,
                                 type: file.type,
                                 handle: entry,
                             })
                         } catch (e) {
-                            console.warn(
-                                `Could not read file: ${entry.name}`,
-                                e,
-                            )
+                            console.warn(`Could not read file: ${entry.name}`, e)
                         }
                     }
-                } else if (entry.kind === "directory") {
-                    await scanDirectory(
-                        entry,
-                        path ? `${path}/${entry.name}` : entry.name,
-                    )
+                } else if (entry.kind === 'directory') {
+                    await scanDirectory(entry, path ? `${path}/${entry.name}` : entry.name)
                 }
             }
         }
@@ -420,7 +392,7 @@ export const useLocalVideos = () => {
 
             return null
         } catch (error) {
-            console.error("Error getting video URL:", error)
+            console.error('Error getting video URL:', error)
             return null
         }
     }
@@ -444,10 +416,7 @@ export const useLocalVideos = () => {
     }
 
     // Save playback progress
-    const saveProgress = async (
-        videoPath: string,
-        currentTime: number,
-    ): Promise<void> => {
+    const saveProgress = async (videoPath: string, currentTime: number): Promise<void> => {
         const progress = { ...watchingProgress.value }
         progress[videoPath] = currentTime
         await updateProfile({ video_watching: progress })
@@ -512,7 +481,7 @@ export const useLocalVideos = () => {
 
     // Format file size
     const formatSize = (bytes: number): string => {
-        const units = ["B", "KB", "MB", "GB"]
+        const units = ['B', 'KB', 'MB', 'GB']
         let size = bytes
         let unitIndex = 0
         while (size >= 1024 && unitIndex < units.length - 1) {
@@ -528,9 +497,9 @@ export const useLocalVideos = () => {
         const m = Math.floor((seconds % 3600) / 60)
         const s = Math.floor(seconds % 60)
         if (h > 0) {
-            return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
+            return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
         }
-        return `${m}:${s.toString().padStart(2, "0")}`
+        return `${m}:${s.toString().padStart(2, '0')}`
     }
 
     return {
@@ -563,5 +532,6 @@ export const useLocalVideos = () => {
         needsReauthorization: readonly(needsReauthorization),
         savedFolderName: readonly(savedFolderName),
         reauthorizeAccess,
+        clearLocalState,
     }
 }

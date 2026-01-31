@@ -202,6 +202,22 @@ export const useAuth = () => {
 
             if (error) throw error
 
+            // Clear local composables state before resetting user
+            // This ensures folder handles and tracks are cleared per user
+            try {
+                const { clearLocalState: clearMusicState } = useLocalMusic()
+                clearMusicState()
+            } catch (e) {
+                console.warn('Could not clear music state:', e)
+            }
+
+            try {
+                const { clearLocalState: clearVideosState } = useLocalVideos()
+                clearVideosState()
+            } catch (e) {
+                console.warn('Could not clear videos state:', e)
+            }
+
             session.value = null
             user.value = null
             profile.value = null
