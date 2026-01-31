@@ -227,6 +227,7 @@
             "noPlaylists": "No playlists created yet",
             "trackInfo": "Track info",
             "addToPlaylist": "Add to playlist",
+            "deletePlaylist": "Delete playlist",
             "infoFile": "File",
             "infoPath": "Path",
             "infoDuration": "Duration",

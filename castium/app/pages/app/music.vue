@@ -427,7 +427,7 @@ watch(spotifyAuthenticated, (isAuth) => {
 
                                 <!-- Playlists list -->
                                 <div class="space-y-1 max-h-64 overflow-y-auto">
-                                    <button
+                                    <div
                                         v-for="playlist in playlists"
                                         :key="playlist.id"
                                         :class="[
@@ -436,17 +436,27 @@ watch(spotifyAuthenticated, (isAuth) => {
                                                 ? 'bg-purple-600/20 text-purple-400'
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
-                                        @click="handleSelectPlaylist(playlist)"
                                     >
-                                        <div
-                                            class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
-                                            :style="{ backgroundColor: playlist.coverColor }"
+                                        <button
+                                            class="flex items-center gap-3 flex-1 min-w-0"
+                                            @click="handleSelectPlaylist(playlist)"
                                         >
-                                            <UIcon name="i-heroicons-musical-note" class="w-4 h-4 text-white" />
-                                        </div>
-                                        <span class="truncate flex-1">{{ playlist.name }}</span>
-                                        <span class="text-sm text-gray-500">{{ playlist.trackCount }}</span>
-                                    </button>
+                                            <div
+                                                class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
+                                                :style="{ backgroundColor: playlist.coverColor }"
+                                            >
+                                                <UIcon name="i-heroicons-musical-note" class="w-4 h-4 text-white" />
+                                            </div>
+                                            <span class="truncate flex-1">{{ playlist.name }}</span>
+                                            <span class="text-sm text-gray-500">{{ playlist.trackCount }}</span>
+                                        </button>
+                                        <button
+                                            class="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                                            @click.stop="handleDeletePlaylist(playlist.id)"
+                                        >
+                                            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Create playlist modal -->
