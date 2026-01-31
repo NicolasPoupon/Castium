@@ -54,7 +54,12 @@ const {
     toggleRepeat,
     formatDuration,
     formatFileSize,
+    loadLikedTracksFromDb,
+    removeLikedTrack,
 } = useLocalMusic()
+
+// Client-only flag for hydration
+const isClient = ref(false)
 
 // Active tab: 'local' | 'spotify'
 const activeTab = ref<"local" | "spotify">("local")
@@ -79,15 +84,15 @@ const trackToAdd = ref<LocalTrack | null>(null)
 
 // Filter local tracks by search
 const filteredTracks = computed(() => {
-    const trackList = viewMode.value === "liked" 
-        ? getLikedTracks.value 
-        : viewMode.value === "playlist" 
-            ? playlistTracks.value 
+    const trackList = viewMode.value === "liked"
+        ? getLikedTracks.value
+        : viewMode.value === "playlist"
+            ? playlistTracks.value
             : tracks.value
-    
+
     if (!localSearchQuery.value) return trackList
     const query = localSearchQuery.value.toLowerCase()
-    return trackList.filter((t) => 
+    return trackList.filter((t) =>
         t.title?.toLowerCase().includes(query) ||
         t.artist?.toLowerCase().includes(query) ||
         t.album?.toLowerCase().includes(query) ||
@@ -170,12 +175,29 @@ const handleViewAll = () => {
 }
 
 const handlePlayTrack = (track: LocalTrack, index: number) => {
-    const trackList = filteredTracks.value
-    playQueue(trackList, index)
+    // Only play if track is available
+    if (!track.isAvailable) return
+    // Filter to only available tracks for the queue
+    const availableTracks = filteredTracks.value.filter((t) => t.isAvailable !== false)
+    const newIndex = availableTracks.findIndex((t) => t.filePath === track.filePath)
+    if (newIndex >= 0) {
+        playQueue(availableTracks, newIndex)
+    }
 }
 
 const handleToggleLike = async (track: LocalTrack) => {
-    await toggleLike(track.filePath)
+    // Only available tracks can be liked/unliked via toggle
+    if (track.isAvailable !== false) {
+        await toggleLike(track.filePath)
+    }
+}
+
+const handleRemoveLikedTrack = async (track: LocalTrack) => {
+    await removeLikedTrack(track.id)
+    // Refresh liked tracks view
+    if (viewMode.value === "liked") {
+        await loadLikedTracksFromDb()
+    }
 }
 
 const openTrackInfo = (track: LocalTrack) => {
@@ -189,6 +211,8 @@ const closeTrackInfo = () => {
 }
 
 const openAddToPlaylist = (track: LocalTrack) => {
+    // Only available tracks can be added to playlists
+    if (track.isAvailable === false) return
     trackToAdd.value = track
     showAddToPlaylist.value = true
 }
@@ -232,10 +256,15 @@ const getTrackColor = (track: LocalTrack) => {
 
 // Lifecycle
 onMounted(async () => {
-    // Restore local folder access
-    await restoreFolderAccess()
+    isClient.value = true
+
+    // Always load playlists and liked tracks from DB first
     await loadPlaylists()
-    
+    await loadLikedTracksFromDb()
+
+    // Try to restore local folder access
+    await restoreFolderAccess()
+
     // Load Spotify if authenticated
     if (spotifyAuthenticated.value) {
         await loadSpotifyPlaylists()
@@ -498,11 +527,11 @@ watch(spotifyAuthenticated, (isAuth) => {
                             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                                 <div>
                                     <h1 class="text-3xl font-bold text-white">
-                                        {{ viewMode === 'liked' 
-                                            ? t("music.local.likedTracks") 
-                                            : viewMode === 'playlist' && selectedPlaylist 
-                                                ? selectedPlaylist.name 
-                                                : t("music.local.allTracks") 
+                                        {{ viewMode === 'liked'
+                                            ? t("music.local.likedTracks")
+                                            : viewMode === 'playlist' && selectedPlaylist
+                                                ? selectedPlaylist.name
+                                                : t("music.local.allTracks")
                                         }}
                                     </h1>
                                     <p class="text-gray-400 text-sm mt-1">
@@ -547,36 +576,47 @@ watch(spotifyAuthenticated, (isAuth) => {
                                     v-for="(track, index) in filteredTracks"
                                     :key="track.filePath"
                                     :class="[
-                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-colors cursor-pointer',
+                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-colors',
+                                        track.isAvailable === false
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : 'cursor-pointer',
                                         playbackState.currentTrack?.filePath === track.filePath
                                             ? 'bg-purple-600/20'
-                                            : 'hover:bg-gray-700/30',
+                                            : track.isAvailable !== false ? 'hover:bg-gray-700/30' : '',
                                     ]"
                                     @dblclick="handlePlayTrack(track, index)"
                                 >
                                     <!-- Index / Play icon -->
                                     <div class="w-10 flex items-center justify-center">
-                                        <span
-                                            v-if="playbackState.currentTrack?.filePath === track.filePath && playbackState.isPlaying"
-                                            class="text-purple-400"
-                                        >
-                                            <UIcon name="i-heroicons-speaker-wave" class="w-4 h-4 animate-pulse" />
-                                        </span>
-                                        <span v-else class="text-gray-400 group-hover:hidden">
-                                            {{ index + 1 }}
-                                        </span>
-                                        <button
-                                            class="hidden group-hover:block text-white"
-                                            @click.stop="handlePlayTrack(track, index)"
-                                        >
-                                            <UIcon name="i-heroicons-play-solid" class="w-4 h-4" />
-                                        </button>
+                                        <template v-if="track.isAvailable === false">
+                                            <UIcon name="i-heroicons-exclamation-circle" class="w-4 h-4 text-amber-500" />
+                                        </template>
+                                        <template v-else>
+                                            <span
+                                                v-if="playbackState.currentTrack?.filePath === track.filePath && playbackState.isPlaying"
+                                                class="text-purple-400"
+                                            >
+                                                <UIcon name="i-heroicons-speaker-wave" class="w-4 h-4 animate-pulse" />
+                                            </span>
+                                            <span v-else class="text-gray-400 group-hover:hidden">
+                                                {{ index + 1 }}
+                                            </span>
+                                            <button
+                                                class="hidden group-hover:block text-white"
+                                                @click.stop="handlePlayTrack(track, index)"
+                                            >
+                                                <UIcon name="i-heroicons-play-solid" class="w-4 h-4" />
+                                            </button>
+                                        </template>
                                     </div>
 
                                     <!-- Title & Artist -->
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div
-                                            class="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
+                                            :class="[
+                                                'w-10 h-10 rounded flex items-center justify-center flex-shrink-0',
+                                                track.isAvailable === false ? 'grayscale' : '',
+                                            ]"
                                             :style="{ backgroundColor: getTrackColor(track) }"
                                         >
                                             <UIcon name="i-heroicons-musical-note" class="w-5 h-5 text-white" />
@@ -585,59 +625,76 @@ watch(spotifyAuthenticated, (isAuth) => {
                                             <p
                                                 :class="[
                                                     'font-medium truncate',
-                                                    playbackState.currentTrack?.filePath === track.filePath
-                                                        ? 'text-purple-400'
-                                                        : 'text-white',
+                                                    track.isAvailable === false
+                                                        ? 'text-gray-500'
+                                                        : playbackState.currentTrack?.filePath === track.filePath
+                                                            ? 'text-purple-400'
+                                                            : 'text-white',
                                                 ]"
                                             >
                                                 {{ track.title || track.fileName }}
                                             </p>
-                                            <p class="text-gray-400 text-sm truncate">
+                                            <p :class="['text-sm truncate', track.isAvailable === false ? 'text-gray-600' : 'text-gray-400']">
                                                 {{ track.artist || t("music.local.unknownArtist") }}
                                             </p>
                                         </div>
                                     </div>
 
                                     <!-- Album -->
-                                    <div class="text-gray-400 text-sm truncate hidden md:block">
+                                    <div :class="['text-sm truncate hidden md:block', track.isAvailable === false ? 'text-gray-600' : 'text-gray-400']">
                                         {{ track.album || t("music.local.unknownAlbum") }}
                                     </div>
 
                                     <!-- Duration -->
-                                    <div class="w-16 text-gray-400 text-sm text-center">
+                                    <div :class="['w-16 text-sm text-center', track.isAvailable === false ? 'text-gray-600' : 'text-gray-400']">
                                         {{ formatDuration(track.duration) }}
                                     </div>
 
                                     <!-- Actions -->
                                     <div class="w-24 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
-                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
-                                            @click.stop="handleToggleLike(track)"
-                                        >
-                                            <UIcon
-                                                :name="track.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
-                                                :class="[
-                                                    'w-4 h-4',
-                                                    track.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-white',
-                                                ]"
-                                            />
-                                        </button>
-                                        <button
-                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
-                                            @click.stop="openAddToPlaylist(track)"
-                                        >
-                                            <UIcon name="i-heroicons-plus" class="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
-                                            @click.stop="openTrackInfo(track)"
-                                        >
-                                            <UIcon name="i-heroicons-information-circle" class="w-4 h-4" />
-                                        </button>
+                                        <!-- Available track actions -->
+                                        <template v-if="track.isAvailable !== false">
+                                            <button
+                                                class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
+                                                @click.stop="handleToggleLike(track)"
+                                            >
+                                                <UIcon
+                                                    :name="track.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                                                    :class="[
+                                                        'w-4 h-4',
+                                                        track.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-white',
+                                                    ]"
+                                                />
+                                            </button>
+                                            <button
+                                                class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
+                                                @click.stop="openAddToPlaylist(track)"
+                                            >
+                                                <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
+                                                @click.stop="openTrackInfo(track)"
+                                            >
+                                                <UIcon name="i-heroicons-information-circle" class="w-4 h-4" />
+                                            </button>
+                                        </template>
+                                        <!-- Unavailable track: only delete allowed -->
+                                        <template v-else>
+                                            <span class="text-xs text-amber-500 mr-2">{{ t("music.local.unavailable") }}</span>
+                                        </template>
+                                        <!-- Remove from playlist/liked -->
                                         <button
                                             v-if="viewMode === 'playlist'"
                                             class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-red-400"
                                             @click.stop="handleRemoveFromPlaylist(track)"
+                                        >
+                                            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            v-if="viewMode === 'liked'"
+                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-red-400"
+                                            @click.stop="handleRemoveLikedTrack(track)"
                                         >
                                             <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
                                         </button>
@@ -655,7 +712,7 @@ watch(spotifyAuthenticated, (isAuth) => {
                                     class="w-16 h-16 text-gray-600 mb-4"
                                 />
                                 <p class="text-gray-400 text-lg">
-                                    {{ viewMode === 'liked' 
+                                    {{ viewMode === 'liked'
                                         ? t("music.local.noLikedTracks")
                                         : viewMode === 'playlist'
                                             ? t("music.local.noPlaylistTracks")

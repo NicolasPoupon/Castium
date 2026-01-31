@@ -231,7 +231,8 @@
             "infoSize": "Taille",
             "infoFormat": "Format",
             "infoYear": "Année",
-            "infoGenre": "Genre"
+            "infoGenre": "Genre",
+            "unavailable": "Indisponible"
         }
     },
     "podcasts": {

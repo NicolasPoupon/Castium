@@ -41,6 +41,7 @@ export interface LocalTrack {
     handle?: FileSystemFileHandle
     isLiked?: boolean
     objectUrl?: string
+    isAvailable?: boolean // Track has file handle/file available
 }
 
 export interface LocalPlaylist {
@@ -80,11 +81,13 @@ const folderHandle = ref<FileSystemDirectoryHandle | null>(null)
 const tracks = ref<LocalTrack[]>([])
 const playlists = ref<LocalPlaylist[]>([])
 const likedTrackIds = ref<Set<string>>(new Set())
+const likedDbTracks = ref<LocalTrack[]>([]) // Liked tracks from DB
 const loading = ref(false)
 const hasPermission = ref(false)
 const usesFallback = ref(false)
 const needsReauthorization = ref(false)
 const savedFolderName = ref<string | null>(null)
+const currentFolderPath = ref<string | null>(null) // Track current folder for availability
 
 // Audio player state
 const audioElement = ref<HTMLAudioElement | null>(null)
@@ -181,7 +184,10 @@ export const useLocalMusic = () => {
     }
 
     // Scan folder for audio files
-    const scanFolder = async (handle: FileSystemDirectoryHandle, basePath = ''): Promise<{ file: File; path: string; handle: FileSystemFileHandle }[]> => {
+    const scanFolder = async (
+        handle: FileSystemDirectoryHandle,
+        basePath = ''
+    ): Promise<{ file: File; path: string; handle: FileSystemFileHandle }[]> => {
         const files: { file: File; path: string; handle: FileSystemFileHandle }[] = []
 
         for await (const entry of handle.values()) {
@@ -317,6 +323,7 @@ export const useLocalMusic = () => {
                     mimeType: file.type || 'audio/mpeg',
                     handle,
                     file,
+                    isAvailable: true,
                     ...metadata,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
@@ -324,7 +331,9 @@ export const useLocalMusic = () => {
             }
 
             tracks.value = audioTracks
+            currentFolderPath.value = folderHandle.value.name
             await syncTracksToDatabase()
+            await loadLikedTracksFromDb()
         } catch (e) {
             console.error('[LocalMusic] Error scanning folder:', e)
         } finally {
@@ -338,9 +347,8 @@ export const useLocalMusic = () => {
 
         try {
             for (const track of tracks.value) {
-                const { error } = await supabase
-                    .from('local_tracks')
-                    .upsert({
+                const { error } = await supabase.from('local_tracks').upsert(
+                    {
                         user_id: user.value.id,
                         file_path: track.filePath,
                         file_name: track.fileName,
@@ -356,9 +364,11 @@ export const useLocalMusic = () => {
                         disc_number: track.discNumber,
                         duration: track.duration,
                         cover_art: track.coverArt,
-                    }, {
+                    },
+                    {
                         onConflict: 'user_id,file_path',
-                    })
+                    }
+                )
 
                 if (error) {
                     console.warn('[LocalMusic] Error syncing track:', error)
@@ -429,13 +439,15 @@ export const useLocalMusic = () => {
         try {
             const { data, error } = await supabase
                 .from('local_playlists')
-                .select(`
+                .select(
+                    `
                     *,
                     local_playlist_tracks(
                         track_id,
                         position
                     )
-                `)
+                `
+                )
                 .eq('user_id', user.value.id)
                 .order('created_at', { ascending: false })
 
@@ -457,7 +469,10 @@ export const useLocalMusic = () => {
     }
 
     // Create a new playlist
-    const createPlaylist = async (name: string, description?: string): Promise<LocalPlaylist | null> => {
+    const createPlaylist = async (
+        name: string,
+        description?: string
+    ): Promise<LocalPlaylist | null> => {
         if (!user.value) return null
 
         try {
@@ -496,10 +511,7 @@ export const useLocalMusic = () => {
     // Delete a playlist
     const deletePlaylist = async (playlistId: string): Promise<boolean> => {
         try {
-            const { error } = await supabase
-                .from('local_playlists')
-                .delete()
-                .eq('id', playlistId)
+            const { error } = await supabase.from('local_playlists').delete().eq('id', playlistId)
 
             if (error) throw error
 
@@ -512,7 +524,10 @@ export const useLocalMusic = () => {
     }
 
     // Update playlist
-    const updatePlaylist = async (playlistId: string, updates: Partial<LocalPlaylist>): Promise<boolean> => {
+    const updatePlaylist = async (
+        playlistId: string,
+        updates: Partial<LocalPlaylist>
+    ): Promise<boolean> => {
         try {
             const { error } = await supabase
                 .from('local_playlists')
@@ -540,37 +555,44 @@ export const useLocalMusic = () => {
         try {
             const { data, error } = await supabase
                 .from('local_playlist_tracks')
-                .select(`
+                .select(
+                    `
                     position,
                     local_tracks(*)
-                `)
+                `
+                )
                 .eq('playlist_id', playlistId)
                 .order('position', { ascending: true })
 
             if (error) throw error
 
-            return (data || []).map((item: any) => {
-                const t = item.local_tracks
-                const track = tracks.value.find((tr) => tr.filePath === t.file_path)
-                return {
-                    id: t.id,
-                    userId: t.user_id,
-                    filePath: t.file_path,
-                    fileName: t.file_name,
-                    fileSize: t.file_size,
-                    mimeType: t.mime_type,
-                    title: t.title,
-                    artist: t.artist,
-                    album: t.album,
-                    duration: t.duration,
-                    coverArt: t.cover_art,
-                    createdAt: t.created_at,
-                    updatedAt: t.updated_at,
-                    file: track?.file,
-                    handle: track?.handle,
-                    isLiked: likedTrackIds.value.has(t.id),
-                } as LocalTrack
-            })
+            return (data || [])
+                .map((item: any) => {
+                    const t = item.local_tracks
+                    if (!t) return null
+                    // Check if this track is available in current folder
+                    const availableTrack = tracks.value.find((tr) => tr.filePath === t.file_path)
+                    return {
+                        id: t.id,
+                        userId: t.user_id,
+                        filePath: t.file_path,
+                        fileName: t.file_name,
+                        fileSize: t.file_size,
+                        mimeType: t.mime_type,
+                        title: t.title,
+                        artist: t.artist,
+                        album: t.album,
+                        duration: t.duration,
+                        coverArt: t.cover_art,
+                        createdAt: t.created_at,
+                        updatedAt: t.updated_at,
+                        file: availableTrack?.file,
+                        handle: availableTrack?.handle,
+                        isLiked: likedTrackIds.value.has(t.id),
+                        isAvailable: !!availableTrack,
+                    } as LocalTrack
+                })
+                .filter(Boolean) as LocalTrack[]
         } catch (e) {
             console.error('[LocalMusic] Error getting playlist tracks:', e)
             return []
@@ -578,7 +600,10 @@ export const useLocalMusic = () => {
     }
 
     // Add track to playlist
-    const addTrackToPlaylist = async (playlistId: string, trackFilePath: string): Promise<boolean> => {
+    const addTrackToPlaylist = async (
+        playlistId: string,
+        trackFilePath: string
+    ): Promise<boolean> => {
         if (!user.value) return false
 
         try {
@@ -595,6 +620,19 @@ export const useLocalMusic = () => {
                 return false
             }
 
+            // Check if track already in playlist
+            const { data: existingEntry } = await supabase
+                .from('local_playlist_tracks')
+                .select('id')
+                .eq('playlist_id', playlistId)
+                .eq('track_id', trackData.id)
+                .maybeSingle()
+
+            if (existingEntry) {
+                console.log('[LocalMusic] Track already in playlist')
+                return true // Already exists, consider it success
+            }
+
             // Get current max position
             const { data: posData } = await supabase
                 .from('local_playlist_tracks')
@@ -605,13 +643,11 @@ export const useLocalMusic = () => {
 
             const nextPosition = posData && posData.length > 0 ? posData[0].position + 1 : 0
 
-            const { error } = await supabase
-                .from('local_playlist_tracks')
-                .insert({
-                    playlist_id: playlistId,
-                    track_id: trackData.id,
-                    position: nextPosition,
-                })
+            const { error } = await supabase.from('local_playlist_tracks').insert({
+                playlist_id: playlistId,
+                track_id: trackData.id,
+                position: nextPosition,
+            })
 
             if (error) throw error
 
@@ -629,7 +665,10 @@ export const useLocalMusic = () => {
     }
 
     // Remove track from playlist
-    const removeTrackFromPlaylist = async (playlistId: string, trackId: string): Promise<boolean> => {
+    const removeTrackFromPlaylist = async (
+        playlistId: string,
+        trackId: string
+    ): Promise<boolean> => {
         try {
             const { error } = await supabase
                 .from('local_playlist_tracks')
@@ -653,7 +692,7 @@ export const useLocalMusic = () => {
 
     // ============ LIKED TRACKS ============
 
-    // Load liked tracks
+    // Load liked tracks IDs (for marking available tracks)
     const loadLikedTracks = async (): Promise<void> => {
         if (!user.value) return
 
@@ -673,6 +712,94 @@ export const useLocalMusic = () => {
             })
         } catch (e) {
             console.error('[LocalMusic] Error loading liked tracks:', e)
+        }
+    }
+
+    // Load liked tracks from DB (with full track info, for showing unavailable tracks)
+    const loadLikedTracksFromDb = async (): Promise<void> => {
+        if (!user.value) return
+
+        try {
+            const { data, error } = await supabase
+                .from('local_liked_tracks')
+                .select(
+                    `
+                    track_id,
+                    local_tracks(*)
+                `
+                )
+                .eq('user_id', user.value.id)
+
+            if (error) throw error
+
+            likedDbTracks.value = (data || [])
+                .map((item: any) => {
+                    const t = item.local_tracks
+                    if (!t) return null
+                    // Check if this track is available in current folder
+                    const availableTrack = tracks.value.find((tr) => tr.filePath === t.file_path)
+                    return {
+                        id: t.id,
+                        userId: t.user_id,
+                        filePath: t.file_path,
+                        fileName: t.file_name,
+                        fileSize: t.file_size,
+                        mimeType: t.mime_type,
+                        title: t.title,
+                        artist: t.artist,
+                        album: t.album,
+                        duration: t.duration,
+                        coverArt: t.cover_art,
+                        createdAt: t.created_at,
+                        updatedAt: t.updated_at,
+                        file: availableTrack?.file,
+                        handle: availableTrack?.handle,
+                        isLiked: true,
+                        isAvailable: !!availableTrack,
+                    } as LocalTrack
+                })
+                .filter(Boolean) as LocalTrack[]
+
+            // Update liked status on available tracks
+            likedTrackIds.value = new Set(likedDbTracks.value.map((t) => t.id))
+            tracks.value.forEach((track) => {
+                const dbTrack = likedDbTracks.value.find((t) => t.filePath === track.filePath)
+                if (dbTrack) {
+                    track.id = dbTrack.id // Use DB id
+                    track.isLiked = true
+                }
+            })
+        } catch (e) {
+            console.error('[LocalMusic] Error loading liked tracks from DB:', e)
+        }
+    }
+
+    // Remove liked track (for unavailable tracks)
+    const removeLikedTrack = async (trackId: string): Promise<boolean> => {
+        if (!user.value) return false
+
+        try {
+            const { error } = await supabase
+                .from('local_liked_tracks')
+                .delete()
+                .eq('user_id', user.value.id)
+                .eq('track_id', trackId)
+
+            if (error) throw error
+
+            likedTrackIds.value.delete(trackId)
+            likedDbTracks.value = likedDbTracks.value.filter((t) => t.id !== trackId)
+
+            // Update track in arrays
+            const track = tracks.value.find((t) => t.id === trackId)
+            if (track) {
+                track.isLiked = false
+            }
+
+            return true
+        } catch (e) {
+            console.error('[LocalMusic] Error removing liked track:', e)
+            return false
         }
     }
 
@@ -703,17 +830,23 @@ export const useLocalMusic = () => {
 
                 if (error) throw error
                 likedTrackIds.value.delete(trackData.id)
+                likedDbTracks.value = likedDbTracks.value.filter((t) => t.id !== trackData.id)
             } else {
                 // Like
-                const { error } = await supabase
-                    .from('local_liked_tracks')
-                    .insert({
-                        user_id: user.value.id,
-                        track_id: trackData.id,
-                    })
+                const { error } = await supabase.from('local_liked_tracks').insert({
+                    user_id: user.value.id,
+                    track_id: trackData.id,
+                })
 
                 if (error) throw error
                 likedTrackIds.value.add(trackData.id)
+
+                // Add to likedDbTracks
+                const track = tracks.value.find((t) => t.filePath === trackFilePath)
+                if (track) {
+                    track.id = trackData.id
+                    likedDbTracks.value.push({ ...track, isLiked: true, isAvailable: true })
+                }
             }
 
             // Update track in array
@@ -735,9 +868,9 @@ export const useLocalMusic = () => {
         return track?.isLiked || false
     }
 
-    // Get liked tracks
+    // Get liked tracks (includes unavailable ones from DB)
     const getLikedTracks = computed(() => {
-        return tracks.value.filter((t) => t.isLiked)
+        return likedDbTracks.value
     })
 
     // ============ PLAYBACK ============
@@ -942,12 +1075,10 @@ export const useLocalMusic = () => {
 
             if (!trackData) return
 
-            await supabase
-                .from('local_recently_played')
-                .insert({
-                    user_id: user.value.id,
-                    track_id: trackData.id,
-                })
+            await supabase.from('local_recently_played').insert({
+                user_id: user.value.id,
+                track_id: trackData.id,
+            })
         } catch (e) {
             console.warn('[LocalMusic] Error adding to recently played:', e)
         }
@@ -957,8 +1088,16 @@ export const useLocalMusic = () => {
 
     const generateRandomColor = (): string => {
         const colors = [
-            '#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a',
-            '#0891b2', '#2563eb', '#7c3aed', '#c026d3', '#e11d48',
+            '#dc2626',
+            '#ea580c',
+            '#d97706',
+            '#65a30d',
+            '#16a34a',
+            '#0891b2',
+            '#2563eb',
+            '#7c3aed',
+            '#c026d3',
+            '#e11d48',
         ]
         return colors[Math.floor(Math.random() * colors.length)]
     }
@@ -1009,6 +1148,7 @@ export const useLocalMusic = () => {
         savedFolderName,
         playbackState,
         likedTrackIds,
+        likedDbTracks,
 
         // Computed
         isFileSystemAPISupported,
@@ -1035,6 +1175,8 @@ export const useLocalMusic = () => {
         toggleLike,
         isLiked,
         loadLikedTracks,
+        loadLikedTracksFromDb,
+        removeLikedTrack,
 
         // Playback
         playTrack,
