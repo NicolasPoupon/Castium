@@ -70,9 +70,8 @@ export interface PlaybackState {
 }
 
 const DB_NAME = 'castium-music-db'
-const DB_VERSION = 1
+const DB_VERSION = 2 // Bumped version for user-specific storage
 const FOLDER_STORE = 'folder-handles'
-const FOLDER_KEY = 'music-folder'
 
 const AUDIO_EXTENSIONS = ['.mp3', '.m4a', '.flac', '.wav', '.ogg', '.aac', '.wma', '.opus']
 
@@ -114,7 +113,7 @@ export const useLocalMusic = () => {
         return 'showDirectoryPicker' in window
     })
 
-    // IndexedDB helpers for storing folder handle
+    // IndexedDB helpers for storing folder handle (per user)
     const openDB = (): Promise<IDBDatabase> => {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION)
@@ -129,12 +128,17 @@ export const useLocalMusic = () => {
         })
     }
 
+    // Get folder key for current user
+    const getFolderKey = (): string => {
+        return user.value?.id ? `music-folder-${user.value.id}` : 'music-folder-anonymous'
+    }
+
     const saveFolderHandle = async (handle: FileSystemDirectoryHandle): Promise<void> => {
         const db = await openDB()
         return new Promise((resolve, reject) => {
             const tx = db.transaction(FOLDER_STORE, 'readwrite')
             const store = tx.objectStore(FOLDER_STORE)
-            const request = store.put(handle, FOLDER_KEY)
+            const request = store.put(handle, getFolderKey())
             request.onerror = () => reject(request.error)
             request.onsuccess = () => resolve()
         })
@@ -146,12 +150,44 @@ export const useLocalMusic = () => {
             return new Promise((resolve, reject) => {
                 const tx = db.transaction(FOLDER_STORE, 'readonly')
                 const store = tx.objectStore(FOLDER_STORE)
-                const request = store.get(FOLDER_KEY)
+                const request = store.get(getFolderKey())
                 request.onerror = () => reject(request.error)
                 request.onsuccess = () => resolve(request.result || null)
             })
         } catch {
             return null
+        }
+    }
+
+    // Clear local state (called on logout)
+    const clearLocalState = (): void => {
+        folderHandle.value = null
+        tracks.value = []
+        playlists.value = []
+        likedTrackIds.value = new Set()
+        likedDbTracks.value = []
+        hasPermission.value = false
+        usesFallback.value = false
+        needsReauthorization.value = false
+        savedFolderName.value = null
+        currentFolderPath.value = null
+
+        // Stop playback
+        if (audioElement.value) {
+            audioElement.value.pause()
+            audioElement.value.src = ''
+        }
+        playbackState.value = {
+            isPlaying: false,
+            currentTrack: null,
+            currentTime: 0,
+            duration: 0,
+            volume: playbackState.value.volume,
+            isMuted: playbackState.value.isMuted,
+            isShuffled: false,
+            repeatMode: 'off',
+            queue: [],
+            queueIndex: -1,
         }
     }
 
@@ -1161,6 +1197,7 @@ export const useLocalMusic = () => {
         restoreFolderAccess,
         reauthorizeAccess,
         scanForTracks,
+        clearLocalState,
 
         // Playlist management
         loadPlaylists,
