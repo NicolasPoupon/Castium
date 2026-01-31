@@ -54,7 +54,8 @@
         "close": "Close",
         "cancel": "Cancel",
         "delete": "Delete",
-        "save": "Save"
+        "save": "Save",
+        "create": "Create"
     },
     "footer": {
         "rights": "Castium. All rights reserved • Made with ❤️",
@@ -185,6 +186,10 @@
         }
     },
     "music": {
+        "tabs": {
+            "local": "Local music",
+            "spotify": "Spotify"
+        },
         "hero": {
             "connectToSpotify": "Connect your Spotify account",
             "description": "Access your favorite playlists, albums and artists. Listen to your music directly from Castium.",
@@ -193,6 +198,42 @@
             "yourMusic": "Your music",
             "playlists": "Your playlists",
             "recommendedPlaylists": "Recommended playlists"
+        },
+        "local": {
+            "title": "Your local music",
+            "description": "Select a folder containing your audio files to listen to them directly from Castium. Your files stay on your device.",
+            "selectFolder": "Select a folder",
+            "permissionNotice": "You will need to grant read access to the selected folder",
+            "previousFolder": "Previously selected folder",
+            "reauthorize": "Reauthorize access",
+            "orSelectNew": "Or select a new folder",
+            "fallbackTitle": "Compatibility mode",
+            "fallbackDescription": "Your browser does not support the File System Access API. Selected music will not be remembered between sessions.",
+            "allTracks": "All tracks",
+            "likedTracks": "Liked tracks",
+            "playlists": "Playlists",
+            "playlistName": "Playlist name",
+            "rescan": "Rescan folder",
+            "changeFolder": "Change folder",
+            "tracks": "tracks",
+            "searchPlaceholder": "Search for a track, artist or album...",
+            "columnTitle": "Title",
+            "columnAlbum": "Album",
+            "unknownArtist": "Unknown artist",
+            "unknownAlbum": "Unknown album",
+            "noTracks": "No audio files found in this folder",
+            "noLikedTracks": "No liked tracks yet",
+            "noPlaylistTracks": "This playlist is empty",
+            "noPlaylists": "No playlists created yet",
+            "trackInfo": "Track info",
+            "addToPlaylist": "Add to playlist",
+            "infoFile": "File",
+            "infoPath": "Path",
+            "infoDuration": "Duration",
+            "infoSize": "Size",
+            "infoFormat": "Format",
+            "infoYear": "Year",
+            "infoGenre": "Genre"
         }
     },
     "podcasts": {

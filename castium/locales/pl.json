@@ -54,7 +54,8 @@
         "close": "Zamknij",
         "cancel": "Anuluj",
         "delete": "Usuń",
-        "save": "Zapisz"
+        "save": "Zapisz",
+        "create": "Utwórz"
     },
     "footer": {
         "rights": "Castium. Wszystkie prawa zastrzeżone • Made with ❤️",
@@ -185,6 +186,10 @@
         }
     },
     "music": {
+        "tabs": {
+            "local": "Lokalna muzyka",
+            "spotify": "Spotify"
+        },
         "hero": {
             "connectToSpotify": "Połącz swoje konto Spotify",
             "description": "Uzyskaj dostęp do ulubionych playlist, albumów i artystów. Słuchaj swojej muzyki bezpośrednio w Castium.",
@@ -193,6 +198,42 @@
             "yourMusic": "Twoja muzyka",
             "playlists": "Twoje playlisty",
             "recommendedPlaylists": "Polecane playlisty"
+        },
+        "local": {
+            "title": "Twoja lokalna muzyka",
+            "description": "Wybierz folder z plikami audio, aby słuchać ich bezpośrednio w Castium. Twoje pliki pozostają na Twoim urządzeniu.",
+            "selectFolder": "Wybierz folder",
+            "permissionNotice": "Musisz przyznać dostęp do odczytu wybranego folderu",
+            "previousFolder": "Poprzednio wybrany folder",
+            "reauthorize": "Ponownie autoryzuj dostęp",
+            "orSelectNew": "Lub wybierz nowy folder",
+            "fallbackTitle": "Tryb kompatybilności",
+            "fallbackDescription": "Twoja przeglądarka nie obsługuje API dostępu do plików. Wybrana muzyka nie będzie zapamiętana między sesjami.",
+            "allTracks": "Wszystkie utwory",
+            "likedTracks": "Polubione utwory",
+            "playlists": "Playlisty",
+            "playlistName": "Nazwa playlisty",
+            "rescan": "Przeskanuj folder",
+            "changeFolder": "Zmień folder",
+            "tracks": "utworów",
+            "searchPlaceholder": "Szukaj utworu, artysty lub albumu...",
+            "columnTitle": "Tytuł",
+            "columnAlbum": "Album",
+            "unknownArtist": "Nieznany artysta",
+            "unknownAlbum": "Nieznany album",
+            "noTracks": "Nie znaleziono plików audio w tym folderze",
+            "noLikedTracks": "Brak polubionych utworów",
+            "noPlaylistTracks": "Ta playlista jest pusta",
+            "noPlaylists": "Nie utworzono jeszcze żadnej playlisty",
+            "trackInfo": "Informacje o utworze",
+            "addToPlaylist": "Dodaj do playlisty",
+            "infoFile": "Plik",
+            "infoPath": "Ścieżka",
+            "infoDuration": "Czas trwania",
+            "infoSize": "Rozmiar",
+            "infoFormat": "Format",
+            "infoYear": "Rok",
+            "infoGenre": "Gatunek"
         }
     },
     "podcasts": {

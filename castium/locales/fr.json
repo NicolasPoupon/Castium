@@ -54,7 +54,8 @@
         "close": "Fermer",
         "cancel": "Annuler",
         "delete": "Supprimer",
-        "save": "Enregistrer"
+        "save": "Enregistrer",
+        "create": "Créer"
     },
     "footer": {
         "rights": "Castium. Tous droits réservés • Made with ❤️",
@@ -183,6 +184,10 @@
         }
     },
     "music": {
+        "tabs": {
+            "local": "Musique locale",
+            "spotify": "Spotify"
+        },
         "hero": {
             "connectToSpotify": "Connectez votre compte Spotify",
             "description": "Accédez à vos playlists, albums et artistes préférés. Écoutez votre musique directement depuis Castium.",
@@ -191,6 +196,42 @@
             "yourMusic": "Votre musique",
             "playlists": "Vos playlists",
             "recommendedPlaylists": "Playlists recommandées"
+        },
+        "local": {
+            "title": "Votre musique locale",
+            "description": "Sélectionnez un dossier contenant vos fichiers audio pour les écouter directement depuis Castium. Vos fichiers restent sur votre appareil.",
+            "selectFolder": "Sélectionner un dossier",
+            "permissionNotice": "Vous devrez autoriser l'accès en lecture au dossier sélectionné",
+            "previousFolder": "Dossier précédemment sélectionné",
+            "reauthorize": "Réautoriser l'accès",
+            "orSelectNew": "Ou sélectionnez un nouveau dossier",
+            "fallbackTitle": "Mode compatibilité",
+            "fallbackDescription": "Votre navigateur ne supporte pas l'API d'accès aux fichiers. Les musiques sélectionnées ne seront pas mémorisées entre les sessions.",
+            "allTracks": "Tous les titres",
+            "likedTracks": "Titres aimés",
+            "playlists": "Playlists",
+            "playlistName": "Nom de la playlist",
+            "rescan": "Rescanner le dossier",
+            "changeFolder": "Changer de dossier",
+            "tracks": "titres",
+            "searchPlaceholder": "Rechercher un titre, artiste ou album...",
+            "columnTitle": "Titre",
+            "columnAlbum": "Album",
+            "unknownArtist": "Artiste inconnu",
+            "unknownAlbum": "Album inconnu",
+            "noTracks": "Aucun fichier audio trouvé dans ce dossier",
+            "noLikedTracks": "Aucun titre aimé pour le moment",
+            "noPlaylistTracks": "Cette playlist est vide",
+            "noPlaylists": "Aucune playlist créée",
+            "trackInfo": "Informations sur le titre",
+            "addToPlaylist": "Ajouter à une playlist",
+            "infoFile": "Fichier",
+            "infoPath": "Chemin",
+            "infoDuration": "Durée",
+            "infoSize": "Taille",
+            "infoFormat": "Format",
+            "infoYear": "Année",
+            "infoGenre": "Genre"
         }
     },
     "podcasts": {
