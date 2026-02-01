@@ -188,7 +188,8 @@
     "music": {
         "tabs": {
             "local": "Local music",
-            "spotify": "Spotify"
+            "spotify": "Spotify",
+            "upload": "Cloud"
         },
         "hero": {
             "connectToSpotify": "Connect your Spotify account",
@@ -236,6 +237,24 @@
             "infoYear": "Year",
             "infoGenre": "Genre",
             "unavailable": "Unavailable"
+        },
+        "cloud": {
+            "allTracks": "All tracks",
+            "likedTracks": "Liked tracks",
+            "playlists": "Playlists",
+            "playlistName": "Playlist name",
+            "uploadMusic": "Upload music",
+            "uploading": "Uploading...",
+            "uploadFirst": "Upload your first track",
+            "noTracks": "No music uploaded yet",
+            "noLikedTracks": "No liked tracks yet",
+            "noPlaylistTracks": "This playlist is empty",
+            "noPlaylists": "No playlists yet",
+            "trackInfo": "Track info",
+            "playCount": "Play count",
+            "uploadedAt": "Uploaded",
+            "deleteTrack": "Delete track",
+            "deleteConfirm": "Are you sure you want to delete this track? This action cannot be undone."
         }
     },
     "podcasts": {
