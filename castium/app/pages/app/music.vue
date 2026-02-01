@@ -6,6 +6,7 @@ const { t } = useI18n()
 
 definePageMeta({
     title: "Music",
+    ssr: false,
 })
 
 // Spotify

@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { useI18n } from "#imports"
+
+definePageMeta({
+    ssr: false,
+})
+
 const { t, locale } = useI18n()
 const { getTrending, getPopular, getTopRated } = useTMDB()
 
@@ -152,4 +157,3 @@ watch(tmdbLanguage, () => {
         <Footer mode="app" />
     </div>
 </template>
-<NuxtPage />

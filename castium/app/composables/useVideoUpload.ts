@@ -239,28 +239,69 @@ export const useVideoUpload = () => {
                 .getPublicUrl(filePath)
 
             // Insert metadata into database
-            const { data: videoData, error: dbError } = await supabase
-                .from('videos')
-                .insert({
-                    user_id: userId,
-                    file_name: file.name,
-                    file_path: filePath,
-                    file_size: file.size,
-                    mime_type: file.type,
-                    duration: metadata.duration,
-                    title: metadata.title,
-                    artist: metadata.artist,
-                    album: metadata.album,
-                    year: metadata.year,
-                    genre: metadata.genre,
-                    description: metadata.description,
-                    thumbnail_path: thumbnailPath,
-                    width: metadata.width,
-                    height: metadata.height,
-                    status: 'ready'
-                })
-                .select()
-                .single()
+            // NOTE: Only include columns that exist in the prod schema (20260131_create_videos_table.sql).
+            // Prod has: id, user_id, file_name, file_path, file_size, mime_type, duration,
+            //           title, artist, release_year, description, playback_position, status,
+            //           last_watched_at, created_at, updated_at
+            // Columns NOT in prod: width, height, album, genre, year, thumbnail_path, cover_path
+            const insertPayload: Record<string, any> = {
+                user_id: userId,
+                file_name: file.name,
+                file_path: filePath,
+                file_size: file.size,
+                mime_type: file.type,
+                duration: metadata.duration,
+                title: metadata.title,
+                artist: metadata.artist,
+                release_year: metadata.year,   // prod uses release_year, not year
+                description: metadata.description
+                // status omitted – will default to 'not_started'
+                // width/height/thumbnail_path/album/genre not in prod schema
+            }
+
+            const tryInsert = async (payload: Record<string, any>) => {
+                return await supabase
+                    .from('videos')
+                    .insert(payload)
+                    .select()
+                    .single()
+            }
+
+            let retryPayload: Record<string, any> = { ...insertPayload }
+            let { data: videoData, error: dbError } = await tryInsert(retryPayload)
+
+            // Backward-compat: if prod schema is missing newer columns, retry without them.
+            // PostgREST errors often look like: Could not find the 'height' column of 'videos' in the schema cache
+            let maxRetries = 10
+            while (dbError && maxRetries-- > 0) {
+                const message = String((dbError as any)?.message || (dbError as any)?.details || '')
+                const code = (dbError as any)?.code || ''
+                console.warn('[VideoUpload] Insert error, attempting recovery:', { message, code, payload: Object.keys(retryPayload) })
+
+                const unknownColumn = /Could not find the '([^']+)' column|column "([^"]+)" (?:of relation "[^"]+" )?does not exist/i
+                const match = message.match(unknownColumn)
+                const missingColumn = (match?.[1] || match?.[2] || '').trim()
+
+                if (!missingColumn) break
+
+                console.log('[VideoUpload] Removing missing column from payload:', missingColumn)
+
+                // Friendly remap: some schemas use `release_year` instead of `year`.
+                if (missingColumn === 'year' && 'year' in retryPayload && !('release_year' in retryPayload)) {
+                    retryPayload.release_year = retryPayload.year
+                    delete retryPayload.year
+                    ;({ data: videoData, error: dbError } = await tryInsert(retryPayload))
+                    continue
+                }
+
+                if (missingColumn in retryPayload) {
+                    delete retryPayload[missingColumn]
+                    ;({ data: videoData, error: dbError } = await tryInsert(retryPayload))
+                    continue
+                }
+
+                break
+            }
 
             if (dbError) {
                 throw new Error(dbError.message)
@@ -268,6 +309,7 @@ export const useVideoUpload = () => {
 
             updateProgress(100, 'complete')
 
+            // Map response – some fields may not exist in prod schema
             const uploadedVideo: UploadedVideo = {
                 id: videoData.id,
                 userId: videoData.user_id,
@@ -278,15 +320,15 @@ export const useVideoUpload = () => {
                 duration: videoData.duration,
                 title: videoData.title,
                 artist: videoData.artist,
-                album: videoData.album,
-                year: videoData.year,
-                genre: videoData.genre,
+                album: videoData.album ?? undefined,
+                year: videoData.release_year ?? videoData.year,
+                genre: videoData.genre ?? undefined,
                 description: videoData.description,
-                thumbnailPath: videoData.thumbnail_path,
-                coverPath: videoData.cover_path,
-                width: videoData.width,
-                height: videoData.height,
-                status: videoData.status,
+                thumbnailPath: videoData.thumbnail_path ?? undefined,
+                coverPath: videoData.cover_path ?? undefined,
+                width: videoData.width ?? undefined,
+                height: videoData.height ?? undefined,
+                status: videoData.status ?? 'not_started',
                 createdAt: videoData.created_at,
                 updatedAt: videoData.updated_at,
                 publicUrl: urlData.publicUrl
@@ -364,19 +406,19 @@ export const useVideoUpload = () => {
                     duration: video.duration,
                     title: video.title,
                     artist: video.artist,
-                    album: video.album,
-                    year: video.year,
-                    genre: video.genre,
+                    album: video.album ?? undefined,
+                    year: video.release_year ?? video.year,
+                    genre: video.genre ?? undefined,
                     description: video.description,
-                    thumbnailPath: video.thumbnail_path,
-                    coverPath: video.cover_path,
-                    width: video.width,
-                    height: video.height,
-                    codec: video.codec,
-                    bitrate: video.bitrate,
-                    fps: video.fps,
-                    status: video.status,
-                    errorMessage: video.error_message,
+                    thumbnailPath: video.thumbnail_path ?? undefined,
+                    coverPath: video.cover_path ?? undefined,
+                    width: video.width ?? undefined,
+                    height: video.height ?? undefined,
+                    codec: video.codec ?? undefined,
+                    bitrate: video.bitrate ?? undefined,
+                    fps: video.fps ?? undefined,
+                    status: video.status ?? 'not_started',
+                    errorMessage: video.error_message ?? undefined,
                     createdAt: video.created_at,
                     updatedAt: video.updated_at,
                     publicUrl: urlData.publicUrl

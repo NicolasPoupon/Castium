@@ -5,6 +5,7 @@ const { t } = useI18n()
 
 definePageMeta({
     title: "Lectures",
+    ssr: false,
 })
 
 // Local Videos
@@ -1899,9 +1900,10 @@ watch(activeTab, async (tab) => {
                                             <label class="text-gray-500 text-xs">{{ t("lectures.upload.metadata.format") }}</label>
                                             <p class="text-gray-300 text-sm">{{ selectedUploadedVideo.mimeType }}</p>
                                         </div>
-                                        <div v-if="selectedUploadedVideo.width && selectedUploadedVideo.height">
+                                        <div>
                                             <label class="text-gray-500 text-xs">{{ t("lectures.upload.metadata.resolution") }}</label>
-                                            <p class="text-gray-300 text-sm">{{ selectedUploadedVideo.width }}x{{ selectedUploadedVideo.height }}</p>
+                                            <p v-if="selectedUploadedVideo.width && selectedUploadedVideo.height" class="text-gray-300 text-sm">{{ selectedUploadedVideo.width }}x{{ selectedUploadedVideo.height }}</p>
+                                            <p v-else class="text-gray-500 text-sm">—</p>
                                         </div>
                                     </div>
                                 </div>
