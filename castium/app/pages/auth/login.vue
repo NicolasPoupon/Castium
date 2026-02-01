@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import * as z from 'zod'
-import { useI18n } from '#imports'
-import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
+import * as z from "zod"
+import { useI18n } from "#imports"
+import type { FormSubmitEvent, AuthFormField } from "@nuxt/ui"
 
 definePageMeta({
-    title: 'Login',
+    title: "Login",
 })
 
 const toast = useToast()
@@ -23,37 +23,37 @@ watch(isAuthenticated, (authenticated) => {
 
 const fields: AuthFormField[] = [
     {
-        name: 'email',
-        type: 'email',
-        label: t('auth.login.fields.email.label'),
-        placeholder: t('auth.login.fields.email.placeholder'),
+        name: "email",
+        type: "email",
+        label: t("auth.login.fields.email.label"),
+        placeholder: t("auth.login.fields.email.placeholder"),
         required: true,
     },
     {
-        name: 'password',
-        label: t('auth.login.fields.password.label'),
-        type: 'password',
-        placeholder: t('auth.login.fields.password.placeholder'),
+        name: "password",
+        label: t("auth.login.fields.password.label"),
+        type: "password",
+        placeholder: t("auth.login.fields.password.placeholder"),
         required: true,
     },
     {
-        name: 'remember',
-        label: t('auth.login.fields.remember.label'),
-        type: 'checkbox',
+        name: "remember",
+        label: t("auth.login.fields.remember.label"),
+        type: "checkbox",
     },
 ]
 
 const providers = [
     {
-        label: 'Google',
-        icon: 'i-simple-icons-google',
+        label: "Google",
+        icon: "i-simple-icons-google",
         onClick: async () => {
             const { error } = await signInWithGoogle()
             if (error) {
                 toast.add({
-                    title: t('auth.login.errors.google'),
+                    title: t("auth.login.errors.google"),
                     description: error.message,
-                    color: 'error',
+                    color: "error",
                 })
             }
         },
@@ -61,10 +61,10 @@ const providers = [
 ]
 
 const schema = z.object({
-    email: z.email(t('auth.login.fields.email.error.invalid')),
+    email: z.email(t("auth.login.fields.email.error.invalid")),
     password: z
-        .string(t('auth.login.fields.password.error.required'))
-        .min(8, t('auth.login.fields.password.error.min')),
+        .string(t("auth.login.fields.password.error.required"))
+        .min(8, t("auth.login.fields.password.error.min")),
 })
 
 type Schema = z.output<typeof schema>
@@ -74,23 +74,25 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 
     if (error) {
         toast.add({
-            title: t('auth.login.errors.title'),
-            description: error.message || t('auth.login.errors.invalid'),
-            color: 'error',
+            title: t("auth.login.errors.title"),
+            description: error.message || t("auth.login.errors.invalid"),
+            color: "error",
         })
     } else {
         toast.add({
-            title: t('auth.login.success'),
-            description: t('auth.login.successDescription'),
-            color: 'success',
+            title: t("auth.login.success"),
+            description: t("auth.login.successDescription"),
+            color: "success",
         })
-        router.push('/app/movies')
+        router.push("/app/movies")
     }
 }
 </script>
 
 <template>
-    <div class="flex flex-col items-center justify-center gap-4 p-4 bg-gray-900 min-h-screen">
+    <div
+        class="flex flex-col items-center justify-center gap-4 p-4 bg-gray-900 min-h-screen"
+    >
         <Navbar mode="auth" />
         <UPageCard class="w-full max-w-md">
             <UAuthForm
@@ -105,8 +107,13 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
             />
         </UPageCard>
         <div class="text-center">
-            <UButton variant="link" color="neutral" to="/auth/signup" class="text-sm">
-                {{ t('auth.login.noAccount') }}
+            <UButton
+                variant="link"
+                color="neutral"
+                to="/auth/signup"
+                class="text-sm"
+            >
+                {{ t("auth.login.noAccount") }}
             </UButton>
         </div>
     </div>

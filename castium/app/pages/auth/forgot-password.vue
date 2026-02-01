@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import * as z from 'zod'
-import { useI18n } from '#imports'
+import * as z from "zod"
+import { useI18n } from "#imports"
 
 definePageMeta({
-    title: 'Forgot Password',
+    title: "Forgot Password",
 })
 
 const toast = useToast()
@@ -11,11 +11,13 @@ const { t } = useI18n()
 const router = useRouter()
 const { resetPassword, loading } = useAuth()
 
-const email = ref('')
+const email = ref("")
 const submitted = ref(false)
 
 const schema = z.object({
-    email: z.string().email(t('auth.forgotPassword.fields.email.error.invalid')),
+    email: z
+        .string()
+        .email(t("auth.forgotPassword.fields.email.error.invalid")),
 })
 
 type Schema = z.output<typeof schema>
@@ -23,9 +25,9 @@ type Schema = z.output<typeof schema>
 async function onSubmit() {
     if (!email.value) {
         toast.add({
-            title: t('auth.forgotPassword.errors.title'),
-            description: t('auth.forgotPassword.fields.email.error.required'),
-            color: 'error',
+            title: t("auth.forgotPassword.errors.title"),
+            description: t("auth.forgotPassword.fields.email.error.required"),
+            color: "error",
         })
         return
     }
@@ -34,16 +36,17 @@ async function onSubmit() {
 
     if (error) {
         toast.add({
-            title: t('auth.forgotPassword.errors.title'),
-            description: error.message || t('auth.forgotPassword.errors.invalid'),
-            color: 'error',
+            title: t("auth.forgotPassword.errors.title"),
+            description:
+                error.message || t("auth.forgotPassword.errors.invalid"),
+            color: "error",
         })
     } else {
         submitted.value = true
         toast.add({
-            title: t('auth.forgotPassword.success'),
-            description: t('auth.forgotPassword.successDescription'),
-            color: 'success',
+            title: t("auth.forgotPassword.success"),
+            description: t("auth.forgotPassword.successDescription"),
+            color: "success",
         })
     }
 }
@@ -61,10 +64,10 @@ async function onSubmit() {
                     class="w-12 h-12 mx-auto mb-4 text-castium-green"
                 />
                 <h1 class="text-2xl font-bold mb-2">
-                    {{ t('auth.forgotPassword.title') }}
+                    {{ t("auth.forgotPassword.title") }}
                 </h1>
                 <p class="text-gray-600 dark:text-gray-400">
-                    {{ t('auth.forgotPassword.description') }}
+                    {{ t("auth.forgotPassword.description") }}
                 </p>
             </div>
 
@@ -78,7 +81,11 @@ async function onSubmit() {
                         <UInput
                             v-model="email"
                             type="email"
-                            :placeholder="t('auth.forgotPassword.fields.email.placeholder')"
+                            :placeholder="
+                                t(
+                                    'auth.forgotPassword.fields.email.placeholder',
+                                )
+                            "
                             size="lg"
                             :disabled="loading"
                         />
@@ -91,7 +98,7 @@ async function onSubmit() {
                         :loading="loading"
                         class="mt-4"
                     >
-                        {{ t('auth.forgotPassword.submit') }}
+                        {{ t("auth.forgotPassword.submit") }}
                     </UButton>
                 </UForm>
 
@@ -102,7 +109,7 @@ async function onSubmit() {
                         to="/auth/login"
                         class="text-sm"
                     >
-                        {{ t('auth.forgotPassword.backToLogin') }}
+                        {{ t("auth.forgotPassword.backToLogin") }}
                     </UButton>
                 </div>
             </div>
@@ -113,18 +120,12 @@ async function onSubmit() {
                     class="w-16 h-16 mx-auto text-green-500"
                 />
                 <p class="text-gray-600 dark:text-gray-400">
-                    {{ t('auth.forgotPassword.successDescription') }}
+                    {{ t("auth.forgotPassword.successDescription") }}
                 </p>
-                <UButton
-                    variant="outline"
-                    block
-                    to="/auth/login"
-                    class="mt-4"
-                >
-                    {{ t('auth.forgotPassword.backToLogin') }}
+                <UButton variant="outline" block to="/auth/login" class="mt-4">
+                    {{ t("auth.forgotPassword.backToLogin") }}
                 </UButton>
             </div>
         </UPageCard>
     </div>
 </template>
-

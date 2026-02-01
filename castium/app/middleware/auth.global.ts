@@ -1,55 +1,77 @@
 export default defineNuxtRouteMiddleware(async (to) => {
     const publicRoutes = [
-        '/',
-        '/auth/login',
-        '/auth/signup',
-        '/auth/forgot-password',
-        '/auth/reset-password',
-        '/auth/callback',
-        '/auth/spotify/callback',
+        "/",
+        "/auth/login",
+        "/auth/signup",
+        "/auth/forgot-password",
+        "/auth/reset-password",
+        "/auth/callback",
+        "/auth/spotify/callback",
     ]
 
-    const isPublicRoute = publicRoutes.includes(to.path)
-    const isAppRoute = to.path.startsWith('/app')
+    // Check if the route is public
+    const isPublicRoute = publicRoutes.some((route) => to.path === route)
+
+    // Check if route starts with /app (protected area)
+    const isAppRoute = to.path.startsWith("/app")
+
+    // Only run on client side to avoid hydration issues
+    if (import.meta.server) {
+        return
+    }
 
     if (process.server) return
 
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     try {
-        const supabase = useSupabase()
-        const {
-            data: { session },
-        } = await supabase.auth.getSession()
-        const isLoggedIn = !!session
+        const { isAuthenticated, initialized, initAuth } = useAuth()
 
-        // Logged in + page auth → redirect app
-        if (
-            isLoggedIn &&
-            to.path.startsWith('/auth/') &&
-            to.path !== '/auth/callback' &&
-            !to.path.includes('/auth/spotify')
-        ) {
-            const redirect = (to.query.redirect as string) || '/app/movies'
-            return navigateTo(redirect)
+        // Ensure auth is initialized
+        if (!initialized.value) {
+            await initAuth()
         }
 
-        // Not logged in + /app → login
-        if (!isLoggedIn && isAppRoute) {
-            return navigateTo('/auth/login')
+        // Wait for auth to be fully initialized
+        let attempts = 0
+        while (!initialized.value && attempts < 100) {
+            await new Promise((resolve) => setTimeout(resolve, 50))
+            attempts++
+        }
+
+        const loggedIn = isAuthenticated.value
+
+        // If user is logged in and tries to access auth pages (except callback), redirect to app
+        if (
+            loggedIn &&
+            to.path.startsWith("/auth/") &&
+            to.path !== "/auth/callback" &&
+            !to.path.includes("/auth/spotify")
+        ) {
+            return navigateTo("/app/movies")
+        }
+
+        // If user is not logged in and tries to access /app routes, redirect to login
+        if (!loggedIn && isAppRoute) {
+            return navigateTo("/auth/login")
         }
 
         // Public routes → ok
         if (isPublicRoute) return
 
-        // Other protected routes
-        if (!isLoggedIn) {
-            return navigateTo('/auth/login')
+        // For any other non-public route, require authentication
+        if (!loggedIn && !isPublicRoute) {
+            return navigateTo("/auth/login")
         }
     } catch (error) {
-        console.error('Auth middleware error:', error)
+        console.error("Auth middleware error:", error)
 
-        if (isPublicRoute) return
-        return navigateTo('/auth/login')
+        // If it's a public route, allow access even if auth check failed
+        if (isPublicRoute) {
+            return
+        }
+
+        // If it's a protected route and auth failed, redirect to login
+        return navigateTo("/auth/login")
     }
 })

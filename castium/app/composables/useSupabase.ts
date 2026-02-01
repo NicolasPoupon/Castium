@@ -1,21 +1,30 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 
-let supabase: ReturnType<typeof createClient> | null = null
+let supabaseClient: SupabaseClient | null = null
 
-export const useSupabase = () => {
-    if (!supabase) {
-        const config = useRuntimeConfig()
-        const supabaseUrl = config.public.supabaseUrl
-        const supabaseAnonKey = config.public.supabaseAnonKey
-
-        if (!supabaseUrl || !supabaseAnonKey) {
-            throw new Error(
-                'Supabase configuration is missing. Please set NUXT_PUBLIC_SUPABASE_URL and NUXT_PUBLIC_SUPABASE_ANON_KEY in your .env file.'
-            )
-        }
-
-        supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const useSupabase = (): SupabaseClient => {
+    if (supabaseClient) {
+        return supabaseClient
     }
-    return supabase
-}
 
+    const config = useRuntimeConfig()
+    const supabaseUrl = config.public.supabaseUrl
+    const supabaseAnonKey = config.public.supabaseAnonKey
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error(
+            "Supabase configuration is missing. Please set NUXT_PUBLIC_SUPABASE_URL and NUXT_PUBLIC_SUPABASE_ANON_KEY in your .env file.",
+        )
+    }
+
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            persistSession: true,
+            storageKey: "castium-auth",
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+        },
+    })
+
+    return supabaseClient
+}

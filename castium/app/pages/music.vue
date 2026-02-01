@@ -1,62 +1,79 @@
 <script setup lang="ts">
 definePageMeta({
-    title: 'Music',
-});
+    title: "Music",
+})
 
 type Playlist = {
-    id: number;
-    name: string;
-    description: string;
-    tracks: number;
-};
+    id: number
+    name: string
+    description: string
+    tracks: number
+}
 
 const playlists = ref<Playlist[]>([
-    { id: 1, name: 'Daily Mix', description: 'Un mélange personnalisé pour toi.', tracks: 42 },
-    { id: 2, name: 'Focus & Code', description: 'Beats lo-fi pour rester concentré.', tracks: 27 },
-    { id: 3, name: 'Night Drive', description: 'Ambiance nocturne et chill.', tracks: 35 },
-]);
+    {
+        id: 1,
+        name: "Daily Mix",
+        description: "Un mélange personnalisé pour toi.",
+        tracks: 42,
+    },
+    {
+        id: 2,
+        name: "Focus & Code",
+        description: "Beats lo-fi pour rester concentré.",
+        tracks: 27,
+    },
+    {
+        id: 3,
+        name: "Night Drive",
+        description: "Ambiance nocturne et chill.",
+        tracks: 35,
+    },
+])
 
-const draggedId = ref<number | null>(null);
-const currentPlaylistId = ref<number | null>(null);
-const isPlaying = ref(false);
+const draggedId = ref<number | null>(null)
+const currentPlaylistId = ref<number | null>(null)
+const isPlaying = ref(false)
 
-const currentPlaylist = computed(() =>
-    playlists.value.find((p) => p.id === currentPlaylistId.value) ?? null,
-);
+const currentPlaylist = computed(
+    () => playlists.value.find((p) => p.id === currentPlaylistId.value) ?? null,
+)
 
 function connectWithSpotify() {
     // TODO: Remplacer cette URL par l'endpoint OAuth réel (backend / callback Spotify)
     // Ex. redirection vers /api/auth/spotify ou directement vers accounts.spotify.com
-    console.log('Connect with Spotify clicked');
+    console.log("Connect with Spotify clicked")
 }
 
 function playPlaylist(playlist: Playlist) {
     if (currentPlaylistId.value === playlist.id && isPlaying.value) {
-        isPlaying.value = false;
-        return;
+        isPlaying.value = false
+        return
     }
 
-    currentPlaylistId.value = playlist.id;
-    isPlaying.value = true;
+    currentPlaylistId.value = playlist.id
+    isPlaying.value = true
 }
 
 function onDragStart(id: number) {
-    draggedId.value = id;
+    draggedId.value = id
 }
 
 function onDrop(targetId: number) {
-    if (draggedId.value === null || draggedId.value === targetId) return;
+    if (draggedId.value === null || draggedId.value === targetId) return
 
-    const sourceIndex = playlists.value.findIndex((p) => p.id === draggedId.value);
-    const targetIndex = playlists.value.findIndex((p) => p.id === targetId);
-    if (sourceIndex === -1 || targetIndex === -1) return;
+    const sourceIndex = playlists.value.findIndex(
+        (p) => p.id === draggedId.value,
+    )
+    const targetIndex = playlists.value.findIndex((p) => p.id === targetId)
+    if (sourceIndex === -1 || targetIndex === -1) return
 
-    const updated = [...playlists.value];
-    const [moved] = updated.splice(sourceIndex, 1);
-    updated.splice(targetIndex, 0, moved);
+    const updated = [...playlists.value]
+    const [moved] = updated.splice(sourceIndex, 1)
+    updated.splice(targetIndex, 0, moved)
 
-    playlists.value = updated;
-    draggedId.value = null;
+    playlists.value = updated
+    draggedId.value = null
 }
 </script>
 
@@ -73,15 +90,17 @@ function onDrop(targetId: number) {
                     <div
                         class="rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-400 p-5 shadow-lg"
                     >
-                        <p class="text-sm uppercase tracking-[0.2em] text-black/70 mb-2">
+                        <p
+                            class="text-sm uppercase tracking-[0.2em] text-black/70 mb-2"
+                        >
                             Castium Music
                         </p>
                         <h1 class="text-2xl font-semibold text-black mb-4">
                             Connecte ton compte Spotify
                         </h1>
                         <p class="text-sm text-black/80 mb-4">
-                            Synchronise tes playlists Spotify pour les organiser et les lire
-                            directement depuis Castium.
+                            Synchronise tes playlists Spotify pour les organiser
+                            et les lire directement depuis Castium.
                         </p>
                         <button
                             type="button"
@@ -93,8 +112,12 @@ function onDrop(targetId: number) {
                         </button>
                     </div>
 
-                    <div class="rounded-2xl bg-zinc-900/80 border border-zinc-800 p-4 space-y-3">
-                        <p class="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                    <div
+                        class="rounded-2xl bg-zinc-900/80 border border-zinc-800 p-4 space-y-3"
+                    >
+                        <p
+                            class="text-xs uppercase tracking-[0.2em] text-zinc-500"
+                        >
                             Lecture en cours
                         </p>
                         <div v-if="currentPlaylist" class="space-y-1">
@@ -106,10 +129,13 @@ function onDrop(targetId: number) {
                             </p>
                         </div>
                         <p v-else class="text-xs text-zinc-500">
-                            Aucune playlist en cours. Choisis-en une pour commencer.
+                            Aucune playlist en cours. Choisis-en une pour
+                            commencer.
                         </p>
 
-                        <div class="flex items-center justify-between pt-3 border-t border-zinc-800">
+                        <div
+                            class="flex items-center justify-between pt-3 border-t border-zinc-800"
+                        >
                             <button
                                 type="button"
                                 class="inline-flex items-center justify-center rounded-full bg-emerald-500 text-black h-10 w-10 hover:bg-emerald-400 transition-colors"
@@ -120,10 +146,17 @@ function onDrop(targetId: number) {
                                     v-if="!isPlaying"
                                     class="i-heroicons-play-20-solid h-5 w-5 translate-x-[1px]"
                                 />
-                                <span v-else class="i-heroicons-pause-20-solid h-5 w-5" />
+                                <span
+                                    v-else
+                                    class="i-heroicons-pause-20-solid h-5 w-5"
+                                />
                             </button>
                             <p class="text-xs text-zinc-500">
-                                {{ isPlaying && currentPlaylist ? 'Lecture' : 'En pause' }}
+                                {{
+                                    isPlaying && currentPlaylist
+                                        ? "Lecture"
+                                        : "En pause"
+                                }}
                             </p>
                         </div>
                     </div>
@@ -154,7 +187,9 @@ function onDrop(targetId: number) {
                             <div
                                 class="flex flex-col items-center justify-center text-zinc-600 group-hover:text-zinc-400"
                             >
-                                <span class="h-1 w-4 rounded-full bg-current mb-1" />
+                                <span
+                                    class="h-1 w-4 rounded-full bg-current mb-1"
+                                />
                                 <span class="h-1 w-4 rounded-full bg-current" />
                             </div>
 
@@ -178,7 +213,10 @@ function onDrop(targetId: number) {
                                 @click.stop="playPlaylist(playlist)"
                             >
                                 <span
-                                    v-if="currentPlaylistId === playlist.id && isPlaying"
+                                    v-if="
+                                        currentPlaylistId === playlist.id &&
+                                        isPlaying
+                                    "
                                     class="i-heroicons-pause-20-solid h-4 w-4"
                                 />
                                 <span
@@ -193,5 +231,3 @@ function onDrop(targetId: number) {
         </main>
     </div>
 </template>
-
-

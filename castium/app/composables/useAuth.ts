@@ -1,15 +1,80 @@
-import type { User, Session } from '@supabase/supabase-js'
+import type { User, Session } from "@supabase/supabase-js"
+
+export interface UserProfile {
+    id: string
+    username: string
+    email: string
+    language: string
+    video_folder_path: string | null
+    video_files: any[] | null
+    video_watching: Record<string, number> | null
+    video_watched: string[] | null
+    video_favorites: string[] | null
+    created_at: string
+    updated_at: string
+}
 
 export const useAuth = () => {
     const supabase = useSupabase()
     const router = useRouter()
 
-    const user = useState<User | null>('auth_user', () => null)
-    const session = useState<Session | null>('auth_session', () => null)
-    const loading = useState<boolean>('auth_loading', () => false)
+    const user = useState<User | null>("auth_user", () => null)
+    const session = useState<Session | null>("auth_session", () => null)
+    const profile = useState<UserProfile | null>("auth_profile", () => null)
+    const loading = useState<boolean>("auth_loading", () => false)
+    const initialized = useState<boolean>("auth_initialized", () => false)
+
+    // Fetch user profile from database
+    const fetchProfile = async (
+        userId: string,
+    ): Promise<UserProfile | null> => {
+        try {
+            const { data, error } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", userId)
+                .single()
+
+            if (error) {
+                console.error("Error fetching profile:", error)
+                return null
+            }
+            return data as UserProfile
+        } catch (error) {
+            console.error("Error fetching profile:", error)
+            return null
+        }
+    }
+
+    // Update user profile
+    const updateProfile = async (
+        updates: Partial<UserProfile>,
+    ): Promise<{ data: UserProfile | null; error: any }> => {
+        if (!user.value)
+            return { data: null, error: new Error("Not authenticated") }
+
+        try {
+            const { data, error } = await (supabase as any)
+                .from("profiles")
+                .update(updates)
+                .eq("id", user.value.id)
+                .select()
+                .single()
+
+            if (error) throw error
+
+            profile.value = data as UserProfile
+            return { data: data as UserProfile, error: null }
+        } catch (error: any) {
+            console.error("Update profile error:", error)
+            return { data: null, error }
+        }
+    }
 
     // Initialize auth state
     const initAuth = async () => {
+        if (initialized.value) return
+
         try {
             loading.value = true
             const {
@@ -18,13 +83,27 @@ export const useAuth = () => {
             session.value = currentSession
             user.value = currentSession?.user ?? null
 
+            if (currentSession?.user) {
+                profile.value = await fetchProfile(currentSession.user.id)
+            }
+
             // Listen for auth changes
-            supabase.auth.onAuthStateChange((_event, newSession) => {
+            supabase.auth.onAuthStateChange(async (event, newSession) => {
                 session.value = newSession
                 user.value = newSession?.user ?? null
+
+                if (event === "SIGNED_IN" && newSession?.user) {
+                    // Small delay to let the trigger create the profile
+                    await new Promise((resolve) => setTimeout(resolve, 500))
+                    profile.value = await fetchProfile(newSession.user.id)
+                } else if (event === "SIGNED_OUT") {
+                    profile.value = null
+                }
             })
+
+            initialized.value = true
         } catch (error) {
-            console.error('Error initializing auth:', error)
+            console.error("Error initializing auth:", error)
         } finally {
             loading.value = false
         }
@@ -43,9 +122,14 @@ export const useAuth = () => {
 
             session.value = data.session
             user.value = data.user
+
+            if (data.user) {
+                profile.value = await fetchProfile(data.user.id)
+            }
+
             return { data, error: null }
         } catch (error: any) {
-            console.error('Sign in error:', error)
+            console.error("Sign in error:", error)
             return { data: null, error }
         } finally {
             loading.value = false
@@ -53,7 +137,11 @@ export const useAuth = () => {
     }
 
     // Sign up with email and password
-    const signUp = async (email: string, password: string, metadata?: Record<string, any>) => {
+    const signUp = async (
+        email: string,
+        password: string,
+        metadata?: Record<string, any>,
+    ) => {
         try {
             loading.value = true
             const { data, error } = await supabase.auth.signUp({
@@ -66,9 +154,10 @@ export const useAuth = () => {
 
             if (error) throw error
 
+            // Profile will be created automatically by trigger
             return { data, error: null }
         } catch (error: any) {
-            console.error('Sign up error:', error)
+            console.error("Sign up error:", error)
             return { data: null, error }
         } finally {
             loading.value = false
@@ -79,7 +168,7 @@ export const useAuth = () => {
     const signInWithGoogle = async () => {
         try {
             loading.value = true
-            let origin = ''
+            let origin = ""
             if (process.client) {
                 origin = window.location.origin
             } else {
@@ -87,7 +176,7 @@ export const useAuth = () => {
                 origin = `${requestURL.protocol}//${requestURL.host}`
             }
             const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
+                provider: "google",
                 options: {
                     redirectTo: `${origin}/auth/callback`,
                 },
@@ -97,7 +186,7 @@ export const useAuth = () => {
 
             return { data, error: null }
         } catch (error: any) {
-            console.error('Google sign in error:', error)
+            console.error("Google sign in error:", error)
             return { data: null, error }
         } finally {
             loading.value = false
@@ -112,11 +201,30 @@ export const useAuth = () => {
 
             if (error) throw error
 
+            // Clear local composables state before resetting user
+            // This ensures folder handles and tracks are cleared per user
+            try {
+                const { clearLocalState: clearMusicState } = useLocalMusic()
+                clearMusicState()
+            } catch (e) {
+                console.warn('Could not clear music state:', e)
+            }
+
+            try {
+                const { clearLocalState: clearVideosState } = useLocalVideos()
+                clearVideosState()
+            } catch (e) {
+                console.warn('Could not clear videos state:', e)
+            }
+
             session.value = null
             user.value = null
-            await router.push('/auth/login')
+            profile.value = null
+
+            // Use navigateTo for Nuxt compatibility
+            await navigateTo("/auth/login")
         } catch (error: any) {
-            console.error('Sign out error:', error)
+            console.error("Sign out error:", error)
             throw error
         } finally {
             loading.value = false
@@ -127,22 +235,25 @@ export const useAuth = () => {
     const resetPassword = async (email: string) => {
         try {
             loading.value = true
-            let origin = ''
+            let origin = ""
             if (process.client) {
                 origin = window.location.origin
             } else {
                 const requestURL = useRequestURL()
                 origin = `${requestURL.protocol}//${requestURL.host}`
             }
-            const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${origin}/auth/reset-password`,
-            })
+            const { data, error } = await supabase.auth.resetPasswordForEmail(
+                email,
+                {
+                    redirectTo: `${origin}/auth/reset-password`,
+                },
+            )
 
             if (error) throw error
 
             return { data, error: null }
         } catch (error: any) {
-            console.error('Reset password error:', error)
+            console.error("Reset password error:", error)
             return { data: null, error }
         } finally {
             loading.value = false
@@ -161,7 +272,7 @@ export const useAuth = () => {
 
             return { data, error: null }
         } catch (error: any) {
-            console.error('Update password error:', error)
+            console.error("Update password error:", error)
             return { data: null, error }
         } finally {
             loading.value = false
@@ -169,12 +280,14 @@ export const useAuth = () => {
     }
 
     // Check if user is authenticated
-    const isAuthenticated = computed(() => !!user.value)
+    const isAuthenticated = computed(() => !!user.value && !!session.value)
 
     return {
         user: readonly(user),
         session: readonly(session),
+        profile: readonly(profile),
         loading: readonly(loading),
+        initialized: readonly(initialized),
         isAuthenticated,
         initAuth,
         signIn,
@@ -183,5 +296,7 @@ export const useAuth = () => {
         signOut,
         resetPassword,
         updatePassword,
+        updateProfile,
+        fetchProfile,
     }
 }

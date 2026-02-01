@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import * as z from 'zod'
-import { useI18n } from '#imports'
-import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
+import * as z from "zod"
+import { useI18n } from "#imports"
+import type { FormSubmitEvent, AuthFormField } from "@nuxt/ui"
 
 definePageMeta({
-    title: 'Signup',
+    title: "Signup",
 })
 
 const toast = useToast()
@@ -15,52 +15,52 @@ const { signUp, signInWithGoogle, loading, isAuthenticated } = useAuth()
 // Redirect if already authenticated
 watch(isAuthenticated, (authenticated) => {
     if (authenticated) {
-        router.push('/app/movies')
+        router.push("/app/movies")
     }
 })
 
 const fields: AuthFormField[] = [
     {
-        name: 'username',
-        type: 'text',
-        label: t('auth.login.fields.username.label'),
-        placeholder: t('auth.login.fields.username.placeholder'),
+        name: "username",
+        type: "text",
+        label: t("auth.login.fields.username.label"),
+        placeholder: t("auth.login.fields.username.placeholder"),
         required: true,
     },
     {
-        name: 'email',
-        type: 'email',
-        label: t('auth.login.fields.email.label'),
-        placeholder: t('auth.login.fields.email.placeholder'),
+        name: "email",
+        type: "email",
+        label: t("auth.login.fields.email.label"),
+        placeholder: t("auth.login.fields.email.placeholder"),
         required: true,
     },
     {
-        name: 'password',
-        label: t('auth.login.fields.password.label'),
-        type: 'password',
-        placeholder: t('auth.login.fields.password.placeholder'),
+        name: "password",
+        label: t("auth.login.fields.password.label"),
+        type: "password",
+        placeholder: t("auth.login.fields.password.placeholder"),
         required: true,
     },
     {
-        name: 'confirmPassword',
-        label: t('auth.login.fields.confirmPassword.label'),
-        type: 'password',
-        placeholder: t('auth.login.fields.confirmPassword.placeholder'),
+        name: "confirmPassword",
+        label: t("auth.login.fields.confirmPassword.label"),
+        type: "password",
+        placeholder: t("auth.login.fields.confirmPassword.placeholder"),
         required: true,
     },
 ]
 
 const providers = [
     {
-        label: t('auth.login.providers.google'),
-        icon: 'i-simple-icons-google',
+        label: t("auth.login.providers.google"),
+        icon: "i-simple-icons-google",
         onClick: async () => {
             const { error } = await signInWithGoogle()
             if (error) {
                 toast.add({
-                    title: t('auth.login.errors.google'),
+                    title: t("auth.login.errors.google"),
                     description: error.message,
-                    color: 'error',
+                    color: "error",
                 })
             }
         },
@@ -69,17 +69,21 @@ const providers = [
 
 const schema = z
     .object({
-        username: z.string().min(1, t('auth.login.fields.username.error.required')),
-        email: z.string().email(t('auth.login.fields.email.error.invalid')),
+        username: z
+            .string()
+            .min(1, t("auth.login.fields.username.error.required")),
+        email: z.string().email(t("auth.login.fields.email.error.invalid")),
         password: z
             .string()
-            .min(1, t('auth.login.fields.password.error.required'))
-            .min(8, t('auth.login.fields.password.error.min')),
-        confirmPassword: z.string().min(1, t('auth.login.fields.confirmPassword.error.required')),
+            .min(1, t("auth.login.fields.password.error.required"))
+            .min(8, t("auth.login.fields.password.error.min")),
+        confirmPassword: z
+            .string()
+            .min(1, t("auth.login.fields.confirmPassword.error.required")),
     })
     .refine((data) => data.password === data.confirmPassword, {
-        message: t('auth.login.fields.confirmPassword.error.match'),
-        path: ['confirmPassword'],
+        message: t("auth.login.fields.confirmPassword.error.match"),
+        path: ["confirmPassword"],
     })
 
 type Schema = z.output<typeof schema>
@@ -91,18 +95,18 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 
     if (error) {
         toast.add({
-            title: t('auth.login.errors.title'),
-            description: error.message || t('auth.login.errors.invalid'),
-            color: 'error',
+            title: t("auth.login.errors.title"),
+            description: error.message || t("auth.login.errors.invalid"),
+            color: "error",
         })
     } else {
         toast.add({
-            title: t('auth.login.success'),
-            description: t('auth.login.successDescription'),
-            color: 'success',
+            title: t("auth.login.success"),
+            description: t("auth.login.successDescription"),
+            color: "success",
         })
         // Redirect to login after successful signup
-        await router.push('/auth/login')
+        await router.push("/auth/login")
     }
 }
 </script>
@@ -125,8 +129,13 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
                 @submit="onSubmit"
             />
             <div class="mt-4 text-center">
-                <UButton variant="link" color="neutral" to="/auth/login" class="text-sm">
-                    {{ t('auth.signUp.hasAccount') }}
+                <UButton
+                    variant="link"
+                    color="neutral"
+                    to="/auth/login"
+                    class="text-sm"
+                >
+                    {{ t("auth.signUp.hasAccount") }}
                 </UButton>
             </div>
         </UPageCard>

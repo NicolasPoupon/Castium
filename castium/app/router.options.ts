@@ -1,11 +1,11 @@
-import type { RouterConfig } from '@nuxt/schema'
+import type { RouterConfig } from "@nuxt/schema"
 
 // https://router.vuejs.org/api/interfaces/routeroptions.html
 export default <RouterConfig>{
     scrollBehavior(to, from, savedPosition) {
         // If the hash starts with #access_token=, it's a Supabase auth redirect.
         // We should not try to scroll to it as it's not a valid selector.
-        if (to.hash && to.hash.startsWith('#access_token=')) {
+        if (to.hash && to.hash.startsWith("#access_token=")) {
             return { top: 0 }
         }
 
@@ -16,10 +16,10 @@ export default <RouterConfig>{
         if (to.hash) {
             return {
                 el: to.hash,
-                behavior: 'smooth',
+                behavior: "smooth",
             }
         }
 
         return { top: 0 }
-    }
+    },
 }

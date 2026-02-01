@@ -50,7 +50,12 @@
         "buttons": {
             "signUpBeta": "Sign up for the beta",
             "signUp": "Sign up"
-        }
+        },
+        "close": "Close",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "save": "Save",
+        "create": "Create"
     },
     "footer": {
         "rights": "Castium. All rights reserved • Made with ❤️",
@@ -93,6 +98,8 @@
                     "label": "Confirm Password",
                     "placeholder": "Re-enter your password",
                     "error": {
+                        "required": "Please confirm your password",
+                        "match": "Passwords do not match",
                         "mismatch": "Passwords do not match"
                     }
                 },
@@ -106,9 +113,13 @@
             "submit": "Login",
             "noAccount": "No account yet? Sign up",
             "success": "Login successful",
-            "successDescription": "You are now logged in."
+            "successDescription": "You are now logged in.",
+            "errors": {
+                "title": "Login failed",
+                "invalid": "Invalid email or password"
+            }
         },
-        "signUp" : {
+        "signUp": {
             "title": "Sign Up",
             "description": "Create an account to start using Castium.",
             "submit": "Sign Up",
@@ -124,7 +135,8 @@
         "selector": {
             "movies": "Movies",
             "music": "Music",
-            "podcasts": "Podcasts"
+            "podcasts": "Podcasts",
+            "lectures": "Videos"
         },
         "user": {
             "settings": "Settings",
@@ -167,13 +179,18 @@
             "mainActors": "Main actors",
             "similar": "Similar movies"
         },
-        "selector" :{
+        "selector": {
             "overview": "Overview",
             "video": "Video",
             "trailer": "Trailer"
         }
     },
     "music": {
+        "tabs": {
+            "local": "Local music",
+            "spotify": "Spotify",
+            "upload": "Cloud"
+        },
         "hero": {
             "connectToSpotify": "Connect your Spotify account",
             "description": "Access your favorite playlists, albums and artists. Listen to your music directly from Castium.",
@@ -182,12 +199,213 @@
             "yourMusic": "Your music",
             "playlists": "Your playlists",
             "recommendedPlaylists": "Recommended playlists"
+        },
+        "local": {
+            "title": "Your local music",
+            "description": "Select a folder containing your audio files to listen to them directly from Castium. Your files stay on your device.",
+            "selectFolder": "Select a folder",
+            "permissionNotice": "You will need to grant read access to the selected folder",
+            "previousFolder": "Previously selected folder",
+            "reauthorize": "Reauthorize access",
+            "orSelectNew": "Or select a new folder",
+            "fallbackTitle": "Compatibility mode",
+            "fallbackDescription": "Your browser does not support the File System Access API. Selected music will not be remembered between sessions.",
+            "allTracks": "All tracks",
+            "likedTracks": "Liked tracks",
+            "playlists": "Playlists",
+            "playlistName": "Playlist name",
+            "rescan": "Rescan folder",
+            "changeFolder": "Change folder",
+            "tracks": "tracks",
+            "searchPlaceholder": "Search for a track, artist or album...",
+            "columnTitle": "Title",
+            "columnAlbum": "Album",
+            "unknownArtist": "Unknown artist",
+            "unknownAlbum": "Unknown album",
+            "noTracks": "No audio files found in this folder",
+            "noLikedTracks": "No liked tracks yet",
+            "noPlaylistTracks": "This playlist is empty",
+            "noPlaylists": "No playlists created yet",
+            "trackInfo": "Track info",
+            "addToPlaylist": "Add to playlist",
+            "deletePlaylist": "Delete playlist",
+            "infoFile": "File",
+            "infoPath": "Path",
+            "infoDuration": "Duration",
+            "infoSize": "Size",
+            "infoFormat": "Format",
+            "infoYear": "Year",
+            "infoGenre": "Genre",
+            "unavailable": "Unavailable"
+        },
+        "cloud": {
+            "allTracks": "All tracks",
+            "likedTracks": "Liked tracks",
+            "playlists": "Playlists",
+            "playlistName": "Playlist name",
+            "uploadMusic": "Upload music",
+            "uploading": "Uploading...",
+            "uploadFirst": "Upload your first track",
+            "noTracks": "No music uploaded yet",
+            "noLikedTracks": "No liked tracks yet",
+            "noPlaylistTracks": "This playlist is empty",
+            "noPlaylists": "No playlists yet",
+            "trackInfo": "Track info",
+            "playCount": "Play count",
+            "uploadedAt": "Uploaded",
+            "deleteTrack": "Delete track",
+            "deleteConfirm": "Are you sure you want to delete this track? This action cannot be undone."
         }
     },
     "podcasts": {
+        "title": "Podcasts",
+        "tabs": {
+            "local": "Local",
+            "cloud": "Cloud"
+        },
+        "filter": {
+            "all": "All",
+            "inProgress": "In Progress",
+            "liked": "Liked"
+        },
+        "searchPlaceholder": "Search podcasts...",
+        "unknownShow": "Unknown show",
+        "completed": "Completed",
+        "local": {
+            "title": "Your local podcasts",
+            "description": "Select a folder containing your podcast files to play them directly from Castium.",
+            "selectFolder": "Select a folder",
+            "previousFolder": "Previously selected folder",
+            "reauthorize": "Reauthorize access",
+            "changeFolder": "Change folder",
+            "noPodcasts": "No podcasts found in this folder"
+        },
+        "cloud": {
+            "upload": "Upload",
+            "uploading": "Uploading...",
+            "uploadFirst": "Upload your first podcast",
+            "noPodcasts": "No podcasts uploaded yet"
+        },
+        "info": {
+            "progress": "Progress",
+            "notes": "Notes",
+            "comment": "Comment",
+            "edit": "Edit",
+            "noNotes": "No notes yet",
+            "noComment": "No comment yet",
+            "file": "File",
+            "size": "Size",
+            "like": "Like",
+            "liked": "Liked",
+            "play": "Play",
+            "delete": "Delete"
+        },
+        "editNotes": {
+            "title": "Edit Notes",
+            "notes": "Notes",
+            "notesPlaceholder": "Add notes about this podcast...",
+            "comment": "Comment",
+            "commentPlaceholder": "Add your thoughts or comments..."
+        },
+        "deleteConfirm": {
+            "title": "Delete Podcast",
+            "message": "Are you sure you want to delete this podcast? This action cannot be undone."
+        }
+    },
+    "lectures": {
+        "tabs": {
+            "local": "Local videos",
+            "youtube": "YouTube",
+            "upload": "Upload"
+        },
         "hero": {
-            "title": "Podcasts coming soon",
-            "description": "The podcasts section will be available soon. You’ll be able to listen to and manage your favorite podcasts."
+            "title": "Your local videos",
+            "description": "Select a folder containing your videos to play them directly from Castium. Your files stay on your device.",
+            "selectFolder": "Select a folder",
+            "permissionNotice": "You will need to grant read access to the selected folder",
+            "previousFolder": "Previously selected folder",
+            "reauthorize": "Reauthorize access",
+            "orSelectNew": "Or select a new folder"
+        },
+        "fallback": {
+            "title": "Compatibility mode",
+            "description": "Your browser does not support the File System Access API. Selected videos will not be remembered between sessions. Use Chrome or Edge for a better experience."
+        },
+        "library": {
+            "title": "My video library",
+            "search": "Search for a video...",
+            "noVideos": "No videos found in this folder"
+        },
+        "sections": {
+            "continueWatching": "Continue watching",
+            "favorites": "My favorites",
+            "allVideos": "All videos"
+        },
+        "youtube": {
+            "title": "Connect your YouTube account",
+            "description": "Access your playlists, liked videos and watch your content directly from Castium.",
+            "connect": "Connect to YouTube",
+            "permissionNotice": "You will be redirected to Google to authorize access to your YouTube account",
+            "connected": "Account connected",
+            "disconnect": "Disconnect",
+            "error": "An error occurred",
+            "quickAccess": "Quick access",
+            "likedVideos": "Liked videos",
+            "playlists": "Your playlists",
+            "noPlaylists": "No playlists found",
+            "noVideos": "No videos in this playlist",
+            "views": "views"
+        },
+        "upload": {
+            "title": "My cloud videos",
+            "search": "Search for a video...",
+            "uploadButton": "Upload",
+            "uploading": "Uploading...",
+            "error": "Upload error",
+            "emptyTitle": "No videos uploaded",
+            "emptyDescription": "Upload your videos to the cloud to access them from anywhere.",
+            "uploadFirst": "Upload a video",
+            "yourVideos": "Your videos",
+            "noResults": "No videos match your search",
+            "videoDetails": "Video details",
+            "sortBy": "Sort by",
+            "sortOptions": {
+                "date": "Date",
+                "name": "Name",
+                "size": "Size"
+            },
+            "metadata": {
+                "title": "Title",
+                "artist": "Artist",
+                "album": "Album",
+                "year": "Year",
+                "genre": "Genre",
+                "duration": "Duration",
+                "fileInfo": "File information",
+                "filename": "Filename",
+                "size": "Size",
+                "format": "Format",
+                "resolution": "Resolution"
+            },
+            "deleteConfirm": {
+                "title": "Delete video?",
+                "message": "This action cannot be undone. The video will be permanently deleted."
+            }
+        },
+        "local": {
+            "videoDetails": "Video details",
+            "play": "Play",
+            "addToFavorites": "Add to favorites",
+            "removeFromFavorites": "Remove from favorites",
+            "metadata": {
+                "name": "Name",
+                "size": "Size",
+                "type": "Type",
+                "lastModified": "Last modified",
+                "path": "Path",
+                "progress": "Progress",
+                "favorite": "Favorite"
+            }
         }
     }
 }
