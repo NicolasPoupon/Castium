@@ -188,7 +188,8 @@
     "music": {
         "tabs": {
             "local": "Lokalna muzyka",
-            "spotify": "Spotify"
+            "spotify": "Spotify",
+            "upload": "Chmura"
         },
         "hero": {
             "connectToSpotify": "Połącz swoje konto Spotify",
@@ -236,6 +237,24 @@
             "infoYear": "Rok",
             "infoGenre": "Gatunek",
             "unavailable": "Niedostępne"
+        },
+        "cloud": {
+            "allTracks": "Wszystkie utwory",
+            "likedTracks": "Polubione utwory",
+            "playlists": "Playlisty",
+            "playlistName": "Nazwa playlisty",
+            "uploadMusic": "Prześlij muzykę",
+            "uploading": "Przesyłanie...",
+            "uploadFirst": "Prześlij swój pierwszy utwór",
+            "noTracks": "Brak przesłanej muzyki",
+            "noLikedTracks": "Brak polubionych utworów",
+            "noPlaylistTracks": "Ta playlista jest pusta",
+            "noPlaylists": "Nie utworzono jeszcze żadnej playlisty",
+            "trackInfo": "Informacje o utworze",
+            "playCount": "Liczba odtworzeń",
+            "uploadedAt": "Przesłano",
+            "deleteTrack": "Usuń utwór",
+            "deleteConfirm": "Czy na pewno chcesz usunąć ten utwór? Tej operacji nie można cofnąć."
         }
     },
     "podcasts": {

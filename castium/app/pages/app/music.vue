@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from "#imports"
 import type { LocalTrack, LocalPlaylist } from "~/composables/useLocalMusic"
+import type { CloudTrack, CloudPlaylist } from "~/composables/useCloudMusic"
 
 const { t } = useI18n()
 
@@ -59,11 +60,49 @@ const {
     removeLikedTrack,
 } = useLocalMusic()
 
+// Cloud Music
+const {
+    tracks: cloudTracks,
+    sortedTracks: sortedCloudTracks,
+    playlists: cloudPlaylists,
+    likedTracks: cloudLikedTracks,
+    loading: cloudLoading,
+    uploading: cloudUploading,
+    uploadProgress: cloudUploadProgress,
+    error: cloudError,
+    playbackState: cloudPlaybackState,
+    fetchTracks: fetchCloudTracks,
+    uploadTracks: uploadCloudTracks,
+    deleteTrack: deleteCloudTrack,
+    toggleLike: toggleCloudLike,
+    fetchLikedTracks: fetchCloudLikedTracks,
+    fetchPlaylists: fetchCloudPlaylists,
+    createPlaylist: createCloudPlaylist,
+    deletePlaylist: deleteCloudPlaylist,
+    addTrackToPlaylist: addCloudTrackToPlaylist,
+    removeTrackFromPlaylist: removeCloudTrackFromPlaylist,
+    getPlaylistTracks: getCloudPlaylistTracks,
+    playTrack: playCloudTrack,
+    playQueue: playCloudQueue,
+    togglePlay: toggleCloudPlay,
+    seek: seekCloud,
+    setVolume: setCloudVolume,
+    toggleMute: toggleCloudMute,
+    nextTrack: nextCloudTrack,
+    previousTrack: previousCloudTrack,
+    toggleShuffle: toggleCloudShuffle,
+    toggleRepeat: toggleCloudRepeat,
+    stopPlayback: stopCloudPlayback,
+    getTrackColor: getCloudTrackColor,
+    formatFileSize: formatCloudFileSize,
+    formatDuration: formatCloudDuration,
+} = useCloudMusic()
+
 // Client-only flag for hydration
 const isClient = ref(false)
 
-// Active tab: 'local' | 'spotify'
-const activeTab = ref<"local" | "spotify">("local")
+// Active tab: 'local' | 'spotify' | 'upload'
+const activeTab = ref<"local" | "spotify" | "upload">("local")
 
 // Spotify state
 const spotifyUserPlaylists = ref<any[]>([])
@@ -78,6 +117,21 @@ const newPlaylistName = ref("")
 const selectedPlaylist = ref<LocalPlaylist | null>(null)
 const playlistTracks = ref<LocalTrack[]>([])
 const viewMode = ref<"all" | "liked" | "playlist">("all")
+
+// Cloud music state
+const cloudSearchQuery = ref("")
+const showCloudCreatePlaylist = ref(false)
+const newCloudPlaylistName = ref("")
+const selectedCloudPlaylist = ref<CloudPlaylist | null>(null)
+const cloudPlaylistTracks = ref<CloudTrack[]>([])
+const cloudViewMode = ref<"all" | "liked" | "playlist">("all")
+const showCloudTrackInfo = ref(false)
+const selectedCloudTrack = ref<CloudTrack | null>(null)
+const showCloudAddToPlaylist = ref(false)
+const cloudTrackToAdd = ref<CloudTrack | null>(null)
+const showCloudDeleteConfirm = ref(false)
+const cloudTrackToDelete = ref<string | null>(null)
+const cloudFileInputRef = ref<HTMLInputElement | null>(null)
 const showTrackInfo = ref(false)
 const selectedTrack = ref<LocalTrack | null>(null)
 const showAddToPlaylist = ref(false)
@@ -255,6 +309,140 @@ const getTrackColor = (track: LocalTrack) => {
     return colors[index]
 }
 
+// =========== CLOUD MUSIC FUNCTIONS ===========
+
+// Filter cloud tracks by search
+const filteredCloudTracks = computed(() => {
+    const trackList = cloudViewMode.value === "liked"
+        ? cloudLikedTracks.value
+        : cloudViewMode.value === "playlist"
+            ? cloudPlaylistTracks.value
+            : cloudTracks.value
+
+    if (!cloudSearchQuery.value) return trackList
+    const query = cloudSearchQuery.value.toLowerCase()
+    return trackList.filter((t) =>
+        t.title?.toLowerCase().includes(query) ||
+        t.artist?.toLowerCase().includes(query) ||
+        t.album?.toLowerCase().includes(query) ||
+        t.fileName.toLowerCase().includes(query)
+    )
+})
+
+// Cloud progress bar
+const cloudProgressPercent = computed(() => {
+    if (!cloudPlaybackState.value.duration) return 0
+    return (cloudPlaybackState.value.currentTime / cloudPlaybackState.value.duration) * 100
+})
+
+const handleCloudSeek = (e: MouseEvent) => {
+    const target = e.currentTarget as HTMLElement
+    const rect = target.getBoundingClientRect()
+    const percent = (e.clientX - rect.left) / rect.width
+    const time = percent * cloudPlaybackState.value.duration
+    seekCloud(time)
+}
+
+// Cloud file upload
+const handleCloudFileSelect = () => {
+    cloudFileInputRef.value?.click()
+}
+
+const handleCloudFilesSelected = async (event: Event) => {
+    const input = event.target as HTMLInputElement
+    if (!input.files?.length) return
+
+    await uploadCloudTracks(input.files)
+    input.value = '' // Reset input
+}
+
+// Cloud playlist functions
+const handleCloudCreatePlaylist = async () => {
+    if (!newCloudPlaylistName.value.trim()) return
+    await createCloudPlaylist(newCloudPlaylistName.value.trim())
+    newCloudPlaylistName.value = ""
+    showCloudCreatePlaylist.value = false
+}
+
+const handleCloudDeletePlaylist = async (playlistId: string) => {
+    await deleteCloudPlaylist(playlistId)
+    if (selectedCloudPlaylist.value?.id === playlistId) {
+        selectedCloudPlaylist.value = null
+        cloudViewMode.value = "all"
+    }
+}
+
+const handleCloudSelectPlaylist = async (playlist: CloudPlaylist) => {
+    selectedCloudPlaylist.value = playlist
+    cloudViewMode.value = "playlist"
+    cloudPlaylistTracks.value = await getCloudPlaylistTracks(playlist.id)
+}
+
+const handleCloudViewLiked = () => {
+    selectedCloudPlaylist.value = null
+    cloudViewMode.value = "liked"
+}
+
+const handleCloudViewAll = () => {
+    selectedCloudPlaylist.value = null
+    cloudViewMode.value = "all"
+}
+
+// Cloud track actions
+const handleCloudPlayTrack = (track: CloudTrack, index: number) => {
+    const trackList = filteredCloudTracks.value
+    playCloudQueue(trackList, index)
+}
+
+const handleCloudToggleLike = async (track: CloudTrack) => {
+    await toggleCloudLike(track.id)
+}
+
+const openCloudTrackInfo = (track: CloudTrack) => {
+    selectedCloudTrack.value = track
+    showCloudTrackInfo.value = true
+}
+
+const closeCloudTrackInfo = () => {
+    showCloudTrackInfo.value = false
+    selectedCloudTrack.value = null
+}
+
+const openCloudAddToPlaylist = (track: CloudTrack) => {
+    cloudTrackToAdd.value = track
+    showCloudAddToPlaylist.value = true
+}
+
+const handleCloudAddToPlaylist = async (playlistId: string) => {
+    if (!cloudTrackToAdd.value) return
+    await addCloudTrackToPlaylist(playlistId, cloudTrackToAdd.value.id)
+    showCloudAddToPlaylist.value = false
+    cloudTrackToAdd.value = null
+}
+
+const handleCloudRemoveFromPlaylist = async (track: CloudTrack) => {
+    if (!selectedCloudPlaylist.value) return
+    await removeCloudTrackFromPlaylist(selectedCloudPlaylist.value.id, track.id)
+    cloudPlaylistTracks.value = cloudPlaylistTracks.value.filter((t) => t.id !== track.id)
+}
+
+const confirmCloudDeleteTrack = (trackId: string) => {
+    cloudTrackToDelete.value = trackId
+    showCloudDeleteConfirm.value = true
+}
+
+const handleCloudDeleteTrack = async () => {
+    if (!cloudTrackToDelete.value) return
+    await deleteCloudTrack(cloudTrackToDelete.value)
+    showCloudDeleteConfirm.value = false
+    cloudTrackToDelete.value = null
+}
+
+const cancelCloudDelete = () => {
+    showCloudDeleteConfirm.value = false
+    cloudTrackToDelete.value = null
+}
+
 // Lifecycle
 onMounted(async () => {
     isClient.value = true
@@ -270,11 +458,25 @@ onMounted(async () => {
     if (spotifyAuthenticated.value) {
         await loadSpotifyPlaylists()
     }
+
+    // Load cloud music
+    await fetchCloudTracks()
+    await fetchCloudPlaylists()
+    await fetchCloudLikedTracks()
 })
 
 watch(spotifyAuthenticated, (isAuth) => {
     if (isAuth) {
         loadSpotifyPlaylists()
+    }
+})
+
+// Load cloud data when tab changes
+watch(activeTab, async (tab) => {
+    if (tab === 'upload') {
+        await fetchCloudTracks()
+        await fetchCloudPlaylists()
+        await fetchCloudLikedTracks()
     }
 })
 </script>
@@ -298,6 +500,18 @@ watch(spotifyAuthenticated, (isAuth) => {
                     >
                         <UIcon name="i-heroicons-folder" class="w-5 h-5" />
                         {{ t("music.tabs.local") }}
+                    </button>
+                    <button
+                        :class="[
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            activeTab === 'upload'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                        ]"
+                        @click="activeTab = 'upload'"
+                    >
+                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5" />
+                        {{ t("music.tabs.upload") || "Cloud" }}
                     </button>
                     <button
                         :class="[
@@ -824,10 +1038,375 @@ watch(spotifyAuthenticated, (isAuth) => {
                         </div>
                     </div>
                 </div>
+
+                <!-- CLOUD MUSIC TAB -->
+                <div v-else-if="activeTab === 'upload'">
+                    <!-- Hidden file input -->
+                    <input
+                        ref="cloudFileInputRef"
+                        type="file"
+                        accept="audio/*"
+                        multiple
+                        class="hidden"
+                        @change="handleCloudFilesSelected"
+                    />
+
+                    <div class="flex gap-6">
+                        <!-- Sidebar: Playlists -->
+                        <aside class="w-64 flex-shrink-0">
+                            <div class="bg-gray-800/50 rounded-xl p-4 sticky top-24">
+                                <!-- Navigation -->
+                                <nav class="space-y-1 mb-6">
+                                    <button
+                                        :class="[
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            cloudViewMode === 'all'
+                                                ? 'bg-blue-600/20 text-blue-400'
+                                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
+                                        ]"
+                                        @click="handleCloudViewAll"
+                                    >
+                                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5" />
+                                        <span>{{ t("music.cloud.allTracks") || "All Tracks" }}</span>
+                                        <span class="ml-auto text-sm text-gray-500">{{ cloudTracks.length }}</span>
+                                    </button>
+                                    <button
+                                        :class="[
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            cloudViewMode === 'liked'
+                                                ? 'bg-blue-600/20 text-blue-400'
+                                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
+                                        ]"
+                                        @click="handleCloudViewLiked"
+                                    >
+                                        <UIcon name="i-heroicons-heart-solid" class="w-5 h-5 text-red-500" />
+                                        <span>{{ t("music.cloud.likedTracks") || "Liked" }}</span>
+                                        <span class="ml-auto text-sm text-gray-500">{{ cloudLikedTracks.length }}</span>
+                                    </button>
+                                </nav>
+
+                                <!-- Playlists header -->
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+                                        {{ t("music.cloud.playlists") || "Playlists" }}
+                                    </h3>
+                                    <button
+                                        class="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
+                                        @click="showCloudCreatePlaylist = true"
+                                    >
+                                        <UIcon name="i-heroicons-plus" class="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                <!-- Playlists list -->
+                                <div class="space-y-1 max-h-64 overflow-y-auto">
+                                    <div
+                                        v-for="playlist in cloudPlaylists"
+                                        :key="playlist.id"
+                                        :class="[
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left group',
+                                            selectedCloudPlaylist?.id === playlist.id
+                                                ? 'bg-blue-600/20 text-blue-400'
+                                                : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
+                                        ]"
+                                    >
+                                        <button
+                                            class="flex items-center gap-3 flex-1 min-w-0"
+                                            @click="handleCloudSelectPlaylist(playlist)"
+                                        >
+                                            <div
+                                                class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
+                                                :style="{ backgroundColor: playlist.coverColor }"
+                                            >
+                                                <UIcon name="i-heroicons-musical-note" class="w-4 h-4 text-white" />
+                                            </div>
+                                            <span class="truncate flex-1">{{ playlist.name }}</span>
+                                            <span class="text-sm text-gray-500">{{ playlist.trackCount }}</span>
+                                        </button>
+                                        <button
+                                            class="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                                            @click.stop="handleCloudDeletePlaylist(playlist.id)"
+                                        >
+                                            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Create playlist modal -->
+                                <div
+                                    v-if="showCloudCreatePlaylist"
+                                    class="mt-4 p-3 bg-gray-700/50 rounded-lg"
+                                >
+                                    <input
+                                        v-model="newCloudPlaylistName"
+                                        type="text"
+                                        :placeholder="t('music.cloud.playlistName') || 'Playlist name'"
+                                        class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        @keyup.enter="handleCloudCreatePlaylist"
+                                    />
+                                    <div class="flex gap-2 mt-2">
+                                        <UButton
+                                            size="xs"
+                                            variant="ghost"
+                                            @click="showCloudCreatePlaylist = false"
+                                        >
+                                            {{ t("common.cancel") }}
+                                        </UButton>
+                                        <UButton
+                                            size="xs"
+                                            class="bg-blue-600 hover:bg-blue-700"
+                                            :disabled="!newCloudPlaylistName.trim()"
+                                            @click="handleCloudCreatePlaylist"
+                                        >
+                                            {{ t("common.create") }}
+                                        </UButton>
+                                    </div>
+                                </div>
+
+                                <!-- Upload button -->
+                                <div class="mt-6 pt-4 border-t border-gray-700">
+                                    <button
+                                        class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+                                        :disabled="cloudUploading"
+                                        @click="handleCloudFileSelect"
+                                    >
+                                        <UIcon
+                                            :name="cloudUploading ? 'i-heroicons-arrow-path' : 'i-heroicons-cloud-arrow-up'"
+                                            :class="['w-5 h-5', cloudUploading ? 'animate-spin' : '']"
+                                        />
+                                        {{ cloudUploading ? (t("music.cloud.uploading") || "Uploading...") : (t("music.cloud.uploadMusic") || "Upload Music") }}
+                                    </button>
+                                </div>
+                            </div>
+                        </aside>
+
+                        <!-- Main content: Track list -->
+                        <main class="flex-1 min-w-0">
+                            <!-- Upload progress -->
+                            <div v-if="cloudUploadProgress.length > 0" class="mb-6 space-y-2">
+                                <div
+                                    v-for="progress in cloudUploadProgress"
+                                    :key="progress.fileName"
+                                    class="bg-gray-800/50 rounded-lg p-3"
+                                >
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-white text-sm truncate">{{ progress.fileName }}</span>
+                                        <span
+                                            :class="[
+                                                'text-xs px-2 py-0.5 rounded',
+                                                progress.status === 'complete' ? 'bg-green-600/20 text-green-400' :
+                                                progress.status === 'error' ? 'bg-red-600/20 text-red-400' :
+                                                'bg-blue-600/20 text-blue-400'
+                                            ]"
+                                        >
+                                            {{ progress.status === 'complete' ? '✓' : progress.status === 'error' ? '✗' : `${progress.progress}%` }}
+                                        </span>
+                                    </div>
+                                    <div class="h-1 bg-gray-700 rounded-full overflow-hidden">
+                                        <div
+                                            :class="[
+                                                'h-full transition-all duration-300',
+                                                progress.status === 'complete' ? 'bg-green-500' :
+                                                progress.status === 'error' ? 'bg-red-500' : 'bg-blue-500'
+                                            ]"
+                                            :style="{ width: `${progress.progress}%` }"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Header -->
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                                <div>
+                                    <h1 class="text-3xl font-bold text-white">
+                                        {{ cloudViewMode === 'liked'
+                                            ? (t("music.cloud.likedTracks") || "Liked Tracks")
+                                            : cloudViewMode === 'playlist' && selectedCloudPlaylist
+                                                ? selectedCloudPlaylist.name
+                                                : (t("music.cloud.allTracks") || "All Tracks")
+                                        }}
+                                    </h1>
+                                    <p class="text-gray-400 text-sm mt-1">
+                                        {{ filteredCloudTracks.length }} {{ t("music.local.tracks") || "tracks" }}
+                                    </p>
+                                </div>
+                                <UInput
+                                    v-model="cloudSearchQuery"
+                                    icon="i-heroicons-magnifying-glass"
+                                    size="md"
+                                    :placeholder="t('music.local.searchPlaceholder') || 'Search...'"
+                                    class="w-full md:w-80"
+                                />
+                            </div>
+
+                            <!-- Loading -->
+                            <div
+                                v-if="cloudLoading"
+                                class="flex items-center justify-center py-20"
+                            >
+                                <UIcon
+                                    name="i-heroicons-arrow-path"
+                                    class="w-12 h-12 text-blue-500 animate-spin"
+                                />
+                            </div>
+
+                            <!-- Track list -->
+                            <div v-else-if="filteredCloudTracks.length > 0" class="bg-gray-800/30 rounded-xl overflow-hidden">
+                                <!-- Header row -->
+                                <div class="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-700/50">
+                                    <span class="w-10 text-center">#</span>
+                                    <span>{{ t("music.local.columnTitle") || "Title" }}</span>
+                                    <span class="hidden md:block">{{ t("music.local.columnAlbum") || "Album" }}</span>
+                                    <span class="w-16 text-center">
+                                        <UIcon name="i-heroicons-clock" class="w-4 h-4" />
+                                    </span>
+                                    <span class="w-32"></span>
+                                </div>
+
+                                <!-- Track rows -->
+                                <div
+                                    v-for="(track, index) in filteredCloudTracks"
+                                    :key="track.id"
+                                    :class="[
+                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-colors cursor-pointer',
+                                        cloudPlaybackState.currentTrack?.id === track.id
+                                            ? 'bg-blue-600/20'
+                                            : 'hover:bg-gray-700/30',
+                                    ]"
+                                    @dblclick="handleCloudPlayTrack(track, index)"
+                                >
+                                    <!-- Index / Play icon -->
+                                    <div class="w-10 flex items-center justify-center">
+                                        <span
+                                            v-if="cloudPlaybackState.currentTrack?.id === track.id && cloudPlaybackState.isPlaying"
+                                            class="text-blue-400"
+                                        >
+                                            <UIcon name="i-heroicons-speaker-wave" class="w-4 h-4 animate-pulse" />
+                                        </span>
+                                        <span v-else class="text-gray-400 group-hover:hidden">
+                                            {{ index + 1 }}
+                                        </span>
+                                        <button
+                                            class="hidden group-hover:block text-white"
+                                            @click.stop="handleCloudPlayTrack(track, index)"
+                                        >
+                                            <UIcon name="i-heroicons-play-solid" class="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <!-- Title & Artist -->
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <div
+                                            class="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
+                                            :style="{ backgroundColor: getCloudTrackColor(track) }"
+                                        >
+                                            <UIcon name="i-heroicons-musical-note" class="w-5 h-5 text-white" />
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p
+                                                :class="[
+                                                    'font-medium truncate',
+                                                    cloudPlaybackState.currentTrack?.id === track.id
+                                                        ? 'text-blue-400'
+                                                        : 'text-white',
+                                                ]"
+                                            >
+                                                {{ track.title || track.fileName }}
+                                            </p>
+                                            <p class="text-sm truncate text-gray-400">
+                                                {{ track.artist || (t("music.local.unknownArtist") || "Unknown Artist") }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Album -->
+                                    <div class="text-sm truncate hidden md:block text-gray-400">
+                                        {{ track.album || (t("music.local.unknownAlbum") || "Unknown Album") }}
+                                    </div>
+
+                                    <!-- Duration -->
+                                    <div class="w-16 text-sm text-center text-gray-400">
+                                        {{ formatCloudDuration(track.duration) }}
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="w-32 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
+                                            @click.stop="handleCloudToggleLike(track)"
+                                        >
+                                            <UIcon
+                                                :name="track.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                                                :class="[
+                                                    'w-4 h-4',
+                                                    track.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-white',
+                                                ]"
+                                            />
+                                        </button>
+                                        <button
+                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
+                                            @click.stop="openCloudAddToPlaylist(track)"
+                                        >
+                                            <UIcon name="i-heroicons-plus" class="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
+                                            @click.stop="openCloudTrackInfo(track)"
+                                        >
+                                            <UIcon name="i-heroicons-information-circle" class="w-4 h-4" />
+                                        </button>
+                                        <!-- Remove from playlist -->
+                                        <button
+                                            v-if="cloudViewMode === 'playlist'"
+                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-red-400"
+                                            @click.stop="handleCloudRemoveFromPlaylist(track)"
+                                        >
+                                            <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                                        </button>
+                                        <!-- Delete track -->
+                                        <button
+                                            class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-red-400"
+                                            @click.stop="confirmCloudDeleteTrack(track.id)"
+                                        >
+                                            <UIcon name="i-heroicons-trash" class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty state -->
+                            <div
+                                v-else
+                                class="flex flex-col items-center justify-center py-20 text-center"
+                            >
+                                <UIcon
+                                    name="i-heroicons-cloud-arrow-up"
+                                    class="w-16 h-16 text-gray-600 mb-4"
+                                />
+                                <p class="text-gray-400 text-lg mb-4">
+                                    {{ cloudViewMode === 'liked'
+                                        ? (t("music.cloud.noLikedTracks") || "No liked tracks yet")
+                                        : cloudViewMode === 'playlist'
+                                            ? (t("music.cloud.noPlaylistTracks") || "No tracks in this playlist")
+                                            : (t("music.cloud.noTracks") || "No music uploaded yet")
+                                    }}
+                                </p>
+                                <UButton
+                                    v-if="cloudViewMode === 'all'"
+                                    icon="i-heroicons-cloud-arrow-up"
+                                    class="bg-blue-600 hover:bg-blue-700"
+                                    @click="handleCloudFileSelect"
+                                >
+                                    {{ t("music.cloud.uploadFirst") || "Upload your first track" }}
+                                </UButton>
+                            </div>
+                        </main>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Fixed Player Bar -->
+        <!-- Fixed Player Bar for Local Music -->
         <div
             v-if="playbackState.currentTrack"
             class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-4 py-3 z-50"
@@ -1072,6 +1651,289 @@ watch(spotifyAuthenticated, (isAuth) => {
                             <p class="text-gray-500 text-sm">{{ playlist.trackCount }} {{ t("music.local.tracks") }}</p>
                         </div>
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloud Player Bar -->
+        <div
+            v-if="cloudPlaybackState.currentTrack && !playbackState.currentTrack"
+            class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-4 py-3 z-50"
+        >
+            <div class="max-w-7xl mx-auto flex items-center gap-4">
+                <!-- Track info -->
+                <div class="flex items-center gap-3 w-64 min-w-0">
+                    <div
+                        class="w-12 h-12 rounded flex items-center justify-center flex-shrink-0"
+                        :style="{ backgroundColor: getCloudTrackColor(cloudPlaybackState.currentTrack) }"
+                    >
+                        <UIcon name="i-heroicons-musical-note" class="w-6 h-6 text-white" />
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-white font-medium truncate text-sm">
+                            {{ cloudPlaybackState.currentTrack.title || cloudPlaybackState.currentTrack.fileName }}
+                        </p>
+                        <p class="text-gray-400 text-xs truncate">
+                            {{ cloudPlaybackState.currentTrack.artist || (t("music.local.unknownArtist") || "Unknown Artist") }}
+                        </p>
+                    </div>
+                    <button
+                        class="ml-2 p-1 rounded-full hover:bg-gray-800 transition-colors flex-shrink-0"
+                        @click="handleCloudToggleLike(cloudPlaybackState.currentTrack)"
+                    >
+                        <UIcon
+                            :name="cloudPlaybackState.currentTrack.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                            :class="[
+                                'w-4 h-4',
+                                cloudPlaybackState.currentTrack.isLiked ? 'text-red-500' : 'text-gray-400',
+                            ]"
+                        />
+                    </button>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex-1 flex flex-col items-center gap-2">
+                    <div class="flex items-center gap-4">
+                        <button
+                            :class="[
+                                'p-2 rounded-full transition-colors',
+                                cloudPlaybackState.isShuffled ? 'text-blue-400' : 'text-gray-400 hover:text-white',
+                            ]"
+                            @click="toggleCloudShuffle"
+                        >
+                            <UIcon name="i-heroicons-arrows-right-left" class="w-4 h-4" />
+                        </button>
+                        <button
+                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+                            @click="previousCloudTrack"
+                        >
+                            <UIcon name="i-heroicons-backward" class="w-5 h-5" />
+                        </button>
+                        <button
+                            class="p-2 w-10 h-10 rounded-full bg-white text-gray-900 hover:scale-105 transition-transform flex items-center justify-center"
+                            @click="toggleCloudPlay"
+                        >
+                            <UIcon
+                                :name="cloudPlaybackState.isPlaying ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'"
+                                class="w-5 h-5"
+                            />
+                        </button>
+                        <button
+                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+                            @click="nextCloudTrack"
+                        >
+                            <UIcon name="i-heroicons-forward" class="w-5 h-5" />
+                        </button>
+                        <button
+                            :class="[
+                                'p-2 rounded-full transition-colors',
+                                cloudPlaybackState.repeatMode !== 'off' ? 'text-blue-400' : 'text-gray-400 hover:text-white',
+                            ]"
+                            @click="toggleCloudRepeat"
+                        >
+                            <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="flex items-center gap-2 w-full max-w-xl">
+                        <span class="text-xs text-gray-400 w-10 text-right">
+                            {{ formatCloudDuration(cloudPlaybackState.currentTime) }}
+                        </span>
+                        <div
+                            class="flex-1 h-1 bg-gray-700 rounded-full cursor-pointer group"
+                            @click="handleCloudSeek"
+                        >
+                            <div
+                                class="h-full bg-white group-hover:bg-blue-500 rounded-full relative transition-colors"
+                                :style="{ width: `${cloudProgressPercent}%` }"
+                            >
+                                <div
+                                    class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                />
+                            </div>
+                        </div>
+                        <span class="text-xs text-gray-400 w-10">
+                            {{ formatCloudDuration(cloudPlaybackState.duration) }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Volume -->
+                <div class="flex items-center gap-2 w-32">
+                    <button
+                        class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+                        @click="toggleCloudMute"
+                    >
+                        <UIcon
+                            :name="cloudPlaybackState.isMuted || cloudPlaybackState.volume === 0
+                                ? 'i-heroicons-speaker-x-mark'
+                                : 'i-heroicons-speaker-wave'"
+                            class="w-5 h-5"
+                        />
+                    </button>
+                    <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        :value="cloudPlaybackState.volume"
+                        class="w-full h-1 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                        @input="(e) => setCloudVolume(parseFloat((e.target as HTMLInputElement).value))"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloud Track Info Modal -->
+        <div
+            v-if="showCloudTrackInfo && selectedCloudTrack"
+            class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            @click.self="closeCloudTrackInfo"
+        >
+            <div class="bg-gray-900 rounded-xl max-w-lg w-full p-6">
+                <div class="flex items-start justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white">{{ t("music.cloud.trackInfo") || "Track Info" }}</h2>
+                    <button
+                        class="p-1 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white"
+                        @click="closeCloudTrackInfo"
+                    >
+                        <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div class="flex gap-4 mb-6">
+                    <div
+                        class="w-24 h-24 rounded-lg flex items-center justify-center flex-shrink-0"
+                        :style="{ backgroundColor: getCloudTrackColor(selectedCloudTrack) }"
+                    >
+                        <UIcon name="i-heroicons-musical-note" class="w-12 h-12 text-white" />
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-white">
+                            {{ selectedCloudTrack.title || selectedCloudTrack.fileName }}
+                        </h3>
+                        <p class="text-gray-400">{{ selectedCloudTrack.artist || (t("music.local.unknownArtist") || "Unknown Artist") }}</p>
+                        <p class="text-gray-500 text-sm">{{ selectedCloudTrack.album || (t("music.local.unknownAlbum") || "Unknown Album") }}</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between py-2 border-b border-gray-800">
+                        <span class="text-gray-400">{{ t("music.local.infoFile") || "File" }}</span>
+                        <span class="text-white">{{ selectedCloudTrack.fileName }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-gray-800">
+                        <span class="text-gray-400">{{ t("music.local.infoDuration") || "Duration" }}</span>
+                        <span class="text-white">{{ formatCloudDuration(selectedCloudTrack.duration) }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-gray-800">
+                        <span class="text-gray-400">{{ t("music.local.infoSize") || "Size" }}</span>
+                        <span class="text-white">{{ formatCloudFileSize(selectedCloudTrack.fileSize) }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-gray-800">
+                        <span class="text-gray-400">{{ t("music.local.infoFormat") || "Format" }}</span>
+                        <span class="text-white">{{ selectedCloudTrack.mimeType || 'audio/mpeg' }}</span>
+                    </div>
+                    <div v-if="selectedCloudTrack.year" class="flex justify-between py-2 border-b border-gray-800">
+                        <span class="text-gray-400">{{ t("music.local.infoYear") || "Year" }}</span>
+                        <span class="text-white">{{ selectedCloudTrack.year }}</span>
+                    </div>
+                    <div v-if="selectedCloudTrack.genre" class="flex justify-between py-2 border-b border-gray-800">
+                        <span class="text-gray-400">{{ t("music.local.infoGenre") || "Genre" }}</span>
+                        <span class="text-white">{{ selectedCloudTrack.genre }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-gray-800">
+                        <span class="text-gray-400">{{ t("music.cloud.playCount") || "Play Count" }}</span>
+                        <span class="text-white">{{ selectedCloudTrack.playCount || 0 }}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-gray-800">
+                        <span class="text-gray-400">{{ t("music.cloud.uploadedAt") || "Uploaded" }}</span>
+                        <span class="text-white">{{ new Date(selectedCloudTrack.createdAt).toLocaleDateString() }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloud Add to Playlist Modal -->
+        <div
+            v-if="showCloudAddToPlaylist && cloudTrackToAdd"
+            class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            @click.self="showCloudAddToPlaylist = false"
+        >
+            <div class="bg-gray-900 rounded-xl max-w-sm w-full p-6">
+                <div class="flex items-start justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white">{{ t("music.local.addToPlaylist") || "Add to Playlist" }}</h2>
+                    <button
+                        class="p-1 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white"
+                        @click="showCloudAddToPlaylist = false"
+                    >
+                        <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div v-if="cloudPlaylists.length === 0" class="text-center py-8">
+                    <UIcon name="i-heroicons-musical-note" class="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                    <p class="text-gray-400">{{ t("music.cloud.noPlaylists") || "No playlists yet" }}</p>
+                </div>
+
+                <div v-else class="space-y-2 max-h-64 overflow-y-auto">
+                    <button
+                        v-for="playlist in cloudPlaylists"
+                        :key="playlist.id"
+                        class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left hover:bg-gray-800 transition-colors"
+                        @click="handleCloudAddToPlaylist(playlist.id)"
+                    >
+                        <div
+                            class="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
+                            :style="{ backgroundColor: playlist.coverColor }"
+                        >
+                            <UIcon name="i-heroicons-musical-note" class="w-5 h-5 text-white" />
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-white font-medium truncate">{{ playlist.name }}</p>
+                            <p class="text-gray-500 text-sm">{{ playlist.trackCount }} {{ t("music.local.tracks") || "tracks" }}</p>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloud Delete Confirmation Modal -->
+        <div
+            v-if="showCloudDeleteConfirm"
+            class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            @click.self="cancelCloudDelete"
+        >
+            <div class="bg-gray-900 rounded-xl max-w-sm w-full p-6">
+                <div class="flex items-start justify-between mb-4">
+                    <h2 class="text-xl font-bold text-white">{{ t("music.cloud.deleteTrack") || "Delete Track" }}</h2>
+                    <button
+                        class="p-1 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white"
+                        @click="cancelCloudDelete"
+                    >
+                        <UIcon name="i-heroicons-x-mark" class="w-6 h-6" />
+                    </button>
+                </div>
+
+                <p class="text-gray-400 mb-6">
+                    {{ t("music.cloud.deleteConfirm") || "Are you sure you want to delete this track? This action cannot be undone." }}
+                </p>
+
+                <div class="flex justify-end gap-3">
+                    <UButton
+                        variant="ghost"
+                        @click="cancelCloudDelete"
+                    >
+                        {{ t("common.cancel") || "Cancel" }}
+                    </UButton>
+                    <UButton
+                        color="error"
+                        class="bg-red-600 hover:bg-red-700"
+                        @click="handleCloudDeleteTrack"
+                    >
+                        {{ t("common.delete") || "Delete" }}
+                    </UButton>
                 </div>
             </div>
         </div>
