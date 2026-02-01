@@ -171,27 +171,29 @@ const userMenuItems = computed(() => [
                     class="w-36"
                     @update:model-value="onLocaleChange"
                 />
-                <!-- User Profile Dropdown (app mode only) -->
-                <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
-                    <UButton
-                        color="neutral"
-                        variant="ghost"
-                        class="rounded-full p-0"
-                    >
-                        <UAvatar
-                            v-if="userAvatar"
-                            :src="userAvatar"
-                            :alt="userName"
-                            size="md"
-                        />
-                        <UAvatar
-                            v-else
-                            :text="userInitials || '?'"
-                            size="md"
-                            class="bg-castium-green text-white"
-                        />
-                    </UButton>
-                </UDropdownMenu>
+                <!-- User Profile Dropdown (app mode only) - Client-side only to avoid hydration mismatch -->
+                <ClientOnly>
+                    <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
+                        <UButton
+                            color="neutral"
+                            variant="ghost"
+                            class="rounded-full p-0"
+                        >
+                            <UAvatar
+                                v-if="userAvatar"
+                                :src="userAvatar"
+                                :alt="userName"
+                                size="md"
+                            />
+                            <UAvatar
+                                v-else
+                                :text="userInitials || '?'"
+                                size="md"
+                                class="bg-castium-green text-white"
+                            />
+                        </UButton>
+                    </UDropdownMenu>
+                </ClientOnly>
                 <UButton
                     v-if="mode === 'landing'"
                     class="[&_svg]:h-7 [&_svg]:w-7"
