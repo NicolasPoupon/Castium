@@ -134,6 +134,7 @@
             "movies": "Films",
             "music": "Musiques",
             "podcasts": "Podcasts",
+            "tv": "TV",
             "lectures": "Lectures"
         },
         "user": {
@@ -404,6 +405,26 @@
                 "progress": "Progression",
                 "favorite": "Favori"
             }
+        }
+    },
+    "tv": {
+        "title": "TV en direct",
+        "subtitle": "Regardez vos chaînes préférées en streaming",
+        "searchPlaceholder": "Rechercher une chaîne...",
+        "allGroups": "Tous les pays",
+        "favorites": "Favoris",
+        "loading": "Chargement des chaînes...",
+        "retry": "Réessayer",
+        "channelCount": "{count} chaînes sur {total}",
+        "noChannels": "Aucune chaîne trouvée",
+        "player": {
+            "externalLink": "Ce flux nécessite une application externe (YouTube/Twitch)",
+            "networkError": "Erreur réseau - Tentative de reconnexion...",
+            "mediaError": "Erreur de lecture - Tentative de récupération...",
+            "fatalError": "Impossible de lire ce flux",
+            "hlsNotSupported": "Votre navigateur ne supporte pas ce format",
+            "loadError": "Erreur lors du chargement du flux",
+            "openExternal": "Ouvrir dans une nouvelle fenêtre"
         }
     }
 }

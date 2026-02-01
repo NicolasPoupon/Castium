@@ -136,6 +136,7 @@
             "movies": "Filmy",
             "music": "Muzyka",
             "podcasts": "Podcasty",
+            "tv": "TV",
             "lectures": "Wideo"
         },
         "user": {
@@ -406,6 +407,26 @@
                 "progress": "Postęp",
                 "favorite": "Ulubiony"
             }
+        }
+    },
+    "tv": {
+        "title": "TV na żywo",
+        "subtitle": "Oglądaj ulubione kanały na żywo",
+        "searchPlaceholder": "Szukaj kanału...",
+        "allGroups": "Wszystkie kraje",
+        "favorites": "Ulubione",
+        "loading": "Ładowanie kanałów...",
+        "retry": "Ponów",
+        "channelCount": "{count} kanałów z {total}",
+        "noChannels": "Nie znaleziono kanałów",
+        "player": {
+            "externalLink": "Ten strumień wymaga zewnętrznej aplikacji (YouTube/Twitch)",
+            "networkError": "Błąd sieci - Próba ponownego połączenia...",
+            "mediaError": "Błąd odtwarzania - Próba naprawy...",
+            "fatalError": "Nie można odtworzyć tego strumienia",
+            "hlsNotSupported": "Twoja przeglądarka nie obsługuje tego formatu",
+            "loadError": "Błąd ładowania strumienia",
+            "openExternal": "Otwórz w nowym oknie"
         }
     }
 }

@@ -41,6 +41,11 @@ const items = computed(() => [
         to: "/app/podcasts",
     },
     {
+        label: t("navbar.selector.tv"),
+        value: "tv",
+        to: "/app/tv",
+    },
+    {
         label: t("navbar.selector.lectures"),
         value: "lectures",
         to: "/app/lectures",
@@ -51,6 +56,7 @@ const activeTab = computed({
     get() {
         if (route.path.includes("/music")) return "music"
         if (route.path.includes("/podcasts")) return "podcasts"
+        if (route.path.includes("/tv")) return "tv"
         if (route.path.includes("/lectures")) return "lectures"
         return "movies"
     },
@@ -64,6 +70,7 @@ const modeClass = computed(() => {
     if (route.path.includes("/movies")) return "fill-red-800"
     if (route.path.includes("/music")) return "fill-green-600"
     if (route.path.includes("/podcasts")) return "fill-orange-400"
+    if (route.path.includes("/tv")) return "fill-amber-800"
     if (route.path.includes("/lectures")) return "fill-purple-500"
 
     return "fill-gray-300"

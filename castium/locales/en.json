@@ -136,6 +136,7 @@
             "movies": "Movies",
             "music": "Music",
             "podcasts": "Podcasts",
+            "tv": "TV",
             "lectures": "Videos"
         },
         "user": {
@@ -406,6 +407,26 @@
                 "progress": "Progress",
                 "favorite": "Favorite"
             }
+        }
+    },
+    "tv": {
+        "title": "Live TV",
+        "subtitle": "Watch your favorite channels streaming live",
+        "searchPlaceholder": "Search for a channel...",
+        "allGroups": "All countries",
+        "favorites": "Favorites",
+        "loading": "Loading channels...",
+        "retry": "Retry",
+        "channelCount": "{count} channels of {total}",
+        "noChannels": "No channels found",
+        "player": {
+            "externalLink": "This stream requires an external app (YouTube/Twitch)",
+            "networkError": "Network error - Attempting to reconnect...",
+            "mediaError": "Playback error - Attempting recovery...",
+            "fatalError": "Unable to play this stream",
+            "hlsNotSupported": "Your browser does not support this format",
+            "loadError": "Error loading the stream",
+            "openExternal": "Open in new window"
         }
     }
 }
