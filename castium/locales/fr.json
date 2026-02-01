@@ -256,9 +256,58 @@
         }
     },
     "podcasts": {
-        "hero": {
-            "title": "Podcasts à venir",
-            "description": "La section podcasts sera bientôt disponible. Vous pourrez écouter et gérer vos podcasts préférés."
+        "title": "Podcasts",
+        "tabs": {
+            "local": "Local",
+            "cloud": "Cloud"
+        },
+        "filter": {
+            "all": "Tous",
+            "inProgress": "En cours",
+            "liked": "Aimés"
+        },
+        "searchPlaceholder": "Rechercher un podcast...",
+        "unknownShow": "Émission inconnue",
+        "completed": "Terminé",
+        "local": {
+            "title": "Vos podcasts locaux",
+            "description": "Sélectionnez un dossier contenant vos fichiers podcast pour les écouter directement depuis Castium.",
+            "selectFolder": "Sélectionner un dossier",
+            "previousFolder": "Dossier précédemment sélectionné",
+            "reauthorize": "Réautoriser l'accès",
+            "changeFolder": "Changer de dossier",
+            "noPodcasts": "Aucun podcast trouvé dans ce dossier"
+        },
+        "cloud": {
+            "upload": "Télécharger",
+            "uploading": "Téléchargement...",
+            "uploadFirst": "Téléchargez votre premier podcast",
+            "noPodcasts": "Aucun podcast téléchargé"
+        },
+        "info": {
+            "progress": "Progression",
+            "notes": "Notes",
+            "comment": "Commentaire",
+            "edit": "Modifier",
+            "noNotes": "Aucune note",
+            "noComment": "Aucun commentaire",
+            "file": "Fichier",
+            "size": "Taille",
+            "like": "Aimer",
+            "liked": "Aimé",
+            "play": "Écouter",
+            "delete": "Supprimer"
+        },
+        "editNotes": {
+            "title": "Modifier les notes",
+            "notes": "Notes",
+            "notesPlaceholder": "Ajouter des notes sur ce podcast...",
+            "comment": "Commentaire",
+            "commentPlaceholder": "Ajouter vos pensées ou commentaires..."
+        },
+        "deleteConfirm": {
+            "title": "Supprimer le podcast",
+            "message": "Êtes-vous sûr de vouloir supprimer ce podcast ? Cette action est irréversible."
         }
     },
     "lectures": {
