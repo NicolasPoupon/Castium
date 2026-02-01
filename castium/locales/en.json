@@ -258,9 +258,58 @@
         }
     },
     "podcasts": {
-        "hero": {
-            "title": "Podcasts coming soon",
-            "description": "The podcasts section will be available soon. You’ll be able to listen to and manage your favorite podcasts."
+        "title": "Podcasts",
+        "tabs": {
+            "local": "Local",
+            "cloud": "Cloud"
+        },
+        "filter": {
+            "all": "All",
+            "inProgress": "In Progress",
+            "liked": "Liked"
+        },
+        "searchPlaceholder": "Search podcasts...",
+        "unknownShow": "Unknown show",
+        "completed": "Completed",
+        "local": {
+            "title": "Your local podcasts",
+            "description": "Select a folder containing your podcast files to play them directly from Castium.",
+            "selectFolder": "Select a folder",
+            "previousFolder": "Previously selected folder",
+            "reauthorize": "Reauthorize access",
+            "changeFolder": "Change folder",
+            "noPodcasts": "No podcasts found in this folder"
+        },
+        "cloud": {
+            "upload": "Upload",
+            "uploading": "Uploading...",
+            "uploadFirst": "Upload your first podcast",
+            "noPodcasts": "No podcasts uploaded yet"
+        },
+        "info": {
+            "progress": "Progress",
+            "notes": "Notes",
+            "comment": "Comment",
+            "edit": "Edit",
+            "noNotes": "No notes yet",
+            "noComment": "No comment yet",
+            "file": "File",
+            "size": "Size",
+            "like": "Like",
+            "liked": "Liked",
+            "play": "Play",
+            "delete": "Delete"
+        },
+        "editNotes": {
+            "title": "Edit Notes",
+            "notes": "Notes",
+            "notesPlaceholder": "Add notes about this podcast...",
+            "comment": "Comment",
+            "commentPlaceholder": "Add your thoughts or comments..."
+        },
+        "deleteConfirm": {
+            "title": "Delete Podcast",
+            "message": "Are you sure you want to delete this podcast? This action cannot be undone."
         }
     },
     "lectures": {

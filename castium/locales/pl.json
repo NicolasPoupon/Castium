@@ -258,9 +258,58 @@
         }
     },
     "podcasts": {
-        "hero": {
-            "title": "Podcasty już wkrótce",
-            "description": "Sekcja podcastów będzie wkrótce dostępna. Będziesz mógł słuchać i zarządzać swoimi ulubionymi podcastami."
+        "title": "Podcasty",
+        "tabs": {
+            "local": "Lokalne",
+            "cloud": "Chmura"
+        },
+        "filter": {
+            "all": "Wszystkie",
+            "inProgress": "W trakcie",
+            "liked": "Polubione"
+        },
+        "searchPlaceholder": "Szukaj podcastów...",
+        "unknownShow": "Nieznany program",
+        "completed": "Ukończone",
+        "local": {
+            "title": "Twoje lokalne podcasty",
+            "description": "Wybierz folder z plikami podcastów, aby słuchać ich bezpośrednio w Castium.",
+            "selectFolder": "Wybierz folder",
+            "previousFolder": "Wcześniej wybrany folder",
+            "reauthorize": "Ponownie autoryzuj dostęp",
+            "changeFolder": "Zmień folder",
+            "noPodcasts": "Nie znaleziono podcastów w tym folderze"
+        },
+        "cloud": {
+            "upload": "Prześlij",
+            "uploading": "Przesyłanie...",
+            "uploadFirst": "Prześlij swój pierwszy podcast",
+            "noPodcasts": "Brak przesłanych podcastów"
+        },
+        "info": {
+            "progress": "Postęp",
+            "notes": "Notatki",
+            "comment": "Komentarz",
+            "edit": "Edytuj",
+            "noNotes": "Brak notatek",
+            "noComment": "Brak komentarza",
+            "file": "Plik",
+            "size": "Rozmiar",
+            "like": "Polub",
+            "liked": "Polubione",
+            "play": "Odtwórz",
+            "delete": "Usuń"
+        },
+        "editNotes": {
+            "title": "Edytuj notatki",
+            "notes": "Notatki",
+            "notesPlaceholder": "Dodaj notatki o tym podcaście...",
+            "comment": "Komentarz",
+            "commentPlaceholder": "Dodaj swoje przemyślenia lub komentarze..."
+        },
+        "deleteConfirm": {
+            "title": "Usuń podcast",
+            "message": "Czy na pewno chcesz usunąć ten podcast? Tej operacji nie można cofnąć."
         }
     },
     "lectures": {
