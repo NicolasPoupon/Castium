@@ -3,6 +3,8 @@
  * Manages music uploads to Supabase Storage with metadata extraction
  */
 
+import type { UploadProgress } from '~/types/upload'
+
 export interface CloudTrackMetadata {
     title?: string
     artist?: string
@@ -49,12 +51,12 @@ export interface CloudPlaylist {
     updatedAt: string
 }
 
-export interface UploadProgress {
-    fileName: string
-    progress: number
-    status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
-    error?: string
-}
+// export interface UploadProgress {
+//     fileName: string
+//     progress: number
+//     status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
+//     error?: string
+// }
 
 export interface CloudPlaybackState {
     currentTrack: CloudTrack | null
@@ -102,7 +104,7 @@ export const useCloudMusic = () => {
         isShuffled: false,
         repeatMode: 'off',
         queue: [],
-        queueIndex: 0
+        queueIndex: 0,
     })
 
     // Sorted tracks
@@ -212,14 +214,18 @@ export const useCloudMusic = () => {
         const filePath = `${userId}/${fileName}`
 
         // Update progress
-        const progressIndex = uploadProgress.value.findIndex(p => p.fileName === file.name)
-        const updateProgress = (progress: number, status: UploadProgress['status'], err?: string) => {
+        const progressIndex = uploadProgress.value.findIndex((p) => p.fileName === file.name)
+        const updateProgress = (
+            progress: number,
+            status: UploadProgress['status'],
+            err?: string
+        ) => {
             if (progressIndex >= 0) {
                 uploadProgress.value[progressIndex] = {
                     fileName: file.name,
                     progress,
                     status,
-                    error: err
+                    error: err,
                 }
             }
         }
@@ -236,7 +242,7 @@ export const useCloudMusic = () => {
                 .from(MUSIC_BUCKET)
                 .upload(filePath, file, {
                     contentType: file.type,
-                    upsert: false
+                    upsert: false,
                 })
 
             if (uploadError) {
@@ -245,9 +251,7 @@ export const useCloudMusic = () => {
             updateProgress(80, 'processing')
 
             // Get public URL
-            const { data: urlData } = supabase.storage
-                .from(MUSIC_BUCKET)
-                .getPublicUrl(filePath)
+            const { data: urlData } = supabase.storage.from(MUSIC_BUCKET).getPublicUrl(filePath)
 
             // Insert metadata into database
             const insertPayload: Record<string, any> = {
@@ -263,27 +267,27 @@ export const useCloudMusic = () => {
                 release_year: metadata.year,
                 genre: metadata.genre,
                 track_number: metadata.trackNumber,
-                disc_number: metadata.discNumber
+                disc_number: metadata.discNumber,
             }
 
             const tryInsert = async (payload: Record<string, any>) => {
-                return await supabase
-                    .from('cloud_tracks')
-                    .insert(payload)
-                    .select()
-                    .single()
+                return await supabase.from('cloud_tracks').insert(payload).select().single()
             }
 
-            let retryPayload: Record<string, any> = { ...insertPayload }
+            const retryPayload: Record<string, any> = { ...insertPayload }
             let { data: trackData, error: dbError } = await tryInsert(retryPayload)
 
             // Backward-compat: retry without missing columns
             let maxRetries = 10
             while (dbError && maxRetries-- > 0) {
                 const message = String((dbError as any)?.message || (dbError as any)?.details || '')
-                console.warn('[CloudMusic] Insert error, attempting recovery:', { message, payload: Object.keys(retryPayload) })
+                console.warn('[CloudMusic] Insert error, attempting recovery:', {
+                    message,
+                    payload: Object.keys(retryPayload),
+                })
 
-                const unknownColumn = /Could not find the '([^']+)' column|column "([^"]+)" (?:of relation "[^"]+" )?does not exist/i
+                const unknownColumn =
+                    /Could not find the '([^']+)' column|column "([^"]+)" (?:of relation "[^"]+" )?does not exist/i
                 const match = message.match(unknownColumn)
                 const missingColumn = (match?.[1] || match?.[2] || '').trim()
 
@@ -327,7 +331,7 @@ export const useCloudMusic = () => {
                 lastPlayedAt: trackData.last_played_at ?? undefined,
                 createdAt: trackData.created_at,
                 updatedAt: trackData.updated_at,
-                publicUrl: urlData.publicUrl
+                publicUrl: urlData.publicUrl,
             }
 
             return uploadedTrack
@@ -344,10 +348,10 @@ export const useCloudMusic = () => {
         error.value = null
 
         // Initialize progress for all files
-        uploadProgress.value = Array.from(files).map(file => ({
+        uploadProgress.value = Array.from(files).map((file) => ({
             fileName: file.name,
             progress: 0,
-            status: 'pending' as const
+            status: 'pending' as const,
         }))
 
         try {
@@ -421,7 +425,7 @@ export const useCloudMusic = () => {
                     lastPlayedAt: track.last_played_at ?? undefined,
                     createdAt: track.created_at,
                     updatedAt: track.updated_at,
-                    publicUrl: urlData.publicUrl
+                    publicUrl: urlData.publicUrl,
                 }
             })
         } catch (e: any) {
@@ -434,7 +438,7 @@ export const useCloudMusic = () => {
 
     // Delete a track
     const deleteTrack = async (trackId: string): Promise<boolean> => {
-        const track = tracks.value.find(t => t.id === trackId)
+        const track = tracks.value.find((t) => t.id === trackId)
         if (!track) return false
 
         try {
@@ -458,8 +462,8 @@ export const useCloudMusic = () => {
             }
 
             // Remove from local state
-            tracks.value = tracks.value.filter(t => t.id !== trackId)
-            likedTracks.value = likedTracks.value.filter(t => t.id !== trackId)
+            tracks.value = tracks.value.filter((t) => t.id !== trackId)
+            likedTracks.value = likedTracks.value.filter((t) => t.id !== trackId)
 
             // Stop playback if this track is playing
             if (playbackState.value.currentTrack?.id === trackId) {
@@ -478,7 +482,7 @@ export const useCloudMusic = () => {
     const toggleLike = async (trackId: string): Promise<void> => {
         if (!user.value) return
 
-        const track = tracks.value.find(t => t.id === trackId)
+        const track = tracks.value.find((t) => t.id === trackId)
         if (!track) return
 
         try {
@@ -491,15 +495,13 @@ export const useCloudMusic = () => {
                     .eq('track_id', trackId)
 
                 track.isLiked = false
-                likedTracks.value = likedTracks.value.filter(t => t.id !== trackId)
+                likedTracks.value = likedTracks.value.filter((t) => t.id !== trackId)
             } else {
                 // Like
-                await supabase
-                    .from('cloud_liked_tracks')
-                    .insert({
-                        user_id: user.value.id,
-                        track_id: trackId
-                    })
+                await supabase.from('cloud_liked_tracks').insert({
+                    user_id: user.value.id,
+                    track_id: trackId,
+                })
 
                 track.isLiked = true
                 likedTracks.value.unshift(track)
@@ -521,10 +523,12 @@ export const useCloudMusic = () => {
         try {
             const { data, error: fetchError } = await supabase
                 .from('cloud_liked_tracks')
-                .select(`
+                .select(
+                    `
                     track_id,
                     cloud_tracks (*)
-                `)
+                `
+                )
                 .eq('user_id', user.value.id)
                 .order('liked_at', { ascending: false })
 
@@ -536,7 +540,7 @@ export const useCloudMusic = () => {
                     .eq('user_id', user.value.id)
 
                 if (likedIds && likedIds.length > 0) {
-                    likedTracks.value = tracks.value.filter(t =>
+                    likedTracks.value = tracks.value.filter((t) =>
                         likedIds.some((l: any) => l.track_id === t.id)
                     )
                 }
@@ -568,7 +572,7 @@ export const useCloudMusic = () => {
                         playCount: track.play_count ?? 0,
                         createdAt: track.created_at,
                         updatedAt: track.updated_at,
-                        publicUrl: urlData.publicUrl
+                        publicUrl: urlData.publicUrl,
                     }
                 })
         } catch (e: any) {
@@ -595,7 +599,7 @@ export const useCloudMusic = () => {
 
             // Get track counts for each playlist
             const playlistIds = (data || []).map((p: any) => p.id)
-            let trackCounts: Record<string, number> = {}
+            const trackCounts: Record<string, number> = {}
 
             if (playlistIds.length > 0) {
                 const { data: countData } = await supabase
@@ -618,7 +622,7 @@ export const useCloudMusic = () => {
                 coverColor: p.cover_color || getRandomColor(),
                 trackCount: trackCounts[p.id] || 0,
                 createdAt: p.created_at,
-                updatedAt: p.updated_at
+                updatedAt: p.updated_at,
             }))
         } catch (e: any) {
             console.error('[CloudMusic] Fetch playlists failed:', e)
@@ -626,7 +630,10 @@ export const useCloudMusic = () => {
     }
 
     // Create playlist
-    const createPlaylist = async (name: string, description?: string): Promise<CloudPlaylist | null> => {
+    const createPlaylist = async (
+        name: string,
+        description?: string
+    ): Promise<CloudPlaylist | null> => {
         if (!user.value) return null
 
         try {
@@ -636,7 +643,7 @@ export const useCloudMusic = () => {
                     user_id: user.value.id,
                     name,
                     description,
-                    cover_color: getRandomColor()
+                    cover_color: getRandomColor(),
                 })
                 .select()
                 .single()
@@ -653,7 +660,7 @@ export const useCloudMusic = () => {
                 coverColor: data.cover_color,
                 trackCount: 0,
                 createdAt: data.created_at,
-                updatedAt: data.updated_at
+                updatedAt: data.updated_at,
             }
 
             playlists.value.unshift(playlist)
@@ -676,7 +683,7 @@ export const useCloudMusic = () => {
                 throw new Error(deleteError.message)
             }
 
-            playlists.value = playlists.value.filter(p => p.id !== playlistId)
+            playlists.value = playlists.value.filter((p) => p.id !== playlistId)
             return true
         } catch (e: any) {
             console.error('[CloudMusic] Delete playlist failed:', e)
@@ -699,20 +706,18 @@ export const useCloudMusic = () => {
 
             const nextPosition = (posData?.[0]?.position ?? -1) + 1
 
-            const { error: insertError } = await supabase
-                .from('cloud_playlist_tracks')
-                .insert({
-                    playlist_id: playlistId,
-                    track_id: trackId,
-                    position: nextPosition
-                })
+            const { error: insertError } = await supabase.from('cloud_playlist_tracks').insert({
+                playlist_id: playlistId,
+                track_id: trackId,
+                position: nextPosition,
+            })
 
             if (insertError) {
                 throw new Error(insertError.message)
             }
 
             // Update local playlist track count
-            const playlist = playlists.value.find(p => p.id === playlistId)
+            const playlist = playlists.value.find((p) => p.id === playlistId)
             if (playlist) {
                 playlist.trackCount++
             }
@@ -725,7 +730,10 @@ export const useCloudMusic = () => {
     }
 
     // Remove track from playlist
-    const removeTrackFromPlaylist = async (playlistId: string, trackId: string): Promise<boolean> => {
+    const removeTrackFromPlaylist = async (
+        playlistId: string,
+        trackId: string
+    ): Promise<boolean> => {
         try {
             const { error: deleteError } = await supabase
                 .from('cloud_playlist_tracks')
@@ -738,7 +746,7 @@ export const useCloudMusic = () => {
             }
 
             // Update local playlist track count
-            const playlist = playlists.value.find(p => p.id === playlistId)
+            const playlist = playlists.value.find((p) => p.id === playlistId)
             if (playlist && playlist.trackCount > 0) {
                 playlist.trackCount--
             }
@@ -755,10 +763,12 @@ export const useCloudMusic = () => {
         try {
             const { data, error: fetchError } = await supabase
                 .from('cloud_playlist_tracks')
-                .select(`
+                .select(
+                    `
                     position,
                     cloud_tracks (*)
-                `)
+                `
+                )
                 .eq('playlist_id', playlistId)
                 .order('position', { ascending: true })
 
@@ -799,7 +809,7 @@ export const useCloudMusic = () => {
                         playCount: track.play_count ?? 0,
                         createdAt: track.created_at,
                         updatedAt: track.updated_at,
-                        publicUrl: urlData.publicUrl
+                        publicUrl: urlData.publicUrl,
                     }
                 })
         } catch (e: any) {
@@ -965,16 +975,32 @@ export const useCloudMusic = () => {
 
     const getRandomColor = (): string => {
         const colors = [
-            '#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a',
-            '#0891b2', '#2563eb', '#7c3aed', '#c026d3', '#e11d48'
+            '#dc2626',
+            '#ea580c',
+            '#d97706',
+            '#65a30d',
+            '#16a34a',
+            '#0891b2',
+            '#2563eb',
+            '#7c3aed',
+            '#c026d3',
+            '#e11d48',
         ]
         return colors[Math.floor(Math.random() * colors.length)]
     }
 
     const getTrackColor = (track: CloudTrack): string => {
         const colors = [
-            '#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a',
-            '#0891b2', '#2563eb', '#7c3aed', '#c026d3', '#e11d48'
+            '#dc2626',
+            '#ea580c',
+            '#d97706',
+            '#65a30d',
+            '#16a34a',
+            '#0891b2',
+            '#2563eb',
+            '#7c3aed',
+            '#c026d3',
+            '#e11d48',
         ]
         const index = (track.title?.length || track.fileName.length) % colors.length
         return colors[index]
@@ -1041,6 +1067,6 @@ export const useCloudMusic = () => {
         // Helpers
         getTrackColor,
         formatFileSize,
-        formatDuration
+        formatDuration,
     }
 }

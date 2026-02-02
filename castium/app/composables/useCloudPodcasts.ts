@@ -3,6 +3,8 @@
  * Manages podcast uploads to Supabase Storage with progress tracking, notes, likes
  */
 
+import type { UploadProgress } from '~/types/upload'
+
 export interface CloudPodcast {
     id: string
     userId: string
@@ -43,12 +45,12 @@ export interface CloudPodcastPlaybackState {
     playbackSpeed: number
 }
 
-export interface UploadProgress {
-    fileName: string
-    progress: number
-    status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
-    error?: string
-}
+// export interface UploadProgress {
+//     fileName: string
+//     progress: number
+//     status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
+//     error?: string
+// }
 
 const PODCAST_BUCKET = 'podcasts'
 
@@ -72,7 +74,7 @@ const playbackState = ref<CloudPodcastPlaybackState>({
     duration: 0,
     volume: 1,
     isMuted: false,
-    playbackSpeed: 1
+    playbackSpeed: 1,
 })
 
 export const useCloudPodcasts = () => {
@@ -81,10 +83,8 @@ export const useCloudPodcasts = () => {
 
     // Update filtered lists
     const updateFilteredLists = () => {
-        likedPodcasts.value = podcasts.value.filter(p => p.isLiked)
-        inProgressPodcasts.value = podcasts.value.filter(p =>
-            p.currentTime > 0 && !p.isCompleted
-        )
+        likedPodcasts.value = podcasts.value.filter((p) => p.isLiked)
+        inProgressPodcasts.value = podcasts.value.filter((p) => p.currentTime > 0 && !p.isCompleted)
     }
 
     // Initialize audio element
@@ -95,7 +95,10 @@ export const useCloudPodcasts = () => {
             audioElement.value.addEventListener('timeupdate', () => {
                 playbackState.value.currentTime = audioElement.value?.currentTime || 0
                 // Auto-save progress every 10 seconds
-                if (playbackState.value.currentPodcast && Math.floor(playbackState.value.currentTime) % 10 === 0) {
+                if (
+                    playbackState.value.currentPodcast &&
+                    Math.floor(playbackState.value.currentTime) % 10 === 0
+                ) {
                     saveProgress()
                 }
             })
@@ -144,7 +147,7 @@ export const useCloudPodcasts = () => {
             audio.onerror = () => {
                 URL.revokeObjectURL(audio.src)
                 resolve({
-                    title: file.name.replace(/\.[^/.]+$/, '').replace(/[._-]/g, ' ')
+                    title: file.name.replace(/\.[^/.]+$/, '').replace(/[._-]/g, ' '),
                 })
             }
 
@@ -163,14 +166,18 @@ export const useCloudPodcasts = () => {
         const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
         const filePath = `${userId}/${fileName}`
 
-        const progressIndex = uploadProgress.value.findIndex(p => p.fileName === file.name)
-        const updateProgressFn = (progress: number, status: UploadProgress['status'], err?: string) => {
+        const progressIndex = uploadProgress.value.findIndex((p) => p.fileName === file.name)
+        const updateProgressFn = (
+            progress: number,
+            status: UploadProgress['status'],
+            err?: string
+        ) => {
             if (progressIndex >= 0) {
                 uploadProgress.value[progressIndex] = {
                     fileName: file.name,
                     progress,
                     status,
-                    error: err
+                    error: err,
                 }
             }
         }
@@ -187,7 +194,7 @@ export const useCloudPodcasts = () => {
                 .from(PODCAST_BUCKET)
                 .upload(filePath, file, {
                     contentType: file.type,
-                    upsert: false
+                    upsert: false,
                 })
 
             if (uploadError) {
@@ -196,9 +203,7 @@ export const useCloudPodcasts = () => {
             updateProgressFn(80, 'processing')
 
             // Get public URL
-            const { data: urlData } = supabase.storage
-                .from(PODCAST_BUCKET)
-                .getPublicUrl(filePath)
+            const { data: urlData } = supabase.storage.from(PODCAST_BUCKET).getPublicUrl(filePath)
 
             // Insert into database
             const insertPayload = {
@@ -253,7 +258,7 @@ export const useCloudPodcasts = () => {
                 lastPlayedAt: podcastData.last_played_at,
                 createdAt: podcastData.created_at,
                 updatedAt: podcastData.updated_at,
-                publicUrl: urlData.publicUrl
+                publicUrl: urlData.publicUrl,
             }
 
             return uploadedPodcast
@@ -269,10 +274,10 @@ export const useCloudPodcasts = () => {
         uploading.value = true
         error.value = null
 
-        uploadProgress.value = Array.from(files).map(file => ({
+        uploadProgress.value = Array.from(files).map((file) => ({
             fileName: file.name,
             progress: 0,
-            status: 'pending' as const
+            status: 'pending' as const,
         }))
 
         try {
@@ -341,7 +346,7 @@ export const useCloudPodcasts = () => {
                     lastPlayedAt: p.last_played_at,
                     createdAt: p.created_at,
                     updatedAt: p.updated_at,
-                    publicUrl: urlData.publicUrl
+                    publicUrl: urlData.publicUrl,
                 }
             })
 
@@ -379,7 +384,7 @@ export const useCloudPodcasts = () => {
                 throw new Error(dbError.message)
             }
 
-            const index = podcasts.value.findIndex(p => p.id === podcast.id)
+            const index = podcasts.value.findIndex((p) => p.id === podcast.id)
             if (index >= 0) {
                 podcasts.value.splice(index, 1)
             }
@@ -425,7 +430,11 @@ export const useCloudPodcasts = () => {
     }
 
     // Update notes and comment
-    const updateNotes = async (podcast: CloudPodcast, notes: string, comment: string): Promise<void> => {
+    const updateNotes = async (
+        podcast: CloudPodcast,
+        notes: string,
+        comment: string
+    ): Promise<void> => {
         if (!user.value) return
 
         podcast.notes = notes
@@ -461,7 +470,7 @@ export const useCloudPodcasts = () => {
                 .update({
                     playback_time: currentTime,
                     progress,
-                    last_played_at: podcast.lastPlayedAt
+                    last_played_at: podcast.lastPlayedAt,
                 })
                 .eq('id', podcast.id)
                 .eq('user_id', user.value.id)
@@ -487,7 +496,7 @@ export const useCloudPodcasts = () => {
                 .update({
                     is_completed: true,
                     progress: 100,
-                    playback_time: podcast.duration || 0
+                    playback_time: podcast.duration || 0,
                 })
                 .eq('id', podcast.id)
                 .eq('user_id', user.value.id)
@@ -603,13 +612,17 @@ export const useCloudPodcasts = () => {
     // Get podcast color
     const getPodcastColor = (podcast: CloudPodcast): string => {
         const colors = [
-            'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
-            'bg-red-500', 'bg-pink-500', 'bg-rose-500'
+            'bg-orange-500',
+            'bg-amber-500',
+            'bg-yellow-500',
+            'bg-red-500',
+            'bg-pink-500',
+            'bg-rose-500',
         ]
         let hash = 0
         const str = podcast.album || podcast.title || podcast.fileName
         for (let i = 0; i < str.length; i++) {
-            hash = ((hash << 5) - hash) + str.charCodeAt(i)
+            hash = (hash << 5) - hash + str.charCodeAt(i)
         }
         return colors[Math.abs(hash) % colors.length]
     }
