@@ -137,6 +137,7 @@
             "music": "Music",
             "podcasts": "Podcasts",
             "tv": "TV",
+            "radio": "Radio",
             "lectures": "Videos"
         },
         "user": {
@@ -411,14 +412,16 @@
     },
     "tv": {
         "title": "Live TV",
-        "subtitle": "Watch your favorite channels streaming live",
+        "subtitle": "Browse channels by category or language",
         "searchPlaceholder": "Search for a channel...",
-        "allGroups": "All countries",
-        "favorites": "Favorites",
+        "favoritesTitle": "My favorite channels",
         "loading": "Loading channels...",
-        "retry": "Retry",
+        "back": "Back",
         "channelCount": "{count} channels of {total}",
+        "channelsLabel": "channels",
         "noChannels": "No channels found",
+        "browseByCategory": "By category",
+        "browseByLanguage": "By language",
         "player": {
             "externalLink": "This stream requires an external app (YouTube/Twitch)",
             "networkError": "Network error - Attempting to reconnect...",
@@ -427,6 +430,24 @@
             "hlsNotSupported": "Your browser does not support this format",
             "loadError": "Error loading the stream",
             "openExternal": "Open in new window"
+        },
+        "errors": {
+            "selectCategoryFirst": "Select a category or language first to play this channel"
+        }
+    },
+    "radio": {
+        "title": "Live Radio",
+        "subtitle": "Listen to your favorite stations streaming live",
+        "searchPlaceholder": "Search for a station...",
+        "allCountries": "All countries",
+        "favorites": "Favorites",
+        "loading": "Loading stations...",
+        "retry": "Retry",
+        "stationCount": "{count} stations of {total}",
+        "noStations": "No stations found",
+        "player": {
+            "networkError": "Network error - Attempting to reconnect...",
+            "loadError": "Error loading the stream"
         }
     }
 }

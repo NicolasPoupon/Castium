@@ -135,6 +135,7 @@
             "music": "Musiques",
             "podcasts": "Podcasts",
             "tv": "TV",
+            "radio": "Radio",
             "lectures": "Lectures"
         },
         "user": {
@@ -409,14 +410,16 @@
     },
     "tv": {
         "title": "TV en direct",
-        "subtitle": "Regardez vos chaînes préférées en streaming",
+        "subtitle": "Parcourez les chaînes par catégorie ou langue",
         "searchPlaceholder": "Rechercher une chaîne...",
-        "allGroups": "Tous les pays",
-        "favorites": "Favoris",
+        "favoritesTitle": "Mes chaînes favorites",
         "loading": "Chargement des chaînes...",
-        "retry": "Réessayer",
+        "back": "Retour",
         "channelCount": "{count} chaînes sur {total}",
+        "channelsLabel": "chaînes",
         "noChannels": "Aucune chaîne trouvée",
+        "browseByCategory": "Par catégorie",
+        "browseByLanguage": "Par langue",
         "player": {
             "externalLink": "Ce flux nécessite une application externe (YouTube/Twitch)",
             "networkError": "Erreur réseau - Tentative de reconnexion...",
@@ -425,6 +428,24 @@
             "hlsNotSupported": "Votre navigateur ne supporte pas ce format",
             "loadError": "Erreur lors du chargement du flux",
             "openExternal": "Ouvrir dans une nouvelle fenêtre"
+        },
+        "errors": {
+            "selectCategoryFirst": "Sélectionnez d'abord une catégorie ou langue pour lire cette chaîne"
+        }
+    },
+    "radio": {
+        "title": "Radio en direct",
+        "subtitle": "Écoutez vos stations préférées en streaming",
+        "searchPlaceholder": "Rechercher une station...",
+        "allCountries": "Tous les pays",
+        "favorites": "Favoris",
+        "loading": "Chargement des stations...",
+        "retry": "Réessayer",
+        "stationCount": "{count} stations sur {total}",
+        "noStations": "Aucune station trouvée",
+        "player": {
+            "networkError": "Erreur réseau - Tentative de reconnexion...",
+            "loadError": "Erreur lors du chargement du flux"
         }
     }
 }

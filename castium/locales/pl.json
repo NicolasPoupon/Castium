@@ -137,6 +137,7 @@
             "music": "Muzyka",
             "podcasts": "Podcasty",
             "tv": "TV",
+            "radio": "Radio",
             "lectures": "Wideo"
         },
         "user": {
@@ -411,14 +412,16 @@
     },
     "tv": {
         "title": "TV na żywo",
-        "subtitle": "Oglądaj ulubione kanały na żywo",
+        "subtitle": "Przeglądaj kanały według kategorii lub języka",
         "searchPlaceholder": "Szukaj kanału...",
-        "allGroups": "Wszystkie kraje",
-        "favorites": "Ulubione",
+        "favoritesTitle": "Moje ulubione kanały",
         "loading": "Ładowanie kanałów...",
-        "retry": "Ponów",
+        "back": "Wstecz",
         "channelCount": "{count} kanałów z {total}",
+        "channelsLabel": "kanałów",
         "noChannels": "Nie znaleziono kanałów",
+        "browseByCategory": "Według kategorii",
+        "browseByLanguage": "Według języka",
         "player": {
             "externalLink": "Ten strumień wymaga zewnętrznej aplikacji (YouTube/Twitch)",
             "networkError": "Błąd sieci - Próba ponownego połączenia...",
@@ -427,6 +430,24 @@
             "hlsNotSupported": "Twoja przeglądarka nie obsługuje tego formatu",
             "loadError": "Błąd ładowania strumienia",
             "openExternal": "Otwórz w nowym oknie"
+        },
+        "errors": {
+            "selectCategoryFirst": "Najpierw wybierz kategorię lub język, aby odtworzyć ten kanał"
+        }
+    },
+    "radio": {
+        "title": "Radio na żywo",
+        "subtitle": "Słuchaj ulubionych stacji na żywo",
+        "searchPlaceholder": "Szukaj stacji...",
+        "allCountries": "Wszystkie kraje",
+        "favorites": "Ulubione",
+        "loading": "Ładowanie stacji...",
+        "retry": "Ponów",
+        "stationCount": "{count} stacji z {total}",
+        "noStations": "Nie znaleziono stacji",
+        "player": {
+            "networkError": "Błąd sieci - Próba ponownego połączenia...",
+            "loadError": "Błąd ładowania strumienia"
         }
     }
 }
