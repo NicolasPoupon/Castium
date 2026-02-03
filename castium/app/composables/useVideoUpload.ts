@@ -49,7 +49,7 @@ export interface UploadedVideo {
     playlist?: string // Playlist name for grouping
 }
 
-export interface UploadProgress {
+export interface VideoUploadProgress {
     fileName: string
     progress: number
     status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
@@ -72,8 +72,17 @@ export const useVideoUpload = () => {
     const uploadedVideos = ref<UploadedVideo[]>([])
     const loading = ref(false)
     const uploading = ref(false)
-    const uploadProgress = ref<UploadProgress[]>([])
+    const uploadProgress = ref<VideoUploadProgress[]>([])
     const error = ref<string | null>(null)
+
+    // Clear state (for refresh after data deletion)
+    const clearState = () => {
+        uploadedVideos.value = []
+        loading.value = false
+        uploading.value = false
+        uploadProgress.value = []
+        error.value = null
+    }
 
     // Cloud video ratings from profile
     const cloudVideoRatings = computed(() => profile.value?.cloud_video_ratings || {} as Record<string, { rating: number; comment: string }>)
@@ -227,7 +236,7 @@ export const useVideoUpload = () => {
         const progressIndex = uploadProgress.value.findIndex((p) => p.fileName === file.name)
         const updateProgress = (
             progress: number,
-            status: UploadProgress['status'],
+            status: VideoUploadProgress['status'],
             err?: string
         ) => {
             if (progressIndex >= 0) {
@@ -729,5 +738,6 @@ export const useVideoUpload = () => {
         deleteCloudPlaylist,
         assignToPlaylist,
         getVideosByPlaylist,
+        clearState,
     }
 }

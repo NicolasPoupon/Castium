@@ -610,6 +610,28 @@ export const useLocalPodcasts = () => {
         return colors[Math.abs(hash) % colors.length]
     }
 
+    // Clear local state (for refresh after data deletion)
+    const clearLocalState = () => {
+        cleanup()
+        folderHandle.value = null
+        podcasts.value = []
+        likedPodcasts.value = []
+        inProgressPodcasts.value = []
+        hasPermission.value = false
+        usesFallback.value = false
+        needsReauthorization.value = false
+        savedFolderName.value = null
+        playbackState.value = {
+            isPlaying: false,
+            currentPodcast: null,
+            currentTime: 0,
+            duration: 0,
+            volume: 1,
+            isMuted: false,
+            playbackSpeed: 1,
+        }
+    }
+
     // Cleanup
     const cleanup = () => {
         if (audioElement.value) {
@@ -658,5 +680,6 @@ export const useLocalPodcasts = () => {
         formatFileSize,
         getPodcastColor,
         cleanup,
+        clearLocalState,
     }
 }

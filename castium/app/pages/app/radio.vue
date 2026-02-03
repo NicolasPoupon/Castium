@@ -80,6 +80,18 @@ onMounted(async () => {
     await Promise.all([loadStations(), loadCustomStreams()])
 })
 
+// Subscribe to data refresh events (for when user deletes data from settings)
+const { onRefresh } = useDataRefresh()
+const refreshRadioData = async () => {
+    console.log('[Radio] Refreshing all data...')
+    await loadStations()
+    await loadCustomStreams()
+}
+onMounted(() => {
+    const unsubscribe = onRefresh('radio', refreshRadioData)
+    onUnmounted(() => unsubscribe())
+})
+
 // Cleanup
 onUnmounted(() => {
     if (audioRef.value) {

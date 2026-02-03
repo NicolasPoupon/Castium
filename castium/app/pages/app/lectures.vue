@@ -42,6 +42,7 @@ const {
     setRating,
     removeRating,
     getVideosByFolder,
+    clearLocalState: clearLocalVideos,
 } = useLocalVideos()
 
 // YouTube
@@ -101,6 +102,7 @@ const {
     createCloudPlaylist,
     deleteCloudPlaylist,
     assignToPlaylist,
+    clearState: clearCloudVideos,
 } = useVideoUpload()
 
 // Active tab: 'local', 'youtube', or 'upload'
@@ -195,6 +197,28 @@ onMounted(async () => {
     } else {
         console.log('[Lectures] YouTube not authenticated')
     }
+})
+
+// Subscribe to data refresh events (for when user deletes data from settings)
+const { onRefresh } = useDataRefresh()
+const refreshAllData = async () => {
+    console.log('[Lectures] Refreshing all data...')
+    // Clear local video state first (removes folders from display)
+    clearLocalVideos()
+    // Clear cloud video state
+    clearCloudVideos()
+    // Try to restore folder access (will fail if IndexedDB was cleared, which is expected)
+    await restoreFolderAccess()
+    // Refresh cloud uploaded videos
+    await fetchUploadedVideos()
+    // Refresh YouTube playlists if authenticated
+    if (youtubeAuthenticated.value) {
+        await fetchYoutubePlaylists()
+    }
+}
+onMounted(() => {
+    const unsubscribe = onRefresh('lectures', refreshAllData)
+    onUnmounted(() => unsubscribe())
 })
 
 // Watch for YouTube authentication changes

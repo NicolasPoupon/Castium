@@ -64,6 +64,7 @@ const {
     formatFileSize,
     loadLikedTracksFromDb,
     removeLikedTrack,
+    clearLocalState: clearLocalMusic,
 } = useLocalMusic()
 
 // Cloud Music
@@ -102,6 +103,7 @@ const {
     getTrackColor: getCloudTrackColor,
     formatFileSize: formatCloudFileSize,
     formatDuration: formatCloudDuration,
+    clearState: clearCloudMusic,
 } = useCloudMusic()
 
 // Client-only flag for hydration
@@ -479,6 +481,28 @@ onMounted(async () => {
     await fetchCloudTracks()
     await fetchCloudPlaylists()
     await fetchCloudLikedTracks()
+})
+
+// Subscribe to data refresh events (for when user deletes data from settings)
+const { onRefresh } = useDataRefresh()
+const refreshAllMusicData = async () => {
+    console.log('[Music] Refreshing all data...')
+    // Clear local music state first
+    clearLocalMusic()
+    // Clear cloud music state
+    clearCloudMusic()
+    // Try to restore folder access
+    await restoreFolderAccess()
+    await loadPlaylists()
+    await loadLikedTracksFromDb()
+    // Refresh cloud music
+    await fetchCloudTracks()
+    await fetchCloudPlaylists()
+    await fetchCloudLikedTracks()
+}
+onMounted(() => {
+    const unsubscribe = onRefresh('music', refreshAllMusicData)
+    onUnmounted(() => unsubscribe())
 })
 
 watch(spotifyAuthenticated, (isAuth) => {

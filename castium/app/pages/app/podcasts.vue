@@ -40,6 +40,7 @@ const {
     formatFileSize: formatLocalFileSize,
     getPodcastColor: getLocalPodcastColor,
     cleanup: cleanupLocal,
+    clearLocalState: clearLocalPodcasts,
 } = useLocalPodcasts()
 
 // Cloud podcasts composable
@@ -67,6 +68,7 @@ const {
     formatFileSize: formatCloudFileSize,
     getPodcastColor: getCloudPodcastColor,
     cleanup: cleanupCloud,
+    clearState: clearCloudPodcasts,
 } = useCloudPodcasts()
 
 // Tab state
@@ -249,6 +251,23 @@ const formatDuration = (seconds?: number) => {
 onMounted(async () => {
     await initializeLocal()
     await fetchCloudPodcasts()
+})
+
+// Subscribe to data refresh events (for when user deletes data from settings)
+const { onRefresh } = useDataRefresh()
+const refreshPodcastData = async () => {
+    console.log('[Podcasts] Refreshing all data...')
+    // Clear local podcast state first
+    clearLocalPodcasts()
+    // Clear cloud podcast state
+    clearCloudPodcasts()
+    // Re-initialize (will try to restore folder access)
+    await initializeLocal()
+    await fetchCloudPodcasts()
+}
+onMounted(() => {
+    const unsubscribe = onRefresh('podcasts', refreshPodcastData)
+    onUnmounted(() => unsubscribe())
 })
 
 onUnmounted(() => {

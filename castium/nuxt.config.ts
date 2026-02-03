@@ -37,6 +37,7 @@ export default defineNuxtConfig({
     runtimeConfig: {
         spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET,
         youtubeClientSecret: process.env.YOUTUBE_CLIENT_SECRET,
+        supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         public: {
             supabaseUrl: process.env.NUXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
             supabaseAnonKey:
@@ -66,7 +67,6 @@ export default defineNuxtConfig({
     i18n: {
         strategy: 'no_prefix',
         defaultLocale: 'fr',
-        langDir: '../locales',
         locales: [
             { code: 'en', name: 'English', file: 'en.json' },
             { code: 'fr', name: 'Français', file: 'fr.json' },

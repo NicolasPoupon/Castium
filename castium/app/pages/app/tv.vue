@@ -68,6 +68,18 @@ onMounted(async () => {
     await Promise.all([loadFavorites(), loadCustomStreams()])
 })
 
+// Subscribe to data refresh events (for when user deletes data from settings)
+const { onRefresh } = useDataRefresh()
+const refreshTvData = async () => {
+    console.log('[TV] Refreshing all data...')
+    await loadFavorites()
+    await loadCustomStreams()
+}
+onMounted(() => {
+    const unsubscribe = onRefresh('tv', refreshTvData)
+    onUnmounted(() => unsubscribe())
+})
+
 // Cleanup HLS on unmount
 onUnmounted(() => {
     destroyHls()

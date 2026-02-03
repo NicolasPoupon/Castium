@@ -298,7 +298,7 @@ const handleDeleteTv = async (id: string) => {
 
 // Delete category data handlers
 const handleDeleteCategoryData = async (
-    category: 'movies' | 'music' | 'radio' | 'tv' | 'podcasts'
+    category: 'lectures' | 'music' | 'radio' | 'tv' | 'podcasts'
 ) => {
     deletingCategory.value = category
     const success = await deleteDataByCategory(category)
@@ -864,30 +864,30 @@ const handleDeleteAccount = async () => {
                     </h3>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        <!-- Movies -->
+                        <!-- Lectures (Videos) -->
                         <div
                             class="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg"
                         >
                             <div class="flex items-center gap-2">
                                 <UIcon
-                                    name="i-heroicons-film"
+                                    name="i-heroicons-play-circle"
                                     :class="[
                                         'w-5 h-5',
-                                        colorClasses[colors.movies as ThemeColor]?.text ||
-                                            'text-red-400',
+                                        colorClasses[colors.lectures as ThemeColor]?.text ||
+                                            'text-purple-400',
                                     ]"
                                 />
                                 <span class="text-white">
-                                    {{ t('settings.data.categories.movies') }}
+                                    {{ t('settings.data.categories.lectures') }}
                                 </span>
                             </div>
                             <UButton
-                                :loading="deletingCategory === 'movies'"
+                                :loading="deletingCategory === 'lectures'"
                                 color="error"
                                 variant="soft"
                                 size="sm"
                                 icon="i-heroicons-trash"
-                                @click="handleDeleteCategoryData('movies')"
+                                @click="handleDeleteCategoryData('lectures')"
                             />
                         </div>
 
@@ -1049,7 +1049,11 @@ const handleDeleteAccount = async () => {
         </div>
 
         <!-- Delete Account Confirmation Modal -->
-        <UModal v-model:open="showDeleteAccountModal">
+        <UModal
+            v-model:open="showDeleteAccountModal"
+            :title="t('settings.data.deleteAccountTitle')"
+            :description="t('settings.data.deleteAccountWarning')"
+        >
             <template #content>
                 <div class="p-6">
                     <div class="flex items-center gap-3 mb-4">

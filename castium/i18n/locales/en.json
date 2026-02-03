@@ -231,7 +231,7 @@
             "description": "Manage your personal data. These actions are irreversible.",
             "byCategory": "Delete by category",
             "categories": {
-                "movies": "Movies & Series",
+                "lectures": "Lectures (Videos)",
                 "music": "Music",
                 "radio": "Radio",
                 "tv": "TV",

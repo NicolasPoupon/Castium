@@ -229,7 +229,7 @@
             "description": "Gérez vos données personnelles. Ces actions sont irréversibles.",
             "byCategory": "Supprimer par catégorie",
             "categories": {
-                "movies": "Films & Séries",
+                "lectures": "Lectures (Vidéos)",
                 "music": "Musique",
                 "radio": "Radio",
                 "tv": "TV",
