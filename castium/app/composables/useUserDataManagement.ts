@@ -11,7 +11,7 @@ export function useUserDataManagement() {
     const safeDelete = async (table: string, column: string = 'user_id') => {
         try {
             await supabase.from(table).delete().eq(column, user.value!.id)
-        } catch (e) {
+        } catch {
             console.log(`[UserData] Could not delete from ${table}, might not exist`)
         }
     }
@@ -42,7 +42,7 @@ export function useUserDataManagement() {
 
     // Delete data for a specific category
     const deleteDataByCategory = async (
-        category: 'movies' | 'music' | 'radio' | 'tv' | 'podcasts',
+        category: 'movies' | 'music' | 'radio' | 'tv' | 'podcasts'
     ): Promise<boolean> => {
         if (!user.value) return false
 

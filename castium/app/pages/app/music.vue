@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { useI18n } from "#imports"
-import type { LocalTrack, LocalPlaylist } from "~/composables/useLocalMusic"
-import type { CloudTrack, CloudPlaylist } from "~/composables/useCloudMusic"
-import type { ThemeColor } from "~/composables/useTheme"
+import { useI18n } from '#imports'
+import type { LocalTrack, LocalPlaylist } from '~/composables/useLocalMusic'
+import type { CloudTrack, CloudPlaylist } from '~/composables/useCloudMusic'
+import type { ThemeColor } from '~/composables/useTheme'
 
 const { t } = useI18n()
 const { colors, colorClasses } = useTheme()
@@ -12,7 +12,7 @@ const themeColor = computed(() => colors.value.music as ThemeColor)
 const theme = computed(() => colorClasses[themeColor.value] || colorClasses.green)
 
 definePageMeta({
-    title: "Music",
+    title: 'Music',
     ssr: false,
 })
 
@@ -108,29 +108,29 @@ const {
 const isClient = ref(false)
 
 // Active tab: 'local' | 'spotify' | 'upload'
-const activeTab = ref<"local" | "spotify" | "upload">("local")
+const activeTab = ref<'local' | 'spotify' | 'upload'>('local')
 
 // Spotify state
 const spotifyUserPlaylists = ref<any[]>([])
 const spotifyFeaturedPlaylists = ref<any[]>([])
 const spotifyLoading = ref(false)
-const spotifySearchQuery = ref("")
+const spotifySearchQuery = ref('')
 
 // Local music state
-const localSearchQuery = ref("")
+const localSearchQuery = ref('')
 const showCreatePlaylist = ref(false)
-const newPlaylistName = ref("")
+const newPlaylistName = ref('')
 const selectedPlaylist = ref<LocalPlaylist | null>(null)
 const playlistTracks = ref<LocalTrack[]>([])
-const viewMode = ref<"all" | "liked" | "playlist">("all")
+const viewMode = ref<'all' | 'liked' | 'playlist'>('all')
 
 // Cloud music state
-const cloudSearchQuery = ref("")
+const cloudSearchQuery = ref('')
 const showCloudCreatePlaylist = ref(false)
-const newCloudPlaylistName = ref("")
+const newCloudPlaylistName = ref('')
 const selectedCloudPlaylist = ref<CloudPlaylist | null>(null)
 const cloudPlaylistTracks = ref<CloudTrack[]>([])
-const cloudViewMode = ref<"all" | "liked" | "playlist">("all")
+const cloudViewMode = ref<'all' | 'liked' | 'playlist'>('all')
 const showCloudTrackInfo = ref(false)
 const selectedCloudTrack = ref<CloudTrack | null>(null)
 const showCloudAddToPlaylist = ref(false)
@@ -145,19 +145,21 @@ const trackToAdd = ref<LocalTrack | null>(null)
 
 // Filter local tracks by search
 const filteredTracks = computed(() => {
-    const trackList = viewMode.value === "liked"
-        ? getLikedTracks.value
-        : viewMode.value === "playlist"
-            ? playlistTracks.value
-            : tracks.value
+    const trackList =
+        viewMode.value === 'liked'
+            ? getLikedTracks.value
+            : viewMode.value === 'playlist'
+              ? playlistTracks.value
+              : tracks.value
 
     if (!localSearchQuery.value) return trackList
     const query = localSearchQuery.value.toLowerCase()
-    return trackList.filter((t) =>
-        t.title?.toLowerCase().includes(query) ||
-        t.artist?.toLowerCase().includes(query) ||
-        t.album?.toLowerCase().includes(query) ||
-        t.fileName.toLowerCase().includes(query)
+    return trackList.filter(
+        (t) =>
+            t.title?.toLowerCase().includes(query) ||
+            t.artist?.toLowerCase().includes(query) ||
+            t.album?.toLowerCase().includes(query) ||
+            t.fileName.toLowerCase().includes(query)
     )
 })
 
@@ -167,15 +169,12 @@ const loadSpotifyPlaylists = async () => {
 
     spotifyLoading.value = true
     try {
-        const [user, featured] = await Promise.all([
-            getUserPlaylists(20),
-            getFeaturedPlaylists(),
-        ])
+        const [user, featured] = await Promise.all([getUserPlaylists(20), getFeaturedPlaylists()])
 
         spotifyUserPlaylists.value = user.items || []
         spotifyFeaturedPlaylists.value = featured.playlists?.items || []
     } catch (error) {
-        console.error("Error loading Spotify playlists:", error)
+        console.error('Error loading Spotify playlists:', error)
     } finally {
         spotifyLoading.value = false
     }
@@ -185,7 +184,7 @@ const handlePlaySpotifyPlaylist = async (playlistId: string) => {
     try {
         await spotifyPlay(`spotify:playlist:${playlistId}`)
     } catch (error) {
-        console.error("Error playing Spotify playlist:", error)
+        console.error('Error playing Spotify playlist:', error)
     }
 }
 
@@ -207,7 +206,7 @@ const handleReauthorize = async () => {
 const handleCreatePlaylist = async () => {
     if (!newPlaylistName.value.trim()) return
     await createPlaylist(newPlaylistName.value.trim())
-    newPlaylistName.value = ""
+    newPlaylistName.value = ''
     showCreatePlaylist.value = false
 }
 
@@ -215,24 +214,24 @@ const handleDeletePlaylist = async (playlistId: string) => {
     await deletePlaylist(playlistId)
     if (selectedPlaylist.value?.id === playlistId) {
         selectedPlaylist.value = null
-        viewMode.value = "all"
+        viewMode.value = 'all'
     }
 }
 
 const handleSelectPlaylist = async (playlist: LocalPlaylist) => {
     selectedPlaylist.value = playlist
-    viewMode.value = "playlist"
+    viewMode.value = 'playlist'
     playlistTracks.value = await getPlaylistTracks(playlist.id)
 }
 
 const handleViewLiked = () => {
     selectedPlaylist.value = null
-    viewMode.value = "liked"
+    viewMode.value = 'liked'
 }
 
 const handleViewAll = () => {
     selectedPlaylist.value = null
-    viewMode.value = "all"
+    viewMode.value = 'all'
 }
 
 const handlePlayTrack = (track: LocalTrack, index: number) => {
@@ -256,7 +255,7 @@ const handleToggleLike = async (track: LocalTrack) => {
 const handleRemoveLikedTrack = async (track: LocalTrack) => {
     await removeLikedTrack(track.id)
     // Refresh liked tracks view
-    if (viewMode.value === "liked") {
+    if (viewMode.value === 'liked') {
         await loadLikedTracksFromDb()
     }
 }
@@ -311,8 +310,14 @@ const getTrackColor = (track: LocalTrack) => {
     const colors = [
         `var(--color-${themeColorValue.replace('-500', '-600')})`,
         `var(--color-${themeColorValue.replace('-500', '-700')})`,
-        "#dc2626", "#ea580c", "#d97706", "#16a34a",
-        "#0891b2", "#2563eb", "#7c3aed", "#c026d3",
+        '#dc2626',
+        '#ea580c',
+        '#d97706',
+        '#16a34a',
+        '#0891b2',
+        '#2563eb',
+        '#7c3aed',
+        '#c026d3',
     ]
     const index = (track.title?.length || track.fileName.length) % colors.length
     return colors[index]
@@ -322,19 +327,21 @@ const getTrackColor = (track: LocalTrack) => {
 
 // Filter cloud tracks by search
 const filteredCloudTracks = computed(() => {
-    const trackList = cloudViewMode.value === "liked"
-        ? cloudLikedTracks.value
-        : cloudViewMode.value === "playlist"
-            ? cloudPlaylistTracks.value
-            : cloudTracks.value
+    const trackList =
+        cloudViewMode.value === 'liked'
+            ? cloudLikedTracks.value
+            : cloudViewMode.value === 'playlist'
+              ? cloudPlaylistTracks.value
+              : cloudTracks.value
 
     if (!cloudSearchQuery.value) return trackList
     const query = cloudSearchQuery.value.toLowerCase()
-    return trackList.filter((t) =>
-        t.title?.toLowerCase().includes(query) ||
-        t.artist?.toLowerCase().includes(query) ||
-        t.album?.toLowerCase().includes(query) ||
-        t.fileName.toLowerCase().includes(query)
+    return trackList.filter(
+        (t) =>
+            t.title?.toLowerCase().includes(query) ||
+            t.artist?.toLowerCase().includes(query) ||
+            t.album?.toLowerCase().includes(query) ||
+            t.fileName.toLowerCase().includes(query)
     )
 })
 
@@ -369,7 +376,7 @@ const handleCloudFilesSelected = async (event: Event) => {
 const handleCloudCreatePlaylist = async () => {
     if (!newCloudPlaylistName.value.trim()) return
     await createCloudPlaylist(newCloudPlaylistName.value.trim())
-    newCloudPlaylistName.value = ""
+    newCloudPlaylistName.value = ''
     showCloudCreatePlaylist.value = false
 }
 
@@ -377,24 +384,24 @@ const handleCloudDeletePlaylist = async (playlistId: string) => {
     await deleteCloudPlaylist(playlistId)
     if (selectedCloudPlaylist.value?.id === playlistId) {
         selectedCloudPlaylist.value = null
-        cloudViewMode.value = "all"
+        cloudViewMode.value = 'all'
     }
 }
 
 const handleCloudSelectPlaylist = async (playlist: CloudPlaylist) => {
     selectedCloudPlaylist.value = playlist
-    cloudViewMode.value = "playlist"
+    cloudViewMode.value = 'playlist'
     cloudPlaylistTracks.value = await getCloudPlaylistTracks(playlist.id)
 }
 
 const handleCloudViewLiked = () => {
     selectedCloudPlaylist.value = null
-    cloudViewMode.value = "liked"
+    cloudViewMode.value = 'liked'
 }
 
 const handleCloudViewAll = () => {
     selectedCloudPlaylist.value = null
-    cloudViewMode.value = "all"
+    cloudViewMode.value = 'all'
 }
 
 // Cloud track actions
@@ -508,7 +515,7 @@ watch(activeTab, async (tab) => {
                         @click="activeTab = 'local'"
                     >
                         <UIcon name="i-heroicons-folder" class="w-5 h-5 icon-bounce" />
-                        {{ t("music.tabs.local") }}
+                        {{ t('music.tabs.local') }}
                     </button>
                     <button
                         :class="[
@@ -520,7 +527,7 @@ watch(activeTab, async (tab) => {
                         @click="activeTab = 'upload'"
                     >
                         <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5 icon-bounce" />
-                        {{ t("music.tabs.upload") || "Cloud" }}
+                        {{ t('music.tabs.upload') || 'Cloud' }}
                     </button>
                     <button
                         :class="[
@@ -550,20 +557,17 @@ watch(activeTab, async (tab) => {
                                     :class="['w-24 h-24 mx-auto mb-6 icon-bounce', theme.text]"
                                 />
                                 <h1 class="text-4xl font-bold text-white mb-4">
-                                    {{ t("music.local.title") }}
+                                    {{ t('music.local.title') }}
                                 </h1>
                                 <p class="text-gray-400 text-lg mb-8">
-                                    {{ t("music.local.description") }}
+                                    {{ t('music.local.description') }}
                                 </p>
                             </div>
 
                             <!-- Reauthorization button -->
-                            <div
-                                v-if="needsReauthorization && savedFolderName"
-                                class="mb-6"
-                            >
+                            <div v-if="needsReauthorization && savedFolderName" class="mb-6">
                                 <p class="text-gray-300 mb-4">
-                                    {{ t("music.local.previousFolder") }}:
+                                    {{ t('music.local.previousFolder') }}:
                                     <span :class="['font-medium', theme.textLight]">
                                         {{ savedFolderName }}
                                     </span>
@@ -573,11 +577,15 @@ watch(activeTab, async (tab) => {
                                     size="xl"
                                     :label="t('music.local.reauthorize')"
                                     :loading="localLoading"
-                                    :class="[theme.bg, `hover:${theme.bgLight}`, 'text-white font-semibold btn-press']"
+                                    :class="[
+                                        theme.bg,
+                                        `hover:${theme.bgLight}`,
+                                        'text-white font-semibold btn-press',
+                                    ]"
                                     @click="handleReauthorize"
                                 />
                                 <p class="text-gray-500 text-sm mt-4">
-                                    {{ t("music.local.orSelectNew") }}
+                                    {{ t('music.local.orSelectNew') }}
                                 </p>
                             </div>
 
@@ -596,7 +604,7 @@ watch(activeTab, async (tab) => {
                             />
 
                             <p class="text-gray-500 text-sm mt-6">
-                                {{ t("music.local.permissionNotice") }}
+                                {{ t('music.local.permissionNotice') }}
                             </p>
                         </div>
                     </div>
@@ -605,7 +613,9 @@ watch(activeTab, async (tab) => {
                     <div v-else class="flex gap-6">
                         <!-- Sidebar: Playlists -->
                         <aside class="w-64 flex-shrink-0">
-                            <div class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30">
+                            <div
+                                class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30"
+                            >
                                 <!-- Navigation -->
                                 <nav class="space-y-1 mb-6">
                                     <button
@@ -617,9 +627,17 @@ watch(activeTab, async (tab) => {
                                         ]"
                                         @click="handleViewAll"
                                     >
-                                        <UIcon name="i-heroicons-musical-note" :class="['w-5 h-5', viewMode === 'all' ? theme.text : '']" />
-                                        <span>{{ t("music.local.allTracks") }}</span>
-                                        <span class="ml-auto text-sm text-gray-500">{{ tracks.length }}</span>
+                                        <UIcon
+                                            name="i-heroicons-musical-note"
+                                            :class="[
+                                                'w-5 h-5',
+                                                viewMode === 'all' ? theme.text : '',
+                                            ]"
+                                        />
+                                        <span>{{ t('music.local.allTracks') }}</span>
+                                        <span class="ml-auto text-sm text-gray-500">
+                                            {{ tracks.length }}
+                                        </span>
                                     </button>
                                     <button
                                         :class="[
@@ -630,16 +648,23 @@ watch(activeTab, async (tab) => {
                                         ]"
                                         @click="handleViewLiked"
                                     >
-                                        <UIcon name="i-heroicons-heart-solid" class="w-5 h-5 text-red-500" />
-                                        <span>{{ t("music.local.likedTracks") }}</span>
-                                        <span class="ml-auto text-sm text-gray-500">{{ getLikedTracks.length }}</span>
+                                        <UIcon
+                                            name="i-heroicons-heart-solid"
+                                            class="w-5 h-5 text-red-500"
+                                        />
+                                        <span>{{ t('music.local.likedTracks') }}</span>
+                                        <span class="ml-auto text-sm text-gray-500">
+                                            {{ getLikedTracks.length }}
+                                        </span>
                                     </button>
                                 </nav>
 
                                 <!-- Playlists header -->
                                 <div class="flex items-center justify-between mb-3">
-                                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-                                        {{ t("music.local.playlists") }}
+                                    <h3
+                                        class="text-sm font-semibold text-gray-400 uppercase tracking-wider"
+                                    >
+                                        {{ t('music.local.playlists') }}
                                     </h3>
                                     <button
                                         class="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
@@ -666,12 +691,20 @@ watch(activeTab, async (tab) => {
                                             @click="handleSelectPlaylist(playlist)"
                                         >
                                             <div
-                                                :class="['w-8 h-8 rounded flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110', theme.bg]"
+                                                :class="[
+                                                    'w-8 h-8 rounded flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110',
+                                                    theme.bg,
+                                                ]"
                                             >
-                                                <UIcon name="i-heroicons-musical-note" class="w-4 h-4 text-white" />
+                                                <UIcon
+                                                    name="i-heroicons-musical-note"
+                                                    class="w-4 h-4 text-white"
+                                                />
                                             </div>
                                             <span class="truncate flex-1">{{ playlist.name }}</span>
-                                            <span class="text-sm text-gray-500">{{ playlist.trackCount }}</span>
+                                            <span class="text-sm text-gray-500">
+                                                {{ playlist.trackCount }}
+                                            </span>
                                         </button>
                                         <button
                                             class="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
@@ -691,7 +724,10 @@ watch(activeTab, async (tab) => {
                                         v-model="newPlaylistName"
                                         type="text"
                                         :placeholder="t('music.local.playlistName')"
-                                        :class="['w-full bg-gray-800/80 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2', `focus:${theme.ring}`]"
+                                        :class="[
+                                            'w-full bg-gray-800/80 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2',
+                                            `focus:${theme.ring}`,
+                                        ]"
                                         @keyup.enter="handleCreatePlaylist"
                                     />
                                     <div class="flex gap-2 mt-2">
@@ -700,15 +736,19 @@ watch(activeTab, async (tab) => {
                                             variant="ghost"
                                             @click="showCreatePlaylist = false"
                                         >
-                                            {{ t("common.cancel") }}
+                                            {{ t('common.cancel') }}
                                         </UButton>
                                         <UButton
                                             size="xs"
-                                            :class="[theme.bg, `hover:${theme.bgLight}`, 'btn-press']"
+                                            :class="[
+                                                theme.bg,
+                                                `hover:${theme.bgLight}`,
+                                                'btn-press',
+                                            ]"
                                             :disabled="!newPlaylistName.trim()"
                                             @click="handleCreatePlaylist"
                                         >
-                                            {{ t("common.create") }}
+                                            {{ t('common.create') }}
                                         </UButton>
                                     </div>
                                 </div>
@@ -720,14 +760,14 @@ watch(activeTab, async (tab) => {
                                         @click="scanForTracks"
                                     >
                                         <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
-                                        {{ t("music.local.rescan") }}
+                                        {{ t('music.local.rescan') }}
                                     </button>
                                     <button
                                         class="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors"
                                         @click="handleSelectFolder"
                                     >
                                         <UIcon name="i-heroicons-folder-open" class="w-4 h-4" />
-                                        {{ t("music.local.changeFolder") }}
+                                        {{ t('music.local.changeFolder') }}
                                     </button>
                                 </div>
                             </div>
@@ -747,28 +787,31 @@ watch(activeTab, async (tab) => {
                                     />
                                     <div>
                                         <p class="text-amber-200 font-medium">
-                                            {{ t("music.local.fallbackTitle") }}
+                                            {{ t('music.local.fallbackTitle') }}
                                         </p>
                                         <p class="text-amber-300/70 text-sm mt-1">
-                                            {{ t("music.local.fallbackDescription") }}
+                                            {{ t('music.local.fallbackDescription') }}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Header -->
-                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                            <div
+                                class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
+                            >
                                 <div>
                                     <h1 class="text-3xl font-bold text-white">
-                                        {{ viewMode === 'liked'
-                                            ? t("music.local.likedTracks")
-                                            : viewMode === 'playlist' && selectedPlaylist
-                                                ? selectedPlaylist.name
-                                                : t("music.local.allTracks")
+                                        {{
+                                            viewMode === 'liked'
+                                                ? t('music.local.likedTracks')
+                                                : viewMode === 'playlist' && selectedPlaylist
+                                                  ? selectedPlaylist.name
+                                                  : t('music.local.allTracks')
                                         }}
                                     </h1>
                                     <p class="text-gray-400 text-sm mt-1">
-                                        {{ filteredTracks.length }} {{ t("music.local.tracks") }}
+                                        {{ filteredTracks.length }} {{ t('music.local.tracks') }}
                                     </p>
                                 </div>
                                 <UInput
@@ -781,10 +824,7 @@ watch(activeTab, async (tab) => {
                             </div>
 
                             <!-- Loading -->
-                            <div
-                                v-if="localLoading"
-                                class="flex items-center justify-center py-20"
-                            >
+                            <div v-if="localLoading" class="flex items-center justify-center py-20">
                                 <UIcon
                                     name="i-heroicons-arrow-path"
                                     :class="['w-12 h-12 animate-spin', theme.text]"
@@ -792,12 +832,19 @@ watch(activeTab, async (tab) => {
                             </div>
 
                             <!-- Track list -->
-                            <div v-else-if="filteredTracks.length > 0" class="bg-gray-800/20 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/30">
+                            <div
+                                v-else-if="filteredTracks.length > 0"
+                                class="bg-gray-800/20 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/30"
+                            >
                                 <!-- Header row -->
-                                <div class="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-700/50">
+                                <div
+                                    class="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-700/50"
+                                >
                                     <span class="w-10 text-center">#</span>
-                                    <span>{{ t("music.local.columnTitle") }}</span>
-                                    <span class="hidden md:block">{{ t("music.local.columnAlbum") }}</span>
+                                    <span>{{ t('music.local.columnTitle') }}</span>
+                                    <span class="hidden md:block">
+                                        {{ t('music.local.columnAlbum') }}
+                                    </span>
                                     <span class="w-16 text-center">
                                         <UIcon name="i-heroicons-clock" class="w-4 h-4" />
                                     </span>
@@ -815,21 +862,32 @@ watch(activeTab, async (tab) => {
                                             : 'cursor-pointer',
                                         playbackState.currentTrack?.filePath === track.filePath
                                             ? `bg-${themeColor}-600/20`
-                                            : track.isAvailable !== false ? 'hover:bg-gray-700/30' : '',
+                                            : track.isAvailable !== false
+                                              ? 'hover:bg-gray-700/30'
+                                              : '',
                                     ]"
                                     @dblclick="handlePlayTrack(track, index)"
                                 >
                                     <!-- Index / Play icon -->
                                     <div class="w-10 flex items-center justify-center">
                                         <template v-if="track.isAvailable === false">
-                                            <UIcon name="i-heroicons-exclamation-circle" class="w-4 h-4 text-amber-500" />
+                                            <UIcon
+                                                name="i-heroicons-exclamation-circle"
+                                                class="w-4 h-4 text-amber-500"
+                                            />
                                         </template>
                                         <template v-else>
                                             <span
-                                                v-if="playbackState.currentTrack?.filePath === track.filePath && playbackState.isPlaying"
+                                                v-if="
+                                                    playbackState.currentTrack?.filePath ===
+                                                        track.filePath && playbackState.isPlaying
+                                                "
                                                 :class="theme.textLight"
                                             >
-                                                <UIcon name="i-heroicons-speaker-wave" class="w-4 h-4 animate-pulse" />
+                                                <UIcon
+                                                    name="i-heroicons-speaker-wave"
+                                                    class="w-4 h-4 animate-pulse"
+                                                />
                                             </span>
                                             <span v-else class="text-gray-400 group-hover:hidden">
                                                 {{ index + 1 }}
@@ -838,7 +896,10 @@ watch(activeTab, async (tab) => {
                                                 class="hidden group-hover:block text-white"
                                                 @click.stop="handlePlayTrack(track, index)"
                                             >
-                                                <UIcon name="i-heroicons-play-solid" class="w-4 h-4" />
+                                                <UIcon
+                                                    name="i-heroicons-play-solid"
+                                                    class="w-4 h-4"
+                                                />
                                             </button>
                                         </template>
                                     </div>
@@ -849,10 +910,13 @@ watch(activeTab, async (tab) => {
                                             :class="[
                                                 'w-10 h-10 rounded flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105',
                                                 track.isAvailable === false ? 'grayscale' : '',
-                                                theme.bg
+                                                theme.bg,
                                             ]"
                                         >
-                                            <UIcon name="i-heroicons-musical-note" class="w-5 h-5 text-white" />
+                                            <UIcon
+                                                name="i-heroicons-musical-note"
+                                                class="w-5 h-5 text-white"
+                                            />
                                         </div>
                                         <div class="min-w-0">
                                             <p
@@ -860,31 +924,55 @@ watch(activeTab, async (tab) => {
                                                     'font-medium truncate',
                                                     track.isAvailable === false
                                                         ? 'text-gray-500'
-                                                        : playbackState.currentTrack?.filePath === track.filePath
-                                                            ? theme.textLight
-                                                            : 'text-white',
+                                                        : playbackState.currentTrack?.filePath ===
+                                                            track.filePath
+                                                          ? theme.textLight
+                                                          : 'text-white',
                                                 ]"
                                             >
                                                 {{ track.title || track.fileName }}
                                             </p>
-                                            <p :class="['text-sm truncate', track.isAvailable === false ? 'text-gray-600' : 'text-gray-400']">
-                                                {{ track.artist || t("music.local.unknownArtist") }}
+                                            <p
+                                                :class="[
+                                                    'text-sm truncate',
+                                                    track.isAvailable === false
+                                                        ? 'text-gray-600'
+                                                        : 'text-gray-400',
+                                                ]"
+                                            >
+                                                {{ track.artist || t('music.local.unknownArtist') }}
                                             </p>
                                         </div>
                                     </div>
 
                                     <!-- Album -->
-                                    <div :class="['text-sm truncate hidden md:block', track.isAvailable === false ? 'text-gray-600' : 'text-gray-400']">
-                                        {{ track.album || t("music.local.unknownAlbum") }}
+                                    <div
+                                        :class="[
+                                            'text-sm truncate hidden md:block',
+                                            track.isAvailable === false
+                                                ? 'text-gray-600'
+                                                : 'text-gray-400',
+                                        ]"
+                                    >
+                                        {{ track.album || t('music.local.unknownAlbum') }}
                                     </div>
 
                                     <!-- Duration -->
-                                    <div :class="['w-16 text-sm text-center', track.isAvailable === false ? 'text-gray-600' : 'text-gray-400']">
+                                    <div
+                                        :class="[
+                                            'w-16 text-sm text-center',
+                                            track.isAvailable === false
+                                                ? 'text-gray-600'
+                                                : 'text-gray-400',
+                                        ]"
+                                    >
                                         {{ formatDuration(track.duration) }}
                                     </div>
 
                                     <!-- Actions -->
-                                    <div class="w-24 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div
+                                        class="w-24 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
                                         <!-- Available track actions -->
                                         <template v-if="track.isAvailable !== false">
                                             <button
@@ -892,10 +980,16 @@ watch(activeTab, async (tab) => {
                                                 @click.stop="handleToggleLike(track)"
                                             >
                                                 <UIcon
-                                                    :name="track.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                                                    :name="
+                                                        track.isLiked
+                                                            ? 'i-heroicons-heart-solid'
+                                                            : 'i-heroicons-heart'
+                                                    "
                                                     :class="[
                                                         'w-4 h-4',
-                                                        track.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-white',
+                                                        track.isLiked
+                                                            ? 'text-red-500'
+                                                            : 'text-gray-400 hover:text-white',
                                                     ]"
                                                 />
                                             </button>
@@ -909,12 +1003,17 @@ watch(activeTab, async (tab) => {
                                                 class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
                                                 @click.stop="openTrackInfo(track)"
                                             >
-                                                <UIcon name="i-heroicons-information-circle" class="w-4 h-4" />
+                                                <UIcon
+                                                    name="i-heroicons-information-circle"
+                                                    class="w-4 h-4"
+                                                />
                                             </button>
                                         </template>
                                         <!-- Unavailable track: only delete allowed -->
                                         <template v-else>
-                                            <span class="text-xs text-amber-500 mr-2">{{ t("music.local.unavailable") }}</span>
+                                            <span class="text-xs text-amber-500 mr-2">
+                                                {{ t('music.local.unavailable') }}
+                                            </span>
                                         </template>
                                         <!-- Remove from playlist/liked -->
                                         <button
@@ -945,11 +1044,12 @@ watch(activeTab, async (tab) => {
                                     class="w-16 h-16 text-gray-600 mb-4"
                                 />
                                 <p class="text-gray-400 text-lg">
-                                    {{ viewMode === 'liked'
-                                        ? t("music.local.noLikedTracks")
-                                        : viewMode === 'playlist'
-                                            ? t("music.local.noPlaylistTracks")
-                                            : t("music.local.noTracks")
+                                    {{
+                                        viewMode === 'liked'
+                                            ? t('music.local.noLikedTracks')
+                                            : viewMode === 'playlist'
+                                              ? t('music.local.noPlaylistTracks')
+                                              : t('music.local.noTracks')
                                     }}
                                 </p>
                             </div>
@@ -970,10 +1070,10 @@ watch(activeTab, async (tab) => {
                                     class="w-24 h-24 text-green-600 mx-auto mb-6"
                                 />
                                 <h1 class="text-4xl font-bold text-white mb-4">
-                                    {{ t("music.hero.connectToSpotify") }}
+                                    {{ t('music.hero.connectToSpotify') }}
                                 </h1>
                                 <p class="text-gray-400 text-lg mb-8">
-                                    {{ t("music.hero.description") }}
+                                    {{ t('music.hero.description') }}
                                 </p>
                             </div>
 
@@ -986,7 +1086,7 @@ watch(activeTab, async (tab) => {
                             />
 
                             <p class="text-gray-500 text-sm mt-6">
-                                {{ t("music.hero.redirectNotice") }}
+                                {{ t('music.hero.redirectNotice') }}
                             </p>
                         </div>
                     </div>
@@ -994,7 +1094,7 @@ watch(activeTab, async (tab) => {
                     <div v-else>
                         <div class="mb-8">
                             <h1 class="text-4xl font-bold text-white mb-6">
-                                {{ t("music.hero.yourMusic") }}
+                                {{ t('music.hero.yourMusic') }}
                             </h1>
                             <UInput
                                 v-model="spotifySearchQuery"
@@ -1005,10 +1105,7 @@ watch(activeTab, async (tab) => {
                             />
                         </div>
 
-                        <div
-                            v-if="spotifyLoading"
-                            class="flex items-center justify-center py-20"
-                        >
+                        <div v-if="spotifyLoading" class="flex items-center justify-center py-20">
                             <UIcon
                                 name="i-heroicons-arrow-path"
                                 class="w-12 h-12 text-castium-green animate-spin"
@@ -1018,7 +1115,7 @@ watch(activeTab, async (tab) => {
                         <div v-else class="space-y-12">
                             <section v-if="spotifyUserPlaylists.length > 0">
                                 <h2 class="text-2xl font-bold text-white mb-6">
-                                    {{ t("music.hero.playlists") }}
+                                    {{ t('music.hero.playlists') }}
                                 </h2>
                                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                     <MusicPlaylistCard
@@ -1032,7 +1129,7 @@ watch(activeTab, async (tab) => {
 
                             <section v-if="spotifyFeaturedPlaylists.length > 0">
                                 <h2 class="text-2xl font-bold text-white mb-6">
-                                    {{ t("music.hero.recommendedPlaylists") }}
+                                    {{ t('music.hero.recommendedPlaylists') }}
                                 </h2>
                                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                     <MusicPlaylistCard
@@ -1062,7 +1159,9 @@ watch(activeTab, async (tab) => {
                     <div class="flex gap-6">
                         <!-- Sidebar: Playlists -->
                         <aside class="w-64 flex-shrink-0">
-                            <div class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30">
+                            <div
+                                class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30"
+                            >
                                 <!-- Navigation -->
                                 <nav class="space-y-1 mb-6">
                                     <button
@@ -1074,9 +1173,19 @@ watch(activeTab, async (tab) => {
                                         ]"
                                         @click="handleCloudViewAll"
                                     >
-                                        <UIcon name="i-heroicons-musical-note" :class="['w-5 h-5', cloudViewMode === 'all' ? theme.text : '']" />
-                                        <span>{{ t("music.cloud.allTracks") || "All Tracks" }}</span>
-                                        <span class="ml-auto text-sm text-gray-500">{{ cloudTracks.length }}</span>
+                                        <UIcon
+                                            name="i-heroicons-musical-note"
+                                            :class="[
+                                                'w-5 h-5',
+                                                cloudViewMode === 'all' ? theme.text : '',
+                                            ]"
+                                        />
+                                        <span>
+                                            {{ t('music.cloud.allTracks') || 'All Tracks' }}
+                                        </span>
+                                        <span class="ml-auto text-sm text-gray-500">
+                                            {{ cloudTracks.length }}
+                                        </span>
                                     </button>
                                     <button
                                         :class="[
@@ -1087,16 +1196,23 @@ watch(activeTab, async (tab) => {
                                         ]"
                                         @click="handleCloudViewLiked"
                                     >
-                                        <UIcon name="i-heroicons-heart-solid" class="w-5 h-5 text-red-500" />
-                                        <span>{{ t("music.cloud.likedTracks") || "Liked" }}</span>
-                                        <span class="ml-auto text-sm text-gray-500">{{ cloudLikedTracks.length }}</span>
+                                        <UIcon
+                                            name="i-heroicons-heart-solid"
+                                            class="w-5 h-5 text-red-500"
+                                        />
+                                        <span>{{ t('music.cloud.likedTracks') || 'Liked' }}</span>
+                                        <span class="ml-auto text-sm text-gray-500">
+                                            {{ cloudLikedTracks.length }}
+                                        </span>
                                     </button>
                                 </nav>
 
                                 <!-- Playlists header -->
                                 <div class="flex items-center justify-between mb-3">
-                                    <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-                                        {{ t("music.cloud.playlists") || "Playlists" }}
+                                    <h3
+                                        class="text-sm font-semibold text-gray-400 uppercase tracking-wider"
+                                    >
+                                        {{ t('music.cloud.playlists') || 'Playlists' }}
                                     </h3>
                                     <button
                                         class="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
@@ -1126,10 +1242,15 @@ watch(activeTab, async (tab) => {
                                                 class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
                                                 :style="{ backgroundColor: playlist.coverColor }"
                                             >
-                                                <UIcon name="i-heroicons-musical-note" class="w-4 h-4 text-white" />
+                                                <UIcon
+                                                    name="i-heroicons-musical-note"
+                                                    class="w-4 h-4 text-white"
+                                                />
                                             </div>
                                             <span class="truncate flex-1">{{ playlist.name }}</span>
-                                            <span class="text-sm text-gray-500">{{ playlist.trackCount }}</span>
+                                            <span class="text-sm text-gray-500">
+                                                {{ playlist.trackCount }}
+                                            </span>
                                         </button>
                                         <button
                                             class="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
@@ -1148,7 +1269,9 @@ watch(activeTab, async (tab) => {
                                     <input
                                         v-model="newCloudPlaylistName"
                                         type="text"
-                                        :placeholder="t('music.cloud.playlistName') || 'Playlist name'"
+                                        :placeholder="
+                                            t('music.cloud.playlistName') || 'Playlist name'
+                                        "
                                         class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         @keyup.enter="handleCloudCreatePlaylist"
                                     />
@@ -1158,7 +1281,7 @@ watch(activeTab, async (tab) => {
                                             variant="ghost"
                                             @click="showCloudCreatePlaylist = false"
                                         >
-                                            {{ t("common.cancel") }}
+                                            {{ t('common.cancel') }}
                                         </UButton>
                                         <UButton
                                             size="xs"
@@ -1166,7 +1289,7 @@ watch(activeTab, async (tab) => {
                                             :disabled="!newCloudPlaylistName.trim()"
                                             @click="handleCloudCreatePlaylist"
                                         >
-                                            {{ t("common.create") }}
+                                            {{ t('common.create') }}
                                         </UButton>
                                     </div>
                                 </div>
@@ -1179,10 +1302,21 @@ watch(activeTab, async (tab) => {
                                         @click="handleCloudFileSelect"
                                     >
                                         <UIcon
-                                            :name="cloudUploading ? 'i-heroicons-arrow-path' : 'i-heroicons-cloud-arrow-up'"
-                                            :class="['w-5 h-5', cloudUploading ? 'animate-spin' : '']"
+                                            :name="
+                                                cloudUploading
+                                                    ? 'i-heroicons-arrow-path'
+                                                    : 'i-heroicons-cloud-arrow-up'
+                                            "
+                                            :class="[
+                                                'w-5 h-5',
+                                                cloudUploading ? 'animate-spin' : '',
+                                            ]"
                                         />
-                                        {{ cloudUploading ? (t("music.cloud.uploading") || "Uploading...") : (t("music.cloud.uploadMusic") || "Upload Music") }}
+                                        {{
+                                            cloudUploading
+                                                ? t('music.cloud.uploading') || 'Uploading...'
+                                                : t('music.cloud.uploadMusic') || 'Upload Music'
+                                        }}
                                     </button>
                                 </div>
                             </div>
@@ -1198,24 +1332,37 @@ watch(activeTab, async (tab) => {
                                     class="bg-gray-800/50 rounded-lg p-3"
                                 >
                                     <div class="flex items-center justify-between mb-2">
-                                        <span class="text-white text-sm truncate">{{ progress.fileName }}</span>
+                                        <span class="text-white text-sm truncate">
+                                            {{ progress.fileName }}
+                                        </span>
                                         <span
                                             :class="[
                                                 'text-xs px-2 py-0.5 rounded',
-                                                progress.status === 'complete' ? 'bg-green-600/20 text-green-400' :
-                                                progress.status === 'error' ? 'bg-red-600/20 text-red-400' :
-                                                'bg-blue-600/20 text-blue-400'
+                                                progress.status === 'complete'
+                                                    ? 'bg-green-600/20 text-green-400'
+                                                    : progress.status === 'error'
+                                                      ? 'bg-red-600/20 text-red-400'
+                                                      : 'bg-blue-600/20 text-blue-400',
                                             ]"
                                         >
-                                            {{ progress.status === 'complete' ? '✓' : progress.status === 'error' ? '✗' : `${progress.progress}%` }}
+                                            {{
+                                                progress.status === 'complete'
+                                                    ? '✓'
+                                                    : progress.status === 'error'
+                                                      ? '✗'
+                                                      : `${progress.progress}%`
+                                            }}
                                         </span>
                                     </div>
                                     <div class="h-1 bg-gray-700 rounded-full overflow-hidden">
                                         <div
                                             :class="[
                                                 'h-full transition-all duration-300',
-                                                progress.status === 'complete' ? 'bg-green-500' :
-                                                progress.status === 'error' ? 'bg-red-500' : 'bg-blue-500'
+                                                progress.status === 'complete'
+                                                    ? 'bg-green-500'
+                                                    : progress.status === 'error'
+                                                      ? 'bg-red-500'
+                                                      : 'bg-blue-500',
                                             ]"
                                             :style="{ width: `${progress.progress}%` }"
                                         />
@@ -1224,18 +1371,23 @@ watch(activeTab, async (tab) => {
                             </div>
 
                             <!-- Header -->
-                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                            <div
+                                class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
+                            >
                                 <div>
                                     <h1 class="text-3xl font-bold text-white">
-                                        {{ cloudViewMode === 'liked'
-                                            ? (t("music.cloud.likedTracks") || "Liked Tracks")
-                                            : cloudViewMode === 'playlist' && selectedCloudPlaylist
-                                                ? selectedCloudPlaylist.name
-                                                : (t("music.cloud.allTracks") || "All Tracks")
+                                        {{
+                                            cloudViewMode === 'liked'
+                                                ? t('music.cloud.likedTracks') || 'Liked Tracks'
+                                                : cloudViewMode === 'playlist' &&
+                                                    selectedCloudPlaylist
+                                                  ? selectedCloudPlaylist.name
+                                                  : t('music.cloud.allTracks') || 'All Tracks'
                                         }}
                                     </h1>
                                     <p class="text-gray-400 text-sm mt-1">
-                                        {{ filteredCloudTracks.length }} {{ t("music.local.tracks") || "tracks" }}
+                                        {{ filteredCloudTracks.length }}
+                                        {{ t('music.local.tracks') || 'tracks' }}
                                     </p>
                                 </div>
                                 <UInput
@@ -1248,10 +1400,7 @@ watch(activeTab, async (tab) => {
                             </div>
 
                             <!-- Loading -->
-                            <div
-                                v-if="cloudLoading"
-                                class="flex items-center justify-center py-20"
-                            >
+                            <div v-if="cloudLoading" class="flex items-center justify-center py-20">
                                 <UIcon
                                     name="i-heroicons-arrow-path"
                                     class="w-12 h-12 text-blue-500 animate-spin"
@@ -1259,12 +1408,19 @@ watch(activeTab, async (tab) => {
                             </div>
 
                             <!-- Track list -->
-                            <div v-else-if="filteredCloudTracks.length > 0" class="bg-gray-800/30 rounded-xl overflow-hidden">
+                            <div
+                                v-else-if="filteredCloudTracks.length > 0"
+                                class="bg-gray-800/30 rounded-xl overflow-hidden"
+                            >
                                 <!-- Header row -->
-                                <div class="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-700/50">
+                                <div
+                                    class="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-700/50"
+                                >
                                     <span class="w-10 text-center">#</span>
-                                    <span>{{ t("music.local.columnTitle") || "Title" }}</span>
-                                    <span class="hidden md:block">{{ t("music.local.columnAlbum") || "Album" }}</span>
+                                    <span>{{ t('music.local.columnTitle') || 'Title' }}</span>
+                                    <span class="hidden md:block">
+                                        {{ t('music.local.columnAlbum') || 'Album' }}
+                                    </span>
                                     <span class="w-16 text-center">
                                         <UIcon name="i-heroicons-clock" class="w-4 h-4" />
                                     </span>
@@ -1286,10 +1442,16 @@ watch(activeTab, async (tab) => {
                                     <!-- Index / Play icon -->
                                     <div class="w-10 flex items-center justify-center">
                                         <span
-                                            v-if="cloudPlaybackState.currentTrack?.id === track.id && cloudPlaybackState.isPlaying"
+                                            v-if="
+                                                cloudPlaybackState.currentTrack?.id === track.id &&
+                                                cloudPlaybackState.isPlaying
+                                            "
                                             class="text-blue-400"
                                         >
-                                            <UIcon name="i-heroicons-speaker-wave" class="w-4 h-4 animate-pulse" />
+                                            <UIcon
+                                                name="i-heroicons-speaker-wave"
+                                                class="w-4 h-4 animate-pulse"
+                                            />
                                         </span>
                                         <span v-else class="text-gray-400 group-hover:hidden">
                                             {{ index + 1 }}
@@ -1308,7 +1470,10 @@ watch(activeTab, async (tab) => {
                                             class="w-10 h-10 rounded flex items-center justify-center flex-shrink-0"
                                             :style="{ backgroundColor: getCloudTrackColor(track) }"
                                         >
-                                            <UIcon name="i-heroicons-musical-note" class="w-5 h-5 text-white" />
+                                            <UIcon
+                                                name="i-heroicons-musical-note"
+                                                class="w-5 h-5 text-white"
+                                            />
                                         </div>
                                         <div class="min-w-0">
                                             <p
@@ -1322,14 +1487,22 @@ watch(activeTab, async (tab) => {
                                                 {{ track.title || track.fileName }}
                                             </p>
                                             <p class="text-sm truncate text-gray-400">
-                                                {{ track.artist || (t("music.local.unknownArtist") || "Unknown Artist") }}
+                                                {{
+                                                    track.artist ||
+                                                    t('music.local.unknownArtist') ||
+                                                    'Unknown Artist'
+                                                }}
                                             </p>
                                         </div>
                                     </div>
 
                                     <!-- Album -->
                                     <div class="text-sm truncate hidden md:block text-gray-400">
-                                        {{ track.album || (t("music.local.unknownAlbum") || "Unknown Album") }}
+                                        {{
+                                            track.album ||
+                                            t('music.local.unknownAlbum') ||
+                                            'Unknown Album'
+                                        }}
                                     </div>
 
                                     <!-- Duration -->
@@ -1338,16 +1511,24 @@ watch(activeTab, async (tab) => {
                                     </div>
 
                                     <!-- Actions -->
-                                    <div class="w-32 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div
+                                        class="w-32 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
                                         <button
                                             class="p-1.5 rounded-full hover:bg-gray-700 transition-colors"
                                             @click.stop="handleCloudToggleLike(track)"
                                         >
                                             <UIcon
-                                                :name="track.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                                                :name="
+                                                    track.isLiked
+                                                        ? 'i-heroicons-heart-solid'
+                                                        : 'i-heroicons-heart'
+                                                "
                                                 :class="[
                                                     'w-4 h-4',
-                                                    track.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-white',
+                                                    track.isLiked
+                                                        ? 'text-red-500'
+                                                        : 'text-gray-400 hover:text-white',
                                                 ]"
                                             />
                                         </button>
@@ -1361,7 +1542,10 @@ watch(activeTab, async (tab) => {
                                             class="p-1.5 rounded-full hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
                                             @click.stop="openCloudTrackInfo(track)"
                                         >
-                                            <UIcon name="i-heroicons-information-circle" class="w-4 h-4" />
+                                            <UIcon
+                                                name="i-heroicons-information-circle"
+                                                class="w-4 h-4"
+                                            />
                                         </button>
                                         <!-- Remove from playlist -->
                                         <button
@@ -1392,11 +1576,14 @@ watch(activeTab, async (tab) => {
                                     class="w-16 h-16 text-gray-600 mb-4"
                                 />
                                 <p class="text-gray-400 text-lg mb-4">
-                                    {{ cloudViewMode === 'liked'
-                                        ? (t("music.cloud.noLikedTracks") || "No liked tracks yet")
-                                        : cloudViewMode === 'playlist'
-                                            ? (t("music.cloud.noPlaylistTracks") || "No tracks in this playlist")
-                                            : (t("music.cloud.noTracks") || "No music uploaded yet")
+                                    {{
+                                        cloudViewMode === 'liked'
+                                            ? t('music.cloud.noLikedTracks') ||
+                                              'No liked tracks yet'
+                                            : cloudViewMode === 'playlist'
+                                              ? t('music.cloud.noPlaylistTracks') ||
+                                                'No tracks in this playlist'
+                                              : t('music.cloud.noTracks') || 'No music uploaded yet'
                                     }}
                                 </p>
                                 <UButton
@@ -1405,7 +1592,7 @@ watch(activeTab, async (tab) => {
                                     class="bg-blue-600 hover:bg-blue-700"
                                     @click="handleCloudFileSelect"
                                 >
-                                    {{ t("music.cloud.uploadFirst") || "Upload your first track" }}
+                                    {{ t('music.cloud.uploadFirst') || 'Upload your first track' }}
                                 </UButton>
                             </div>
                         </main>
@@ -1430,10 +1617,15 @@ watch(activeTab, async (tab) => {
                     </div>
                     <div class="min-w-0">
                         <p class="text-white font-medium truncate text-sm">
-                            {{ playbackState.currentTrack.title || playbackState.currentTrack.fileName }}
+                            {{
+                                playbackState.currentTrack.title ||
+                                playbackState.currentTrack.fileName
+                            }}
                         </p>
                         <p class="text-gray-400 text-xs truncate">
-                            {{ playbackState.currentTrack.artist || t("music.local.unknownArtist") }}
+                            {{
+                                playbackState.currentTrack.artist || t('music.local.unknownArtist')
+                            }}
                         </p>
                     </div>
                     <button
@@ -1441,10 +1633,16 @@ watch(activeTab, async (tab) => {
                         @click="handleToggleLike(playbackState.currentTrack)"
                     >
                         <UIcon
-                            :name="playbackState.currentTrack.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                            :name="
+                                playbackState.currentTrack.isLiked
+                                    ? 'i-heroicons-heart-solid'
+                                    : 'i-heroicons-heart'
+                            "
                             :class="[
                                 'w-4 h-4',
-                                playbackState.currentTrack.isLiked ? 'text-red-500' : 'text-gray-400',
+                                playbackState.currentTrack.isLiked
+                                    ? 'text-red-500'
+                                    : 'text-gray-400',
                             ]"
                         />
                     </button>
@@ -1456,7 +1654,9 @@ watch(activeTab, async (tab) => {
                         <button
                             :class="[
                                 'p-2 rounded-full transition-colors',
-                                playbackState.isShuffled ? 'text-purple-400' : 'text-gray-400 hover:text-white',
+                                playbackState.isShuffled
+                                    ? 'text-purple-400'
+                                    : 'text-gray-400 hover:text-white',
                             ]"
                             @click="toggleShuffle"
                         >
@@ -1473,7 +1673,11 @@ watch(activeTab, async (tab) => {
                             @click="togglePlay"
                         >
                             <UIcon
-                                :name="playbackState.isPlaying ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'"
+                                :name="
+                                    playbackState.isPlaying
+                                        ? 'i-heroicons-pause-solid'
+                                        : 'i-heroicons-play-solid'
+                                "
                                 class="w-5 h-5"
                             />
                         </button>
@@ -1486,18 +1690,26 @@ watch(activeTab, async (tab) => {
                         <button
                             :class="[
                                 'p-2 rounded-full transition-colors',
-                                playbackState.repeatMode !== 'off' ? 'text-purple-400' : 'text-gray-400 hover:text-white',
+                                playbackState.repeatMode !== 'off'
+                                    ? 'text-purple-400'
+                                    : 'text-gray-400 hover:text-white',
                             ]"
                             @click="toggleRepeat"
                         >
                             <UIcon
-                                :name="playbackState.repeatMode === 'one' ? 'i-heroicons-arrow-path' : 'i-heroicons-arrow-path'"
+                                :name="
+                                    playbackState.repeatMode === 'one'
+                                        ? 'i-heroicons-arrow-path'
+                                        : 'i-heroicons-arrow-path'
+                                "
                                 class="w-4 h-4"
                             />
                             <span
                                 v-if="playbackState.repeatMode === 'one'"
                                 class="absolute text-[8px] font-bold"
-                            >1</span>
+                            >
+                                1
+                            </span>
                         </button>
                     </div>
 
@@ -1532,11 +1744,13 @@ watch(activeTab, async (tab) => {
                         @click="toggleMute"
                     >
                         <UIcon
-                            :name="playbackState.isMuted || playbackState.volume === 0
-                                ? 'i-heroicons-speaker-x-mark'
-                                : playbackState.volume < 0.5
-                                    ? 'i-heroicons-speaker-wave'
-                                    : 'i-heroicons-speaker-wave'"
+                            :name="
+                                playbackState.isMuted || playbackState.volume === 0
+                                    ? 'i-heroicons-speaker-x-mark'
+                                    : playbackState.volume < 0.5
+                                      ? 'i-heroicons-speaker-wave'
+                                      : 'i-heroicons-speaker-wave'
+                            "
                             class="w-5 h-5"
                         />
                     </button>
@@ -1561,7 +1775,7 @@ watch(activeTab, async (tab) => {
         >
             <div class="bg-gray-900 rounded-xl max-w-lg w-full p-6">
                 <div class="flex items-start justify-between mb-6">
-                    <h2 class="text-xl font-bold text-white">{{ t("music.local.trackInfo") }}</h2>
+                    <h2 class="text-xl font-bold text-white">{{ t('music.local.trackInfo') }}</h2>
                     <button
                         class="p-1 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white"
                         @click="closeTrackInfo"
@@ -1581,38 +1795,50 @@ watch(activeTab, async (tab) => {
                         <h3 class="text-lg font-semibold text-white">
                             {{ selectedTrack.title || selectedTrack.fileName }}
                         </h3>
-                        <p class="text-gray-400">{{ selectedTrack.artist || t("music.local.unknownArtist") }}</p>
-                        <p class="text-gray-500 text-sm">{{ selectedTrack.album || t("music.local.unknownAlbum") }}</p>
+                        <p class="text-gray-400">
+                            {{ selectedTrack.artist || t('music.local.unknownArtist') }}
+                        </p>
+                        <p class="text-gray-500 text-sm">
+                            {{ selectedTrack.album || t('music.local.unknownAlbum') }}
+                        </p>
                     </div>
                 </div>
 
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoFile") }}</span>
+                        <span class="text-gray-400">{{ t('music.local.infoFile') }}</span>
                         <span class="text-white">{{ selectedTrack.fileName }}</span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoPath") }}</span>
-                        <span class="text-white truncate ml-4 max-w-[250px]">{{ selectedTrack.filePath }}</span>
+                        <span class="text-gray-400">{{ t('music.local.infoPath') }}</span>
+                        <span class="text-white truncate ml-4 max-w-[250px]">
+                            {{ selectedTrack.filePath }}
+                        </span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoDuration") }}</span>
+                        <span class="text-gray-400">{{ t('music.local.infoDuration') }}</span>
                         <span class="text-white">{{ formatDuration(selectedTrack.duration) }}</span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoSize") }}</span>
+                        <span class="text-gray-400">{{ t('music.local.infoSize') }}</span>
                         <span class="text-white">{{ formatFileSize(selectedTrack.fileSize) }}</span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoFormat") }}</span>
+                        <span class="text-gray-400">{{ t('music.local.infoFormat') }}</span>
                         <span class="text-white">{{ selectedTrack.mimeType || 'audio/mpeg' }}</span>
                     </div>
-                    <div v-if="selectedTrack.year" class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoYear") }}</span>
+                    <div
+                        v-if="selectedTrack.year"
+                        class="flex justify-between py-2 border-b border-gray-800"
+                    >
+                        <span class="text-gray-400">{{ t('music.local.infoYear') }}</span>
                         <span class="text-white">{{ selectedTrack.year }}</span>
                     </div>
-                    <div v-if="selectedTrack.genre" class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoGenre") }}</span>
+                    <div
+                        v-if="selectedTrack.genre"
+                        class="flex justify-between py-2 border-b border-gray-800"
+                    >
+                        <span class="text-gray-400">{{ t('music.local.infoGenre') }}</span>
                         <span class="text-white">{{ selectedTrack.genre }}</span>
                     </div>
                 </div>
@@ -1627,7 +1853,9 @@ watch(activeTab, async (tab) => {
         >
             <div class="bg-gray-900 rounded-xl max-w-sm w-full p-6">
                 <div class="flex items-start justify-between mb-6">
-                    <h2 class="text-xl font-bold text-white">{{ t("music.local.addToPlaylist") }}</h2>
+                    <h2 class="text-xl font-bold text-white">
+                        {{ t('music.local.addToPlaylist') }}
+                    </h2>
                     <button
                         class="p-1 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white"
                         @click="showAddToPlaylist = false"
@@ -1637,8 +1865,11 @@ watch(activeTab, async (tab) => {
                 </div>
 
                 <div v-if="playlists.length === 0" class="text-center py-8">
-                    <UIcon name="i-heroicons-musical-note" class="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p class="text-gray-400">{{ t("music.local.noPlaylists") }}</p>
+                    <UIcon
+                        name="i-heroicons-musical-note"
+                        class="w-12 h-12 text-gray-600 mx-auto mb-3"
+                    />
+                    <p class="text-gray-400">{{ t('music.local.noPlaylists') }}</p>
                 </div>
 
                 <div v-else class="space-y-2 max-h-64 overflow-y-auto">
@@ -1656,7 +1887,9 @@ watch(activeTab, async (tab) => {
                         </div>
                         <div class="min-w-0">
                             <p class="text-white font-medium truncate">{{ playlist.name }}</p>
-                            <p class="text-gray-500 text-sm">{{ playlist.trackCount }} {{ t("music.local.tracks") }}</p>
+                            <p class="text-gray-500 text-sm">
+                                {{ playlist.trackCount }} {{ t('music.local.tracks') }}
+                            </p>
                         </div>
                     </button>
                 </div>
@@ -1673,16 +1906,25 @@ watch(activeTab, async (tab) => {
                 <div class="flex items-center gap-3 w-64 min-w-0">
                     <div
                         class="w-12 h-12 rounded flex items-center justify-center flex-shrink-0"
-                        :style="{ backgroundColor: getCloudTrackColor(cloudPlaybackState.currentTrack) }"
+                        :style="{
+                            backgroundColor: getCloudTrackColor(cloudPlaybackState.currentTrack),
+                        }"
                     >
                         <UIcon name="i-heroicons-musical-note" class="w-6 h-6 text-white" />
                     </div>
                     <div class="min-w-0">
                         <p class="text-white font-medium truncate text-sm">
-                            {{ cloudPlaybackState.currentTrack.title || cloudPlaybackState.currentTrack.fileName }}
+                            {{
+                                cloudPlaybackState.currentTrack.title ||
+                                cloudPlaybackState.currentTrack.fileName
+                            }}
                         </p>
                         <p class="text-gray-400 text-xs truncate">
-                            {{ cloudPlaybackState.currentTrack.artist || (t("music.local.unknownArtist") || "Unknown Artist") }}
+                            {{
+                                cloudPlaybackState.currentTrack.artist ||
+                                t('music.local.unknownArtist') ||
+                                'Unknown Artist'
+                            }}
                         </p>
                     </div>
                     <button
@@ -1690,10 +1932,16 @@ watch(activeTab, async (tab) => {
                         @click="handleCloudToggleLike(cloudPlaybackState.currentTrack)"
                     >
                         <UIcon
-                            :name="cloudPlaybackState.currentTrack.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
+                            :name="
+                                cloudPlaybackState.currentTrack.isLiked
+                                    ? 'i-heroicons-heart-solid'
+                                    : 'i-heroicons-heart'
+                            "
                             :class="[
                                 'w-4 h-4',
-                                cloudPlaybackState.currentTrack.isLiked ? 'text-red-500' : 'text-gray-400',
+                                cloudPlaybackState.currentTrack.isLiked
+                                    ? 'text-red-500'
+                                    : 'text-gray-400',
                             ]"
                         />
                     </button>
@@ -1705,7 +1953,9 @@ watch(activeTab, async (tab) => {
                         <button
                             :class="[
                                 'p-2 rounded-full transition-colors',
-                                cloudPlaybackState.isShuffled ? 'text-blue-400' : 'text-gray-400 hover:text-white',
+                                cloudPlaybackState.isShuffled
+                                    ? 'text-blue-400'
+                                    : 'text-gray-400 hover:text-white',
                             ]"
                             @click="toggleCloudShuffle"
                         >
@@ -1722,7 +1972,11 @@ watch(activeTab, async (tab) => {
                             @click="toggleCloudPlay"
                         >
                             <UIcon
-                                :name="cloudPlaybackState.isPlaying ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'"
+                                :name="
+                                    cloudPlaybackState.isPlaying
+                                        ? 'i-heroicons-pause-solid'
+                                        : 'i-heroicons-play-solid'
+                                "
                                 class="w-5 h-5"
                             />
                         </button>
@@ -1735,7 +1989,9 @@ watch(activeTab, async (tab) => {
                         <button
                             :class="[
                                 'p-2 rounded-full transition-colors',
-                                cloudPlaybackState.repeatMode !== 'off' ? 'text-blue-400' : 'text-gray-400 hover:text-white',
+                                cloudPlaybackState.repeatMode !== 'off'
+                                    ? 'text-blue-400'
+                                    : 'text-gray-400 hover:text-white',
                             ]"
                             @click="toggleCloudRepeat"
                         >
@@ -1774,9 +2030,11 @@ watch(activeTab, async (tab) => {
                         @click="toggleCloudMute"
                     >
                         <UIcon
-                            :name="cloudPlaybackState.isMuted || cloudPlaybackState.volume === 0
-                                ? 'i-heroicons-speaker-x-mark'
-                                : 'i-heroicons-speaker-wave'"
+                            :name="
+                                cloudPlaybackState.isMuted || cloudPlaybackState.volume === 0
+                                    ? 'i-heroicons-speaker-x-mark'
+                                    : 'i-heroicons-speaker-wave'
+                            "
                             class="w-5 h-5"
                         />
                     </button>
@@ -1787,7 +2045,9 @@ watch(activeTab, async (tab) => {
                         step="0.01"
                         :value="cloudPlaybackState.volume"
                         class="w-full h-1 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-                        @input="(e) => setCloudVolume(parseFloat((e.target as HTMLInputElement).value))"
+                        @input="
+                            (e) => setCloudVolume(parseFloat((e.target as HTMLInputElement).value))
+                        "
                     />
                 </div>
             </div>
@@ -1801,7 +2061,9 @@ watch(activeTab, async (tab) => {
         >
             <div class="bg-gray-900 rounded-xl max-w-lg w-full p-6">
                 <div class="flex items-start justify-between mb-6">
-                    <h2 class="text-xl font-bold text-white">{{ t("music.cloud.trackInfo") || "Track Info" }}</h2>
+                    <h2 class="text-xl font-bold text-white">
+                        {{ t('music.cloud.trackInfo') || 'Track Info' }}
+                    </h2>
                     <button
                         class="p-1 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white"
                         @click="closeCloudTrackInfo"
@@ -1821,43 +2083,79 @@ watch(activeTab, async (tab) => {
                         <h3 class="text-lg font-semibold text-white">
                             {{ selectedCloudTrack.title || selectedCloudTrack.fileName }}
                         </h3>
-                        <p class="text-gray-400">{{ selectedCloudTrack.artist || (t("music.local.unknownArtist") || "Unknown Artist") }}</p>
-                        <p class="text-gray-500 text-sm">{{ selectedCloudTrack.album || (t("music.local.unknownAlbum") || "Unknown Album") }}</p>
+                        <p class="text-gray-400">
+                            {{
+                                selectedCloudTrack.artist ||
+                                t('music.local.unknownArtist') ||
+                                'Unknown Artist'
+                            }}
+                        </p>
+                        <p class="text-gray-500 text-sm">
+                            {{
+                                selectedCloudTrack.album ||
+                                t('music.local.unknownAlbum') ||
+                                'Unknown Album'
+                            }}
+                        </p>
                     </div>
                 </div>
 
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoFile") || "File" }}</span>
+                        <span class="text-gray-400">{{ t('music.local.infoFile') || 'File' }}</span>
                         <span class="text-white">{{ selectedCloudTrack.fileName }}</span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoDuration") || "Duration" }}</span>
-                        <span class="text-white">{{ formatCloudDuration(selectedCloudTrack.duration) }}</span>
+                        <span class="text-gray-400">
+                            {{ t('music.local.infoDuration') || 'Duration' }}
+                        </span>
+                        <span class="text-white">
+                            {{ formatCloudDuration(selectedCloudTrack.duration) }}
+                        </span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoSize") || "Size" }}</span>
-                        <span class="text-white">{{ formatCloudFileSize(selectedCloudTrack.fileSize) }}</span>
+                        <span class="text-gray-400">{{ t('music.local.infoSize') || 'Size' }}</span>
+                        <span class="text-white">
+                            {{ formatCloudFileSize(selectedCloudTrack.fileSize) }}
+                        </span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoFormat") || "Format" }}</span>
-                        <span class="text-white">{{ selectedCloudTrack.mimeType || 'audio/mpeg' }}</span>
+                        <span class="text-gray-400">
+                            {{ t('music.local.infoFormat') || 'Format' }}
+                        </span>
+                        <span class="text-white">
+                            {{ selectedCloudTrack.mimeType || 'audio/mpeg' }}
+                        </span>
                     </div>
-                    <div v-if="selectedCloudTrack.year" class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoYear") || "Year" }}</span>
+                    <div
+                        v-if="selectedCloudTrack.year"
+                        class="flex justify-between py-2 border-b border-gray-800"
+                    >
+                        <span class="text-gray-400">{{ t('music.local.infoYear') || 'Year' }}</span>
                         <span class="text-white">{{ selectedCloudTrack.year }}</span>
                     </div>
-                    <div v-if="selectedCloudTrack.genre" class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.local.infoGenre") || "Genre" }}</span>
+                    <div
+                        v-if="selectedCloudTrack.genre"
+                        class="flex justify-between py-2 border-b border-gray-800"
+                    >
+                        <span class="text-gray-400">
+                            {{ t('music.local.infoGenre') || 'Genre' }}
+                        </span>
                         <span class="text-white">{{ selectedCloudTrack.genre }}</span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.cloud.playCount") || "Play Count" }}</span>
+                        <span class="text-gray-400">
+                            {{ t('music.cloud.playCount') || 'Play Count' }}
+                        </span>
                         <span class="text-white">{{ selectedCloudTrack.playCount || 0 }}</span>
                     </div>
                     <div class="flex justify-between py-2 border-b border-gray-800">
-                        <span class="text-gray-400">{{ t("music.cloud.uploadedAt") || "Uploaded" }}</span>
-                        <span class="text-white">{{ new Date(selectedCloudTrack.createdAt).toLocaleDateString() }}</span>
+                        <span class="text-gray-400">
+                            {{ t('music.cloud.uploadedAt') || 'Uploaded' }}
+                        </span>
+                        <span class="text-white">
+                            {{ new Date(selectedCloudTrack.createdAt).toLocaleDateString() }}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -1871,7 +2169,9 @@ watch(activeTab, async (tab) => {
         >
             <div class="bg-gray-900 rounded-xl max-w-sm w-full p-6">
                 <div class="flex items-start justify-between mb-6">
-                    <h2 class="text-xl font-bold text-white">{{ t("music.local.addToPlaylist") || "Add to Playlist" }}</h2>
+                    <h2 class="text-xl font-bold text-white">
+                        {{ t('music.local.addToPlaylist') || 'Add to Playlist' }}
+                    </h2>
                     <button
                         class="p-1 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white"
                         @click="showCloudAddToPlaylist = false"
@@ -1881,8 +2181,13 @@ watch(activeTab, async (tab) => {
                 </div>
 
                 <div v-if="cloudPlaylists.length === 0" class="text-center py-8">
-                    <UIcon name="i-heroicons-musical-note" class="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p class="text-gray-400">{{ t("music.cloud.noPlaylists") || "No playlists yet" }}</p>
+                    <UIcon
+                        name="i-heroicons-musical-note"
+                        class="w-12 h-12 text-gray-600 mx-auto mb-3"
+                    />
+                    <p class="text-gray-400">
+                        {{ t('music.cloud.noPlaylists') || 'No playlists yet' }}
+                    </p>
                 </div>
 
                 <div v-else class="space-y-2 max-h-64 overflow-y-auto">
@@ -1900,7 +2205,9 @@ watch(activeTab, async (tab) => {
                         </div>
                         <div class="min-w-0">
                             <p class="text-white font-medium truncate">{{ playlist.name }}</p>
-                            <p class="text-gray-500 text-sm">{{ playlist.trackCount }} {{ t("music.local.tracks") || "tracks" }}</p>
+                            <p class="text-gray-500 text-sm">
+                                {{ playlist.trackCount }} {{ t('music.local.tracks') || 'tracks' }}
+                            </p>
                         </div>
                     </button>
                 </div>
@@ -1915,7 +2222,9 @@ watch(activeTab, async (tab) => {
         >
             <div class="bg-gray-900 rounded-xl max-w-sm w-full p-6">
                 <div class="flex items-start justify-between mb-4">
-                    <h2 class="text-xl font-bold text-white">{{ t("music.cloud.deleteTrack") || "Delete Track" }}</h2>
+                    <h2 class="text-xl font-bold text-white">
+                        {{ t('music.cloud.deleteTrack') || 'Delete Track' }}
+                    </h2>
                     <button
                         class="p-1 rounded-full hover:bg-gray-800 text-gray-400 hover:text-white"
                         @click="cancelCloudDelete"
@@ -1925,22 +2234,22 @@ watch(activeTab, async (tab) => {
                 </div>
 
                 <p class="text-gray-400 mb-6">
-                    {{ t("music.cloud.deleteConfirm") || "Are you sure you want to delete this track? This action cannot be undone." }}
+                    {{
+                        t('music.cloud.deleteConfirm') ||
+                        'Are you sure you want to delete this track? This action cannot be undone.'
+                    }}
                 </p>
 
                 <div class="flex justify-end gap-3">
-                    <UButton
-                        variant="ghost"
-                        @click="cancelCloudDelete"
-                    >
-                        {{ t("common.cancel") || "Cancel" }}
+                    <UButton variant="ghost" @click="cancelCloudDelete">
+                        {{ t('common.cancel') || 'Cancel' }}
                     </UButton>
                     <UButton
                         color="error"
                         class="bg-red-600 hover:bg-red-700"
                         @click="handleCloudDeleteTrack"
                     >
-                        {{ t("common.delete") || "Delete" }}
+                        {{ t('common.delete') || 'Delete' }}
                     </UButton>
                 </div>
             </div>

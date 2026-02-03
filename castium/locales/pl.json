@@ -149,8 +149,38 @@
         "title": "Ustawienia",
         "profile": {
             "title": "Profil",
-            "name": "Imię",
-            "email": "Email"
+            "name": "Nazwa użytkownika",
+            "namePlaceholder": "Wpisz nazwę użytkownika",
+            "email": "Email",
+            "createdAt": "Konto utworzone",
+            "lastSignIn": "Ostatnie logowanie",
+            "usernameEmpty": "Nazwa użytkownika nie może być pusta",
+            "updateSuccess": "Profil zaktualizowany",
+            "updateError": "Błąd podczas aktualizacji profilu"
+        },
+        "password": {
+            "title": "Hasło",
+            "description": "Zmień hasło, aby zabezpieczyć swoje konto.",
+            "changeButton": "Zmień",
+            "verifyCurrent": "Wpisz aktualne hasło, aby kontynuować.",
+            "currentPlaceholder": "Aktualne hasło",
+            "verify": "Zweryfikuj",
+            "verified": "Hasło zweryfikowane",
+            "wrongPassword": "Nieprawidłowe hasło",
+            "enterCurrent": "Proszę wpisać aktualne hasło",
+            "new": "Nowe hasło",
+            "newPlaceholder": "Wpisz nowe hasło",
+            "confirm": "Potwierdź hasło",
+            "confirmPlaceholder": "Potwierdź nowe hasło",
+            "save": "Zapisz",
+            "fillAll": "Proszę wypełnić wszystkie pola",
+            "noMatch": "Hasła nie są zgodne",
+            "tooShort": "Hasło musi mieć co najmniej 8 znaków",
+            "changeSuccess": "Hasło zmienione pomyślnie",
+            "changeError": "Błąd podczas zmiany hasła",
+            "forgot": "Zapomniałeś hasła?",
+            "resetSent": "Email resetujący wysłany",
+            "resetError": "Błąd podczas wysyłania emaila"
         },
         "session": {
             "title": "Sesja",
@@ -345,8 +375,26 @@
         "sections": {
             "continueWatching": "Kontynuuj oglądanie",
             "favorites": "Moje ulubione",
-            "allVideos": "Wszystkie wideo"
+            "allVideos": "Wszystkie wideo",
+            "playlists": "Playlisty (Foldery)"
         },
+        "rating": {
+            "title": "Oceń ten film",
+            "score": "Ocena",
+            "comment": "Komentarz",
+            "commentPlaceholder": "Dodaj komentarz (opcjonalnie)...",
+            "delete": "Usuń ocenę",
+            "save": "Zapisz"
+        },
+        "playlist": {
+            "title": "Zarządzaj playlistami",
+            "createNew": "Utwórz nową playlistę",
+            "namePlaceholder": "Nazwa playlisty...",
+            "addTo": "Dodaj do playlisty",
+            "removeFromPlaylist": "Usuń z playlisty",
+            "videos": "{count} film | {count} filmy | {count} filmów"
+        },
+        "videos": "filmów",
         "youtube": {
             "title": "Połącz swoje konto YouTube",
             "description": "Uzyskaj dostęp do playlist, polubionych filmów i oglądaj treści bezpośrednio w Castium.",

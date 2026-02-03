@@ -58,7 +58,7 @@ export function useCustomStreams() {
             loaded = true
 
             console.log(
-                `[CustomStreams] Loaded ${state.value.radioStreams.length} radio, ${state.value.tvStreams.length} TV streams`,
+                `[CustomStreams] Loaded ${state.value.radioStreams.length} radio, ${state.value.tvStreams.length} TV streams`
             )
         } catch (e: any) {
             console.error('[CustomStreams] Failed to load:', e)
@@ -73,7 +73,7 @@ export function useCustomStreams() {
         type: 'radio' | 'tv',
         name: string,
         url: string,
-        logo?: string,
+        logo?: string
     ): Promise<boolean> => {
         if (!user.value) return false
 
@@ -165,15 +165,12 @@ export function useCustomStreams() {
     const updateStream = async (
         id: string,
         type: 'radio' | 'tv',
-        updates: { name?: string; url?: string; logo?: string },
+        updates: { name?: string; url?: string; logo?: string }
     ): Promise<boolean> => {
         if (!user.value) return false
 
         try {
-            const { error } = await supabase
-                .from('custom_streams')
-                .update(updates)
-                .eq('id', id)
+            const { error } = await supabase.from('custom_streams').update(updates).eq('id', id)
 
             if (error) throw error
 

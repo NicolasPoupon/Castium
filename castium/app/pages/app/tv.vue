@@ -193,7 +193,7 @@ const handlePlayFavorite = async (channel: any) => {
     }
 
     // Fallback: try to find in current channels
-    const found = channels.value.find(c => c.id === channel.id)
+    const found = channels.value.find((c) => c.id === channel.id)
     if (found) {
         handlePlayChannel(found)
     } else {
@@ -241,9 +241,16 @@ const currentSelection = computed(() => {
         <div class="pt-20 pb-32 flex-1">
             <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
                 <!-- Header -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+                >
                     <div class="flex items-center gap-3">
-                        <div :class="['w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-lg transition-all duration-300', theme.gradient]">
+                        <div
+                            :class="[
+                                'w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-lg transition-all duration-300',
+                                theme.gradient,
+                            ]"
+                        >
                             <UIcon name="i-heroicons-tv" class="w-6 h-6 text-white" />
                         </div>
                         <div>
@@ -259,28 +266,38 @@ const currentSelection = computed(() => {
                         <UIcon name="i-heroicons-heart-solid" class="w-5 h-5 text-red-400" />
                         {{ t('tv.favoritesTitle') }}
                     </h2>
-                    <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-700">
+                    <div
+                        class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-700"
+                    >
                         <div
                             v-for="channel in favorites"
                             :key="channel.id"
                             :class="[
                                 'flex-shrink-0 w-32 bg-gray-800/40 rounded-xl p-3 cursor-pointer hover:bg-gray-800/60 transition-all border backdrop-blur-sm card-hover',
-                                `border-gray-700/30 hover:${theme.border}`
+                                `border-gray-700/30 hover:${theme.border}`,
                             ]"
                             @click="handlePlayFavorite(channel)"
                         >
-                            <div class="w-16 h-16 mx-auto mb-2 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden">
+                            <div
+                                class="w-16 h-16 mx-auto mb-2 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden"
+                            >
                                 <img
                                     v-if="channel.logo"
                                     :src="channel.logo"
                                     :alt="channel.name"
                                     class="w-full h-full object-cover"
                                     loading="lazy"
-                                    @error="($event.target as HTMLImageElement).style.display = 'none'"
+                                    @error="
+                                        ($event.target as HTMLImageElement).style.display = 'none'
+                                    "
                                 />
-                                <span v-else class="text-white font-bold text-lg">{{ getChannelInitials(channel.name) }}</span>
+                                <span v-else class="text-white font-bold text-lg">
+                                    {{ getChannelInitials(channel.name) }}
+                                </span>
                             </div>
-                            <p class="text-white text-xs text-center truncate">{{ channel.name }}</p>
+                            <p class="text-white text-xs text-center truncate">
+                                {{ channel.name }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -291,26 +308,37 @@ const currentSelection = computed(() => {
                         <UIcon name="i-heroicons-tv" :class="['w-5 h-5', theme.text]" />
                         {{ t('tv.myChannels') }}
                     </h2>
-                    <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-700">
+                    <div
+                        class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-700"
+                    >
                         <div
                             v-for="stream in tvStreams"
                             :key="stream.id"
                             :class="[
                                 'flex-shrink-0 w-32 bg-gray-800/40 rounded-xl p-3 cursor-pointer hover:bg-gray-800/60 transition-all border backdrop-blur-sm card-hover',
-                                `border-${themeColor}-600/30 hover:${theme.border}`
+                                `border-${themeColor}-600/30 hover:${theme.border}`,
                             ]"
                             @click="playCustomChannel(stream)"
                         >
-                            <div :class="['w-16 h-16 mx-auto mb-2 rounded-lg bg-gradient-to-br flex items-center justify-center overflow-hidden', `from-${themeColor}-600/30 to-${themeColor}-800/30`]">
+                            <div
+                                :class="[
+                                    'w-16 h-16 mx-auto mb-2 rounded-lg bg-gradient-to-br flex items-center justify-center overflow-hidden',
+                                    `from-${themeColor}-600/30 to-${themeColor}-800/30`,
+                                ]"
+                            >
                                 <img
                                     v-if="stream.logo"
                                     :src="stream.logo"
                                     :alt="stream.name"
                                     class="w-full h-full object-cover"
                                     loading="lazy"
-                                    @error="($event.target as HTMLImageElement).style.display = 'none'"
+                                    @error="
+                                        ($event.target as HTMLImageElement).style.display = 'none'
+                                    "
                                 />
-                                <span v-else :class="['font-bold text-lg', theme.textLight]">{{ getChannelInitials(stream.name) }}</span>
+                                <span v-else :class="['font-bold text-lg', theme.textLight]">
+                                    {{ getChannelInitials(stream.name) }}
+                                </span>
                             </div>
                             <p class="text-white text-xs text-center truncate">{{ stream.name }}</p>
                         </div>
@@ -326,7 +354,7 @@ const currentSelection = computed(() => {
                                 'px-4 py-2 rounded-lg font-medium transition-all btn-press',
                                 activeTab === 'categories'
                                     ? `${theme.bg} text-white`
-                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60'
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                             ]"
                             @click="activeTab = 'categories'"
                         >
@@ -338,7 +366,7 @@ const currentSelection = computed(() => {
                                 'px-4 py-2 rounded-lg font-medium transition-all btn-press',
                                 activeTab === 'languages'
                                     ? `${theme.bg} text-white`
-                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60'
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                             ]"
                             @click="activeTab = 'languages'"
                         >
@@ -348,45 +376,77 @@ const currentSelection = computed(() => {
                     </div>
 
                     <!-- Categories Grid -->
-                    <div v-if="activeTab === 'categories'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <div
+                        v-if="activeTab === 'categories'"
+                        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+                    >
                         <div
                             v-for="category in categories"
                             :key="category.id"
                             :class="[
                                 'bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-4 cursor-pointer transition-all border group card-hover',
-                                `border-gray-700/30 hover:${theme.border} hover:shadow-lg hover:shadow-${themeColor}-900/20`
+                                `border-gray-700/30 hover:${theme.border} hover:shadow-lg hover:shadow-${themeColor}-900/20`,
                             ]"
                             @click="loadChannelsByCategory(category.code)"
                         >
-                            <div :class="[`w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform icon-bounce`, `bg-${themeColor}-500/20`]">
-                                <UIcon :name="category.icon" :class="['w-6 h-6', theme.textLight]" />
+                            <div
+                                :class="[
+                                    `w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform icon-bounce`,
+                                    `bg-${themeColor}-500/20`,
+                                ]"
+                            >
+                                <UIcon
+                                    :name="category.icon"
+                                    :class="['w-6 h-6', theme.textLight]"
+                                />
                             </div>
                             <h3 class="text-white font-medium text-sm">{{ category.name }}</h3>
-                            <p class="text-gray-500 text-xs mt-1">{{ category.count }} {{ t('tv.channelsLabel') }}</p>
+                            <p class="text-gray-500 text-xs mt-1">
+                                {{ category.count }} {{ t('tv.channelsLabel') }}
+                            </p>
                         </div>
                     </div>
 
                     <!-- Languages Grid -->
-                    <div v-if="activeTab === 'languages'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <div
+                        v-if="activeTab === 'languages'"
+                        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+                    >
                         <div
                             v-for="lang in languages"
                             :key="lang.id"
                             :class="[
                                 'bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-4 cursor-pointer transition-all border group card-hover',
-                                `border-gray-700/30 hover:${theme.border} hover:shadow-lg hover:shadow-${themeColor}-900/20`
+                                `border-gray-700/30 hover:${theme.border} hover:shadow-lg hover:shadow-${themeColor}-900/20`,
                             ]"
                             @click="loadChannelsByLanguage(lang.code)"
                         >
                             <div class="flex items-center justify-between gap-2 mb-3">
-                                <div :class="[`w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform icon-bounce`, `bg-${themeColor}-500/20`]">
-                                    <UIcon name="i-heroicons-language" :class="['w-6 h-6', theme.textLight]" />
+                                <div
+                                    :class="[
+                                        `w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform icon-bounce`,
+                                        `bg-${themeColor}-500/20`,
+                                    ]"
+                                >
+                                    <UIcon
+                                        name="i-heroicons-language"
+                                        :class="['w-6 h-6', theme.textLight]"
+                                    />
                                 </div>
-                                <span :class="['text-xs font-semibold tracking-wider px-2 py-1 rounded-lg ring-1', theme.textLight, `bg-${themeColor}-500/10 ring-${themeColor}-500/20`]">
+                                <span
+                                    :class="[
+                                        'text-xs font-semibold tracking-wider px-2 py-1 rounded-lg ring-1',
+                                        theme.textLight,
+                                        `bg-${themeColor}-500/10 ring-${themeColor}-500/20`,
+                                    ]"
+                                >
                                     {{ lang.code.toUpperCase() }}
                                 </span>
                             </div>
                             <h3 class="text-white font-medium text-sm">{{ lang.name }}</h3>
-                            <p class="text-gray-500 text-xs mt-1">{{ lang.count }} {{ t('tv.channelsLabel') }}</p>
+                            <p class="text-gray-500 text-xs mt-1">
+                                {{ lang.count }} {{ t('tv.channelsLabel') }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -405,22 +465,34 @@ const currentSelection = computed(() => {
 
                         <div
                             v-if="currentSelection"
-                            :class="['flex items-center gap-2 px-3 py-2 rounded-lg border', `bg-${themeColor}-600/20 ${theme.textLight} border-${themeColor}-600/30`]"
+                            :class="[
+                                'flex items-center gap-2 px-3 py-2 rounded-lg border',
+                                `bg-${themeColor}-600/20 ${theme.textLight} border-${themeColor}-600/30`,
+                            ]"
                         >
                             <UIcon :name="currentSelection.icon" class="w-5 h-5" />
                             <span class="font-medium">{{ currentSelection.label }}</span>
-                            <span v-if="'code' in currentSelection && currentSelection.code" class="text-xs opacity-80">
+                            <span
+                                v-if="'code' in currentSelection && currentSelection.code"
+                                class="text-xs opacity-80"
+                            >
                                 {{ currentSelection.code.toUpperCase() }}
                             </span>
                         </div>
 
                         <div class="relative flex-1 min-w-[200px] max-w-md">
-                            <UIcon name="i-heroicons-magnifying-glass" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                            <UIcon
+                                name="i-heroicons-magnifying-glass"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
+                            />
                             <input
                                 v-model="searchInput"
                                 type="text"
                                 :placeholder="t('tv.searchPlaceholder')"
-                                :class="['w-full pl-10 pr-4 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all', `focus:${theme.ring}`]"
+                                :class="[
+                                    'w-full pl-10 pr-4 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all',
+                                    `focus:${theme.ring}`,
+                                ]"
                             />
                         </div>
                     </div>
@@ -428,18 +500,31 @@ const currentSelection = computed(() => {
                     <!-- Loading state -->
                     <div v-if="loading" class="flex items-center justify-center py-20">
                         <div class="text-center">
-                            <div :class="['w-12 h-12 border-4 border-gray-700 rounded-full animate-spin mx-auto mb-4', `border-t-${themeColor}-500`]"></div>
+                            <div
+                                :class="[
+                                    'w-12 h-12 border-4 border-gray-700 rounded-full animate-spin mx-auto mb-4',
+                                    `border-t-${themeColor}-500`,
+                                ]"
+                            ></div>
                             <p class="text-gray-400">{{ t('tv.loading') }}</p>
                         </div>
                     </div>
 
                     <!-- Error state -->
                     <div v-else-if="error" class="text-center py-20">
-                        <div class="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <UIcon name="i-heroicons-exclamation-circle" class="w-8 h-8 text-red-400" />
+                        <div
+                            class="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4"
+                        >
+                            <UIcon
+                                name="i-heroicons-exclamation-circle"
+                                class="w-8 h-8 text-red-400"
+                            />
                         </div>
                         <p class="text-red-400 mb-4">{{ error }}</p>
-                        <button class="px-6 py-2 bg-gray-800/60 hover:bg-gray-700/60 text-white rounded-lg transition-colors btn-press" @click="goBackToBrowse">
+                        <button
+                            class="px-6 py-2 bg-gray-800/60 hover:bg-gray-700/60 text-white rounded-lg transition-colors btn-press"
+                            @click="goBackToBrowse"
+                        >
                             {{ t('tv.back') }}
                         </button>
                     </div>
@@ -447,37 +532,57 @@ const currentSelection = computed(() => {
                     <!-- Channels list -->
                     <div v-else>
                         <div class="mb-4 text-gray-400 text-sm">
-                            {{ t('tv.channelCount', { count: filteredChannels.length, total: channels.length }) }}
+                            {{
+                                t('tv.channelCount', {
+                                    count: filteredChannels.length,
+                                    total: channels.length,
+                                })
+                            }}
                         </div>
 
                         <div v-if="filteredChannels.length === 0" class="text-center py-20">
                             <p class="text-stone-500">{{ t('tv.noChannels') }}</p>
                         </div>
 
-                        <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        <div
+                            v-else
+                            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+                        >
                             <div
                                 v-for="channel in filteredChannels"
                                 :key="channel.id"
                                 :class="[
                                     'group bg-stone-800/40 hover:bg-stone-700/60 rounded-xl p-3 cursor-pointer transition-all border card-hover',
-                                    `border-stone-700/50 hover:${theme.border}`
+                                    `border-stone-700/50 hover:${theme.border}`,
                                 ]"
                                 @click="handlePlayChannel(channel)"
                             >
-                                <div class="relative aspect-video mb-2 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden">
+                                <div
+                                    class="relative aspect-video mb-2 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden"
+                                >
                                     <img
                                         v-if="channel.logo"
                                         :src="channel.logo"
                                         :alt="channel.name"
                                         class="w-full h-full object-contain p-2"
                                         loading="lazy"
-                                        @error="($event.target as HTMLImageElement).style.display = 'none'"
+                                        @error="
+                                            ($event.target as HTMLImageElement).style.display =
+                                                'none'
+                                        "
                                     />
-                                    <span v-else class="text-white font-bold text-xl">{{ getChannelInitials(channel.name) }}</span>
+                                    <span v-else class="text-white font-bold text-xl">
+                                        {{ getChannelInitials(channel.name) }}
+                                    </span>
 
                                     <!-- Play overlay -->
-                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <UIcon name="i-heroicons-play-solid" class="w-10 h-10 text-white" />
+                                    <div
+                                        class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                    >
+                                        <UIcon
+                                            name="i-heroicons-play-solid"
+                                            class="w-10 h-10 text-white"
+                                        />
                                     </div>
 
                                     <!-- Favorite button -->
@@ -486,8 +591,15 @@ const currentSelection = computed(() => {
                                         @click.stop="toggleFavorite(channel)"
                                     >
                                         <UIcon
-                                            :name="channel.isFavorite ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
-                                            :class="['w-4 h-4', channel.isFavorite ? 'text-red-400' : 'text-white']"
+                                            :name="
+                                                channel.isFavorite
+                                                    ? 'i-heroicons-heart-solid'
+                                                    : 'i-heroicons-heart'
+                                            "
+                                            :class="[
+                                                'w-4 h-4',
+                                                channel.isFavorite ? 'text-red-400' : 'text-white',
+                                            ]"
                                         />
                                     </button>
                                 </div>
@@ -511,7 +623,9 @@ const currentSelection = computed(() => {
                     class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
                     @click.self="handleClosePlayer"
                 >
-                    <div class="relative w-full max-w-5xl bg-stone-900 rounded-2xl overflow-hidden shadow-2xl scale-fade-enter-active">
+                    <div
+                        class="relative w-full max-w-5xl bg-stone-900 rounded-2xl overflow-hidden shadow-2xl scale-fade-enter-active"
+                    >
                         <!-- Close button -->
                         <button
                             class="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors btn-press"
@@ -535,7 +649,12 @@ const currentSelection = computed(() => {
                                 v-if="isBuffering"
                                 class="absolute inset-0 flex items-center justify-center bg-black/50"
                             >
-                                <div :class="['w-12 h-12 border-4 border-stone-600 rounded-full animate-spin', `border-t-${themeColor}-500`]"></div>
+                                <div
+                                    :class="[
+                                        'w-12 h-12 border-4 border-stone-600 rounded-full animate-spin',
+                                        `border-t-${themeColor}-500`,
+                                    ]"
+                                ></div>
                             </div>
 
                             <!-- Error message -->
@@ -544,7 +663,10 @@ const currentSelection = computed(() => {
                                 class="absolute inset-0 flex items-center justify-center bg-black/80"
                             >
                                 <div class="text-center p-4">
-                                    <UIcon name="i-heroicons-exclamation-circle" class="w-12 h-12 text-red-400 mx-auto mb-4" />
+                                    <UIcon
+                                        name="i-heroicons-exclamation-circle"
+                                        class="w-12 h-12 text-red-400 mx-auto mb-4"
+                                    />
                                     <p class="text-red-400">{{ playerError }}</p>
                                 </div>
                             </div>
@@ -553,17 +675,23 @@ const currentSelection = computed(() => {
                         <!-- Channel info bar -->
                         <div class="p-4 bg-stone-800 flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden"
+                                >
                                     <img
                                         v-if="currentChannel.logo"
                                         :src="currentChannel.logo"
                                         :alt="currentChannel.name"
                                         class="w-full h-full object-cover"
                                     />
-                                    <span v-else class="text-white font-bold text-sm">{{ getChannelInitials(currentChannel.name) }}</span>
+                                    <span v-else class="text-white font-bold text-sm">
+                                        {{ getChannelInitials(currentChannel.name) }}
+                                    </span>
                                 </div>
                                 <div>
-                                    <h3 class="text-white font-medium">{{ currentChannel.name }}</h3>
+                                    <h3 class="text-white font-medium">
+                                        {{ currentChannel.name }}
+                                    </h3>
                                     <p class="text-stone-400 text-sm">{{ currentChannel.group }}</p>
                                 </div>
                             </div>
@@ -574,8 +702,17 @@ const currentSelection = computed(() => {
                                 @click="toggleFavorite(currentChannel)"
                             >
                                 <UIcon
-                                    :name="currentChannel.isFavorite ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
-                                    :class="['w-6 h-6', currentChannel.isFavorite ? 'text-red-400' : 'text-stone-400']"
+                                    :name="
+                                        currentChannel.isFavorite
+                                            ? 'i-heroicons-heart-solid'
+                                            : 'i-heroicons-heart'
+                                    "
+                                    :class="[
+                                        'w-6 h-6',
+                                        currentChannel.isFavorite
+                                            ? 'text-red-400'
+                                            : 'text-stone-400',
+                                    ]"
                                 />
                             </button>
                         </div>

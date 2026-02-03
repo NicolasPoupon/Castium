@@ -149,8 +149,38 @@
         "title": "Settings",
         "profile": {
             "title": "Profile",
-            "name": "Name",
-            "email": "Email"
+            "name": "Username",
+            "namePlaceholder": "Enter your username",
+            "email": "Email",
+            "createdAt": "Account created",
+            "lastSignIn": "Last sign in",
+            "usernameEmpty": "Username cannot be empty",
+            "updateSuccess": "Profile updated",
+            "updateError": "Error updating profile"
+        },
+        "password": {
+            "title": "Password",
+            "description": "Change your password to secure your account.",
+            "changeButton": "Change",
+            "verifyCurrent": "Enter your current password to continue.",
+            "currentPlaceholder": "Current password",
+            "verify": "Verify",
+            "verified": "Password verified",
+            "wrongPassword": "Incorrect password",
+            "enterCurrent": "Please enter your current password",
+            "new": "New password",
+            "newPlaceholder": "Enter new password",
+            "confirm": "Confirm password",
+            "confirmPlaceholder": "Confirm new password",
+            "save": "Save",
+            "fillAll": "Please fill in all fields",
+            "noMatch": "Passwords do not match",
+            "tooShort": "Password must be at least 8 characters",
+            "changeSuccess": "Password changed successfully",
+            "changeError": "Error changing password",
+            "forgot": "Forgot password?",
+            "resetSent": "Reset email sent",
+            "resetError": "Error sending reset email"
         },
         "session": {
             "title": "Session",
@@ -402,8 +432,26 @@
         "sections": {
             "continueWatching": "Continue watching",
             "favorites": "My favorites",
-            "allVideos": "All videos"
+            "allVideos": "All videos",
+            "playlists": "Playlists (Folders)"
         },
+        "rating": {
+            "title": "Rate this video",
+            "score": "Score",
+            "comment": "Comment",
+            "commentPlaceholder": "Add a comment (optional)...",
+            "delete": "Delete rating",
+            "save": "Save"
+        },
+        "playlist": {
+            "title": "Manage playlists",
+            "createNew": "Create a new playlist",
+            "namePlaceholder": "Playlist name...",
+            "addTo": "Add to a playlist",
+            "removeFromPlaylist": "Remove from playlist",
+            "videos": "{count} video | {count} videos"
+        },
+        "videos": "videos",
         "youtube": {
             "title": "Connect your YouTube account",
             "description": "Access your playlists, liked videos and watch your content directly from Castium.",

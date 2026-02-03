@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     if (!refreshToken) {
         throw createError({
             statusCode: 400,
-            statusMessage: "Refresh token is required",
+            statusMessage: 'Refresh token is required',
         })
     }
 
@@ -22,31 +22,30 @@ export default defineEventHandler(async (event) => {
     if (!clientId || !clientSecret) {
         throw createError({
             statusCode: 500,
-            statusMessage: "YouTube API credentials not configured",
+            statusMessage: 'YouTube API credentials not configured',
         })
     }
 
     try {
-        const response = await fetch("https://oauth2.googleapis.com/token", {
-            method: "POST",
+        const response = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
+                'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
                 refresh_token: refreshToken,
                 client_id: clientId,
                 client_secret: clientSecret,
-                grant_type: "refresh_token",
+                grant_type: 'refresh_token',
             }),
         })
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
-            console.error("[YouTube] Token refresh error:", errorData)
+            console.error('[YouTube] Token refresh error:', errorData)
             throw createError({
                 statusCode: response.status,
-                statusMessage:
-                    errorData.error_description || "Failed to refresh token",
+                statusMessage: errorData.error_description || 'Failed to refresh token',
             })
         }
 
@@ -58,10 +57,10 @@ export default defineEventHandler(async (event) => {
             token_type: data.token_type,
         }
     } catch (error: any) {
-        console.error("[YouTube] Token refresh failed:", error)
+        console.error('[YouTube] Token refresh failed:', error)
         throw createError({
             statusCode: 500,
-            statusMessage: error.message || "Failed to refresh YouTube token",
+            statusMessage: error.message || 'Failed to refresh YouTube token',
         })
     }
 })

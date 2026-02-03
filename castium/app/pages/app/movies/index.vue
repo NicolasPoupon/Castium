@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from "#imports"
+import { useI18n } from '#imports'
 
 definePageMeta({
     ssr: false,
@@ -14,16 +14,16 @@ const popularMovies = ref<any[]>([])
 const topRatedMovies = ref<any[]>([])
 const isLoading = ref(true)
 
-const searchQuery = ref("")
+const searchQuery = ref('')
 
 const tmdbLanguage = computed(() => {
     switch (locale.value) {
-        case "fr":
-            return "fr-FR"
-        case "pl":
-            return "pl-PL"
+        case 'fr':
+            return 'fr-FR'
+        case 'pl':
+            return 'pl-PL'
         default:
-            return "en-US"
+            return 'en-US'
     }
 })
 
@@ -32,9 +32,9 @@ const loadMovies = async () => {
     try {
         const lang = tmdbLanguage.value
         const [trending, popular, topRated] = await Promise.all([
-            getTrending("movie", "week", lang),
-            getPopular("movie", lang),
-            getTopRated("movie", lang),
+            getTrending('movie', 'week', lang),
+            getPopular('movie', lang),
+            getTopRated('movie', lang),
         ])
 
         trendingMovies.value = trending.results || []
@@ -43,7 +43,7 @@ const loadMovies = async () => {
 
         heroMovie.value = trendingMovies.value[0] ?? null
     } catch (error) {
-        console.error("Error loading movies:", error)
+        console.error('Error loading movies:', error)
     } finally {
         isLoading.value = false
     }
@@ -53,9 +53,9 @@ onMounted(async () => {
     try {
         const lang = tmdbLanguage.value
         const [trending, popular, topRated] = await Promise.all([
-            getTrending("movie", "week", lang),
-            getPopular("movie", lang),
-            getTopRated("movie", lang),
+            getTrending('movie', 'week', lang),
+            getPopular('movie', lang),
+            getTopRated('movie', lang),
         ])
 
         trendingMovies.value = trending.results || []
@@ -66,7 +66,7 @@ onMounted(async () => {
             heroMovie.value = trendingMovies.value[0]
         }
     } catch (error) {
-        console.error("Error loading movies:", error)
+        console.error('Error loading movies:', error)
     } finally {
         isLoading.value = false
     }
@@ -82,14 +82,8 @@ watch(tmdbLanguage, () => {
         <Navbar mode="app" />
         <!-- <AppNav /> -->
 
-        <div
-            v-if="isLoading"
-            class="flex items-center justify-center min-h-screen"
-        >
-            <UIcon
-                name="i-heroicons-arrow-path"
-                class="w-12 h-12 text-red-800 animate-spin"
-            />
+        <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
+            <UIcon name="i-heroicons-arrow-path" class="w-12 h-12 text-red-800 animate-spin" />
         </div>
 
         <div v-else>
@@ -109,11 +103,9 @@ watch(tmdbLanguage, () => {
 
                 <section v-if="trendingMovies.length > 0">
                     <h2 class="text-2xl font-bold text-white mb-6">
-                        {{ t("movies.hero.trendingTitle") }}
+                        {{ t('movies.hero.trendingTitle') }}
                     </h2>
-                    <div
-                        class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
-                    >
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         <MoviesMovieCard
                             v-for="movie in trendingMovies.slice(1, 13)"
                             :key="movie.id"
@@ -124,11 +116,9 @@ watch(tmdbLanguage, () => {
 
                 <section v-if="popularMovies.length > 0">
                     <h2 class="text-2xl font-bold text-white mb-6">
-                        {{ t("movies.hero.popularTitle") }}
+                        {{ t('movies.hero.popularTitle') }}
                     </h2>
-                    <div
-                        class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
-                    >
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         <MoviesMovieCard
                             v-for="movie in popularMovies.slice(0, 12)"
                             :key="movie.id"
@@ -139,11 +129,9 @@ watch(tmdbLanguage, () => {
 
                 <section v-if="topRatedMovies.length > 0">
                     <h2 class="text-2xl font-bold text-white mb-6">
-                        {{ t("movies.hero.topRatedTitle") }}
+                        {{ t('movies.hero.topRatedTitle') }}
                     </h2>
-                    <div
-                        class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
-                    >
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         <MoviesMovieCard
                             v-for="movie in topRatedMovies.slice(0, 12)"
                             :key="movie.id"
