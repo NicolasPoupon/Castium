@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from "#imports"
-import * as locales from "@nuxt/ui/locale"
+import type { ThemeColor } from '~/composables/useTheme'
 
-const { t, locale, setLocale } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const { user, isAuthenticated, signOut, loading } = useAuth()
 const toast = useToast()
-
-const onLocaleChange = async (value: "en" | "fr" | "pl") => {
-    await setLocale(value as any)
-    if (process.client) window.location.reload()
-}
+const { colors, colorClasses } = useTheme()
 
 const handleLogout = async () => {
     try {
@@ -33,27 +29,31 @@ const props = defineProps({
 })
 
 const items = computed(() => [
-    { label: t("navbar.selector.movies"), value: "movies", to: "/app/movies" },
-    { label: t("navbar.selector.music"), value: "music", to: "/app/music" },
+    { label: t("navbar.selector.movies"), value: "movies", to: "/app/movies", icon: "i-heroicons-film" },
+    { label: t("navbar.selector.music"), value: "music", to: "/app/music", icon: "i-heroicons-musical-note" },
     {
         label: t("navbar.selector.podcasts"),
         value: "podcasts",
         to: "/app/podcasts",
+        icon: "i-heroicons-microphone",
     },
     {
         label: t("navbar.selector.tv"),
         value: "tv",
         to: "/app/tv",
+        icon: "i-heroicons-tv",
     },
     {
         label: t("navbar.selector.radio"),
         value: "radio",
         to: "/app/radio",
+        icon: "i-heroicons-radio",
     },
     {
         label: t("navbar.selector.lectures"),
         value: "lectures",
         to: "/app/lectures",
+        icon: "i-heroicons-book-open",
     },
 ])
 
@@ -66,7 +66,11 @@ const activeTab = computed({
         if (route.path.includes("/lectures")) return "lectures"
         return "movies"
     },
-    set(value: string) {
+    set(value: string | null | undefined) {
+        // Guard against null/undefined/invalid values to prevent router loops
+        if (!value || typeof value !== 'string') {
+            return
+        }
         const item = items.value.find((i) => i.value === value)
         if (item?.to) {
             router.push(item.to)
@@ -74,16 +78,33 @@ const activeTab = computed({
     },
 })
 
-const modeClass = computed(() => {
-    if (route.path.includes("/movies")) return "fill-red-800"
-    if (route.path.includes("/music")) return "fill-green-600"
-    if (route.path.includes("/podcasts")) return "fill-orange-400"
-    if (route.path.includes("/tv")) return "fill-amber-800"
-    if (route.path.includes("/radio")) return "fill-gray-400"
-    if (route.path.includes("/lectures")) return "fill-purple-500"
+// Get icon color for a tab
+const getTabColor = (value: string) => {
+    const color = colors.value[value as keyof typeof colors.value] as ThemeColor
+    return colorClasses[color]?.text || 'text-gray-400'
+}
 
-    return "fill-gray-300"
+// Get current page key from the route (keeps logo/theme in sync across pages)
+const currentPageKey = computed(() => {
+    const segments = route.path.split('/').filter(Boolean)
+    // e.g. /app/tv -> ['app','tv']
+    const appSection = segments[0] === 'app' ? segments[1] : null
+    if (appSection && Object.prototype.hasOwnProperty.call(colors.value, appSection)) {
+        return appSection as keyof typeof colors.value
+    }
+    // Fallback to active tab when possible
+    const tab = activeTab.value
+    if (tab && Object.prototype.hasOwnProperty.call(colors.value, tab)) {
+        return tab as keyof typeof colors.value
+    }
+    return 'movies' as keyof typeof colors.value
 })
+
+const currentPageColor = computed(() => {
+    return (colors.value[currentPageKey.value] as ThemeColor) || ('green' as ThemeColor)
+})
+
+const currentTheme = computed(() => colorClasses[currentPageColor.value] || colorClasses.green)
 
 // User profile helpers
 const userName = computed(() => {
@@ -141,17 +162,21 @@ const userMenuItems = computed(() => [
 
 <template>
     <header
-        class="fixed inset-x-0 top-0 z-50 bg-black/20 backdrop-blur-md py-2"
+        class="fixed inset-x-0 top-0 z-50 bg-black/20 backdrop-blur-md py-2 theme-transition"
     >
         <div
-            class="flex items-center justify-between gap-3 h-[--header-height] mx-auto px-4 md:px-6 lg:px-8"
+            class="flex items-center justify-between gap-3 h-[--header-height] mx-auto px-2 md:px-4 lg:px-6"
         >
             <div class="flex items-center justify-start gap-4">
-                <NuxtLink to="/">
+                <NuxtLink
+                    to="/"
+                    class="transition-all duration-300 hover:scale-105"
+                    :class="currentTheme.text"
+                >
                     <svg
-                        class="h-10 transition-colors"
-                        :class="modeClass"
+                        class="h-8 transition-colors duration-300"
                         viewBox="0 0 147 40"
+                        fill="currentColor"
                         aria-label="Castium Logo"
                         xmlns="http://www.w3.org/2000/svg"
                     >
@@ -169,25 +194,35 @@ const userMenuItems = computed(() => [
                 </NuxtLink>
             </div>
             <div class="flex-1 flex justify-center">
-                <UTabs
+                <!-- Custom tabs with theme colors -->
+                <nav
                     v-if="mode === 'app'"
-                    v-model="activeTab"
-                    :items="items"
-                    :content="false"
-                    size="md"
-                    color="neutral"
-                    variant="pill"
-                    class="bg-gray-800/50 rounded-full"
-                />
+                    class="flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 theme-transition"
+                >
+                    <NuxtLink
+                        v-for="item in items"
+                        :key="item.value"
+                        :to="item.to"
+                        :class="[
+                            'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 btn-press border',
+                            activeTab === item.value
+                                ? `text-white ${currentTheme.border} bg-transparent`
+                                : 'text-gray-400 border-transparent hover:text-white hover:border-gray-600'
+                        ]"
+                    >
+                        <UIcon
+                            :name="item.icon"
+                            :class="[
+                                'w-4 h-4 transition-colors duration-300',
+                                activeTab === item.value ? currentTheme.text : getTabColor(item.value)
+                            ]"
+                        />
+                        <span class="hidden md:inline">{{ item.label }}</span>
+                    </NuxtLink>
+                </nav>
             </div>
 
             <div class="flex items-center gap-6">
-                <ULocaleSelect
-                    v-model="locale"
-                    :locales="[locales.en, locales.fr, locales.pl]"
-                    class="w-36"
-                    @update:model-value="onLocaleChange"
-                />
                 <!-- User Profile Dropdown (app mode only) - Client-side only to avoid hydration mismatch -->
                 <ClientOnly>
                     <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">

@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from "#imports"
+import type { ThemeColor } from "~/composables/useTheme"
 
 const { t } = useI18n()
+const { colors, colorClasses } = useTheme()
+const themeColor = computed(() => colors.value.lectures as ThemeColor)
+const theme = computed(() => colorClasses[themeColor.value] || colorClasses.purple)
 
 definePageMeta({
     title: "Lectures",
@@ -519,7 +523,7 @@ watch(activeTab, async (tab) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-900 flex flex-col">
+    <div class="min-h-screen bg-gray-900 flex flex-col theme-transition">
         <Navbar mode="app" />
 
         <div class="pt-24 pb-12">
@@ -528,38 +532,38 @@ watch(activeTab, async (tab) => {
                 <div class="flex items-center gap-4 mb-8">
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'local'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white',
                         ]"
                         @click="activeTab = 'local'"
                     >
-                        <UIcon name="i-heroicons-folder" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-folder" class="w-5 h-5 icon-bounce" />
                         {{ t("lectures.tabs.local") }}
                     </button>
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'youtube'
-                                ? 'bg-red-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white',
                         ]"
                         @click="activeTab = 'youtube'"
                     >
-                        <UIcon name="i-heroicons-play" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-play" class="w-5 h-5 icon-bounce" />
                         YouTube
                     </button>
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'upload'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white',
                         ]"
                         @click="activeTab = 'upload'"
                     >
-                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5 icon-bounce" />
                         {{ t("lectures.tabs.upload") }}
                     </button>
                 </div>
@@ -573,10 +577,12 @@ watch(activeTab, async (tab) => {
                     >
                         <div class="text-center max-w-2xl">
                             <div class="mb-8">
-                                <UIcon
-                                    name="i-heroicons-folder-open"
-                                    class="w-24 h-24 text-purple-500 mx-auto mb-6"
-                                />
+                                <div :class="['w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 transition-transform hover:scale-110', `bg-${themeColor}-500/20`]">
+                                    <UIcon
+                                        name="i-heroicons-folder-open"
+                                        :class="['w-12 h-12', theme.textLight]"
+                                    />
+                                </div>
                                 <h1 class="text-4xl font-bold text-white mb-4">
                                     {{ t("lectures.hero.title") }}
                                 </h1>
@@ -592,7 +598,7 @@ watch(activeTab, async (tab) => {
                             >
                                 <p class="text-gray-300 mb-4">
                                     {{ t("lectures.hero.previousFolder") }}:
-                                    <span class="text-purple-400 font-medium">
+                                    <span :class="[theme.textLight, 'font-medium']">
                                         {{ savedFolderName }}
                                     </span>
                                 </p>
@@ -601,7 +607,7 @@ watch(activeTab, async (tab) => {
                                     size="xl"
                                     :label="t('lectures.hero.reauthorize')"
                                     :loading="loading"
-                                    class="bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+                                    :class="[`text-white font-semibold btn-press`, theme.bg]"
                                     @click="handleReauthorize"
                                 />
                                 <p class="text-gray-500 text-sm mt-4">
@@ -619,8 +625,8 @@ watch(activeTab, async (tab) => {
                                 "
                                 :class="
                                     needsReauthorization
-                                        ? 'border-purple-600 text-purple-400 hover:bg-purple-600/20'
-                                        : 'bg-purple-600 hover:bg-purple-700 text-white font-semibold'
+                                        ? `border-${themeColor}-600 ${theme.textLight} hover:bg-${themeColor}-600/20 btn-press`
+                                        : `${theme.bg} text-white font-semibold btn-press`
                                 "
                                 @click="handleSelectFolder"
                             />
@@ -728,7 +734,7 @@ watch(activeTab, async (tab) => {
                                             class="absolute bottom-0 left-0 right-0 h-1 bg-gray-800"
                                         >
                                             <div
-                                                class="h-full bg-purple-500"
+                                                :class="['h-full', theme.bg]"
                                                 :style="{
                                                     width: `${(getProgress(video.path) / 100) * 100}%`,
                                                 }"
@@ -1635,7 +1641,7 @@ watch(activeTab, async (tab) => {
                                         min="0"
                                         :max="videoDuration"
                                         :value="currentTime"
-                                        class="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                        :class="[`w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-${themeColor}-500`]"
                                         @input="seek"
                                         @click.stop
                                     />
@@ -1702,7 +1708,7 @@ watch(activeTab, async (tab) => {
                                                 max="1"
                                                 step="0.1"
                                                 :value="isMuted ? 0 : volume"
-                                                class="w-24 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                                                :class="[`w-24 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-${themeColor}-500`]"
                                                 @input="changeVolume"
                                                 @click.stop
                                             />
@@ -2098,7 +2104,7 @@ watch(activeTab, async (tab) => {
                                     <div class="flex items-center gap-2 mt-1">
                                         <div class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
                                             <div
-                                                class="h-full bg-purple-500"
+                                                :class="['h-full', theme.bg]"
                                                 :style="{ width: `${Math.min((getProgress(selectedLocalVideo.path) / 100) * 100, 100)}%` }"
                                             />
                                         </div>

@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { useI18n } from "#imports"
+import type { ThemeColor } from "~/composables/useTheme"
 
 definePageMeta({
     ssr: false,
 })
 
 const { t } = useI18n()
+const { colors, colorClasses } = useTheme()
+
+// Get theme classes for podcasts
+const themeColor = computed(() => colors.value.podcasts as ThemeColor)
+const theme = computed(() => colorClasses[themeColor.value] || colorClasses.pink)
 
 // Local podcasts composable
 const {
@@ -252,7 +258,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-900 flex flex-col">
+    <div class="min-h-screen bg-gray-900 flex flex-col theme-transition">
         <Navbar mode="app" />
 
         <div class="pt-20 pb-32 flex-1">
@@ -260,7 +266,9 @@ onUnmounted(() => {
                 <!-- Header with tabs -->
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                     <div class="flex items-center gap-3">
-                        <UIcon name="i-heroicons-microphone" class="w-8 h-8 text-orange-400" />
+                        <div :class="['w-10 h-10 rounded-xl flex items-center justify-center transition-transform hover:scale-110', theme.bg]">
+                            <UIcon name="i-heroicons-microphone" class="w-6 h-6 text-white" />
+                        </div>
                         <h1 class="text-2xl font-bold text-white">{{ t('podcasts.title') }}</h1>
                     </div>
 
@@ -269,23 +277,25 @@ onUnmounted(() => {
                         <button
                             @click="activeTab = 'local'"
                             :class="[
-                                'px-4 py-2 rounded-lg font-medium transition-all duration-300',
+                                'px-4 py-2 rounded-lg font-medium transition-all duration-300 btn-press',
                                 activeTab === 'local'
-                                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
-                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                                    ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white'
                             ]"
                         >
+                            <UIcon name="i-heroicons-folder" class="w-4 h-4 inline mr-2 icon-bounce" />
                             {{ t('podcasts.tabs.local') }}
                         </button>
                         <button
                             @click="activeTab = 'cloud'"
                             :class="[
-                                'px-4 py-2 rounded-lg font-medium transition-all duration-300',
+                                'px-4 py-2 rounded-lg font-medium transition-all duration-300 btn-press',
                                 activeTab === 'cloud'
-                                    ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/25'
-                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                                    ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white'
                             ]"
                         >
+                            <UIcon name="i-heroicons-cloud" class="w-4 h-4 inline mr-2 icon-bounce" />
                             {{ t('podcasts.tabs.cloud') }}
                         </button>
                     </div>
@@ -296,14 +306,14 @@ onUnmounted(() => {
                     <!-- No folder selected -->
                     <div v-if="!localHasPermission && !localNeedsReauthorization" class="flex flex-col items-center justify-center min-h-[50vh]">
                         <div class="text-center max-w-lg">
-                            <div class="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <UIcon name="i-heroicons-folder-open" class="w-10 h-10 text-orange-400" />
+                            <div :class="['w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 transition-transform hover:scale-110', `bg-${themeColor}-500/20`]">
+                                <UIcon name="i-heroicons-folder-open" :class="['w-10 h-10', theme.textLight]" />
                             </div>
                             <h2 class="text-2xl font-bold text-white mb-3">{{ t('podcasts.local.title') }}</h2>
                             <p class="text-gray-400 mb-6">{{ t('podcasts.local.description') }}</p>
                             <button
                                 @click="selectFolder"
-                                class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/25"
+                                :class="[`px-6 py-3 text-white rounded-lg font-medium transition-all duration-300 hover:shadow-lg btn-press`, theme.bg, `hover:shadow-${themeColor}-500/25`]"
                             >
                                 {{ t('podcasts.local.selectFolder') }}
                             </button>
@@ -317,10 +327,10 @@ onUnmounted(() => {
                                 <UIcon name="i-heroicons-key" class="w-10 h-10 text-yellow-400" />
                             </div>
                             <h2 class="text-xl font-bold text-white mb-2">{{ t('podcasts.local.previousFolder') }}</h2>
-                            <p class="text-orange-400 font-medium mb-4">{{ localSavedFolderName }}</p>
+                            <p :class="['font-medium mb-4', theme.textLight]">{{ localSavedFolderName }}</p>
                             <button
                                 @click="reauthorizeFolder"
-                                class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-all duration-300"
+                                :class="[`px-6 py-3 text-white rounded-lg font-medium transition-all duration-300 btn-press`, theme.bg]"
                             >
                                 {{ t('podcasts.local.reauthorize') }}
                             </button>
@@ -336,10 +346,10 @@ onUnmounted(() => {
                                 <button
                                     @click="localViewMode = 'all'"
                                     :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
                                         localViewMode === 'all'
-                                            ? 'bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/50'
-                                            : 'bg-gray-800 text-gray-400 hover:text-white'
+                                            ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
+                                            : 'bg-gray-800/60 text-gray-400 hover:text-white'
                                     ]"
                                 >
                                     {{ t('podcasts.filter.all') }}
@@ -347,10 +357,10 @@ onUnmounted(() => {
                                 <button
                                     @click="localViewMode = 'inProgress'"
                                     :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
                                         localViewMode === 'inProgress'
-                                            ? 'bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/50'
-                                            : 'bg-gray-800 text-gray-400 hover:text-white'
+                                            ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
+                                            : 'bg-gray-800/60 text-gray-400 hover:text-white'
                                     ]"
                                 >
                                     {{ t('podcasts.filter.inProgress') }}
@@ -358,10 +368,10 @@ onUnmounted(() => {
                                 <button
                                     @click="localViewMode = 'liked'"
                                     :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
                                         localViewMode === 'liked'
-                                            ? 'bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/50'
-                                            : 'bg-gray-800 text-gray-400 hover:text-white'
+                                            ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
+                                            : 'bg-gray-800/60 text-gray-400 hover:text-white'
                                     ]"
                                 >
                                     {{ t('podcasts.filter.liked') }}
@@ -381,7 +391,7 @@ onUnmounted(() => {
                             <!-- Change folder -->
                             <button
                                 @click="selectFolder"
-                                class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+                                class="px-4 py-2 bg-gray-800/60 hover:bg-gray-700/60 text-gray-300 rounded-lg text-sm transition-colors btn-press"
                             >
                                 {{ t('podcasts.local.changeFolder') }}
                             </button>
@@ -389,7 +399,7 @@ onUnmounted(() => {
 
                         <!-- Loading -->
                         <div v-if="localLoading" class="flex items-center justify-center py-20">
-                            <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-orange-400 animate-spin" />
+                            <UIcon name="i-heroicons-arrow-path" :class="['w-8 h-8 animate-spin', theme.textLight]" />
                         </div>
 
                         <!-- Empty state -->
@@ -404,15 +414,15 @@ onUnmounted(() => {
                                 <div
                                     v-for="podcast in filteredLocalPodcasts"
                                     :key="podcast.id"
-                                    class="group bg-gray-800/50 hover:bg-gray-800 rounded-xl p-4 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                                    class="group bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-sm rounded-xl p-4 transition-all duration-300 hover:shadow-lg cursor-pointer border border-gray-700/30 card-hover"
                                     @click="openPodcastInfo(podcast, true)"
                                 >
                                     <div class="flex items-center gap-4">
                                         <!-- Cover/Icon -->
                                         <div
                                             :class="[
-                                                'w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105',
-                                                getLocalPodcastColor(podcast)
+                                                'w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110',
+                                                theme.bg
                                             ]"
                                         >
                                             <UIcon name="i-heroicons-microphone" class="w-8 h-8 text-white/80" />
@@ -427,7 +437,7 @@ onUnmounted(() => {
                                             <div v-if="podcast.progress > 0 && !podcast.isCompleted" class="mt-2">
                                                 <div class="h-1 bg-gray-700 rounded-full overflow-hidden">
                                                     <div
-                                                        class="h-full bg-orange-500 rounded-full transition-all duration-300"
+                                                        :class="['h-full rounded-full transition-all duration-300', theme.bg]"
                                                         :style="{ width: `${podcast.progress}%` }"
                                                     />
                                                 </div>
@@ -445,17 +455,16 @@ onUnmounted(() => {
                                         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
                                             <button
                                                 @click="handleToggleLike(podcast, true)"
-                                                class="p-2 rounded-full hover:bg-gray-700 transition-colors"
+                                                class="p-2 rounded-full hover:bg-gray-700 transition-colors btn-press"
                                             >
                                                 <UIcon
                                                     :name="podcast.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
-                                                    :class="podcast.isLiked ? 'w-5 h-5 text-orange-400' : 'w-5 h-5 text-gray-400'"
+                                                    :class="podcast.isLiked ? ['w-5 h-5', theme.textLight] : 'w-5 h-5 text-gray-400'"
                                                 />
                                             </button>
                                             <button
                                                 @click="handlePlay(podcast, true)"
-                                                class="p-2 bg-orange-500 rounded-full hover:bg-orange-600 transition-colors"
-                                            >
+                                                :class="[`p-2 rounded-full transition-colors btn-press`, theme.bg]">
                                                 <UIcon name="i-heroicons-play-solid" class="w-5 h-5 text-white" />
                                             </button>
                                         </div>
@@ -475,10 +484,10 @@ onUnmounted(() => {
                             <button
                                 @click="cloudViewMode = 'all'"
                                 :class="[
-                                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
                                     cloudViewMode === 'all'
-                                        ? 'bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/50'
-                                        : 'bg-gray-800 text-gray-400 hover:text-white'
+                                        ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
+                                        : 'bg-gray-800/60 text-gray-400 hover:text-white'
                                 ]"
                             >
                                 {{ t('podcasts.filter.all') }}
@@ -486,10 +495,10 @@ onUnmounted(() => {
                             <button
                                 @click="cloudViewMode = 'inProgress'"
                                 :class="[
-                                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
                                     cloudViewMode === 'inProgress'
-                                        ? 'bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/50'
-                                        : 'bg-gray-800 text-gray-400 hover:text-white'
+                                        ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
+                                        : 'bg-gray-800/60 text-gray-400 hover:text-white'
                                 ]"
                             >
                                 {{ t('podcasts.filter.inProgress') }}
@@ -497,10 +506,10 @@ onUnmounted(() => {
                             <button
                                 @click="cloudViewMode = 'liked'"
                                 :class="[
-                                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-all',
+                                    'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
                                     cloudViewMode === 'liked'
-                                        ? 'bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/50'
-                                        : 'bg-gray-800 text-gray-400 hover:text-white'
+                                        ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
+                                        : 'bg-gray-800/60 text-gray-400 hover:text-white'
                                 ]"
                             >
                                 {{ t('podcasts.filter.liked') }}
@@ -521,9 +530,9 @@ onUnmounted(() => {
                         <button
                             @click="handleCloudFileSelect"
                             :disabled="cloudUploading"
-                            class="px-4 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-500/50 text-white rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
+                            :class="[`px-4 py-2 text-white rounded-lg font-medium transition-all duration-300 flex items-center gap-2 btn-press`, theme.bg, `hover:shadow-lg hover:shadow-${themeColor}-500/25 disabled:opacity-50`]"
                         >
-                            <UIcon :name="cloudUploading ? 'i-heroicons-arrow-path' : 'i-heroicons-arrow-up-tray'" :class="cloudUploading ? 'w-5 h-5 animate-spin' : 'w-5 h-5'" />
+                            <UIcon :name="cloudUploading ? 'i-heroicons-arrow-path' : 'i-heroicons-arrow-up-tray'" :class="cloudUploading ? 'w-5 h-5 animate-spin' : 'w-5 h-5 icon-bounce'" />
                             {{ cloudUploading ? t('podcasts.cloud.uploading') : t('podcasts.cloud.upload') }}
                         </button>
                         <input
@@ -541,14 +550,14 @@ onUnmounted(() => {
                         <div
                             v-for="progress in cloudUploadProgress"
                             :key="progress.fileName"
-                            class="bg-gray-800 rounded-lg p-3"
+                            class="bg-gray-800/60 backdrop-blur-sm rounded-lg p-3 border border-gray-700/30"
                         >
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-white text-sm truncate">{{ progress.fileName }}</span>
                                 <span :class="[
                                     'text-xs font-medium',
                                     progress.status === 'complete' ? 'text-green-400' :
-                                    progress.status === 'error' ? 'text-red-400' : 'text-orange-400'
+                                    progress.status === 'error' ? 'text-red-400' : theme.textLight
                                 ]">
                                     {{ progress.status === 'complete' ? '✓' : progress.status === 'error' ? '✗' : `${progress.progress}%` }}
                                 </span>
@@ -557,7 +566,7 @@ onUnmounted(() => {
                                 <div
                                     :class="[
                                         'h-full rounded-full transition-all duration-300',
-                                        progress.status === 'error' ? 'bg-red-500' : 'bg-orange-500'
+                                        progress.status === 'error' ? 'bg-red-500' : theme.bg
                                     ]"
                                     :style="{ width: `${progress.progress}%` }"
                                 />
@@ -567,20 +576,20 @@ onUnmounted(() => {
 
                     <!-- Loading -->
                     <div v-if="cloudLoading" class="flex items-center justify-center py-20">
-                        <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-orange-400 animate-spin" />
+                        <UIcon name="i-heroicons-arrow-path" :class="['w-8 h-8 animate-spin', theme.textLight]" />
                     </div>
 
                     <!-- Empty state -->
                     <div v-else-if="filteredCloudPodcasts.length === 0" class="flex flex-col items-center justify-center min-h-[50vh]">
                         <div class="text-center">
-                            <div class="w-20 h-20 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <UIcon name="i-heroicons-cloud-arrow-up" class="w-10 h-10 text-orange-400" />
+                            <div :class="['w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 transition-transform hover:scale-110', `bg-${themeColor}-500/20`]">
+                                <UIcon name="i-heroicons-cloud-arrow-up" :class="['w-10 h-10', theme.textLight]" />
                             </div>
                             <h2 class="text-xl font-bold text-white mb-3">{{ t('podcasts.cloud.uploadFirst') }}</h2>
                             <p class="text-gray-400 mb-6">{{ t('podcasts.cloud.noPodcasts') }}</p>
                             <button
                                 @click="handleCloudFileSelect"
-                                class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-all duration-300"
+                                :class="[`px-6 py-3 text-white rounded-lg font-medium transition-all duration-300 btn-press hover:shadow-lg`, theme.bg, `hover:shadow-${themeColor}-500/25`]"
                             >
                                 {{ t('podcasts.cloud.upload') }}
                             </button>
@@ -593,15 +602,15 @@ onUnmounted(() => {
                             <div
                                 v-for="podcast in filteredCloudPodcasts"
                                 :key="podcast.id"
-                                class="group bg-gray-800/50 hover:bg-gray-800 rounded-xl p-4 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                                class="group bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-sm rounded-xl p-4 transition-all duration-300 hover:shadow-lg cursor-pointer border border-gray-700/30 card-hover"
                                 @click="openPodcastInfo(podcast, false)"
                             >
                                 <div class="flex items-center gap-4">
                                     <!-- Cover/Icon -->
                                     <div
                                         :class="[
-                                            'w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105',
-                                            getCloudPodcastColor(podcast)
+                                            'w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110',
+                                            theme.bg
                                         ]"
                                     >
                                         <UIcon name="i-heroicons-microphone" class="w-8 h-8 text-white/80" />
@@ -616,7 +625,7 @@ onUnmounted(() => {
                                         <div v-if="podcast.progress > 0 && !podcast.isCompleted" class="mt-2">
                                             <div class="h-1 bg-gray-700 rounded-full overflow-hidden">
                                                 <div
-                                                    class="h-full bg-orange-500 rounded-full transition-all duration-300"
+                                                    :class="['h-full rounded-full transition-all duration-300', theme.bg]"
                                                     :style="{ width: `${podcast.progress}%` }"
                                                 />
                                             </div>
@@ -634,17 +643,16 @@ onUnmounted(() => {
                                     <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" @click.stop>
                                         <button
                                             @click="handleToggleLike(podcast, false)"
-                                            class="p-2 rounded-full hover:bg-gray-700 transition-colors"
+                                            class="p-2 rounded-full hover:bg-gray-700 transition-colors btn-press"
                                         >
                                             <UIcon
                                                 :name="podcast.isLiked ? 'i-heroicons-heart-solid' : 'i-heroicons-heart'"
-                                                :class="podcast.isLiked ? 'w-5 h-5 text-orange-400' : 'w-5 h-5 text-gray-400'"
+                                                :class="podcast.isLiked ? ['w-5 h-5', theme.textLight] : 'w-5 h-5 text-gray-400'"
                                             />
                                         </button>
                                         <button
                                             @click="handlePlay(podcast, false)"
-                                            class="p-2 bg-orange-500 rounded-full hover:bg-orange-600 transition-colors"
-                                        >
+                                            :class="[`p-2 rounded-full transition-colors btn-press`, theme.bg]">
                                             <UIcon name="i-heroicons-play-solid" class="w-5 h-5 text-white" />
                                         </button>
                                     </div>
@@ -660,13 +668,13 @@ onUnmounted(() => {
         <Transition name="slide-up">
             <div
                 v-if="currentPlaybackState.currentPodcast"
-                class="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 z-40"
+                :class="[`fixed bottom-0 left-0 right-0 backdrop-blur-lg border-t border-gray-800 z-40 bg-gradient-to-r from-gray-900 via-${themeColor}-900/30 to-gray-900`]"
             >
                 <div class="max-w-7xl mx-auto px-4 py-3">
                     <div class="flex items-center gap-4">
                         <!-- Podcast info -->
                         <div class="flex items-center gap-3 flex-1 min-w-0">
-                            <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <div :class="['w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0', theme.bg]">
                                 <UIcon name="i-heroicons-microphone" class="w-6 h-6 text-white" />
                             </div>
                             <div class="min-w-0">
@@ -680,7 +688,7 @@ onUnmounted(() => {
                             <!-- Skip back -->
                             <button
                                 @click="activeTab === 'local' ? skipLocal(-15) : skipCloud(-15)"
-                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
+                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white btn-press"
                             >
                                 <UIcon name="i-heroicons-backward" class="w-5 h-5" />
                             </button>
@@ -688,7 +696,7 @@ onUnmounted(() => {
                             <!-- Play/Pause -->
                             <button
                                 @click="activeTab === 'local' ? toggleLocalPlay() : toggleCloudPlay()"
-                                class="p-3 bg-orange-500 rounded-full hover:bg-orange-600 transition-colors"
+                                :class="[`p-3 rounded-full transition-colors btn-press`, theme.bg]"
                             >
                                 <UIcon
                                     :name="currentPlaybackState.isPlaying ? 'i-heroicons-pause-solid' : 'i-heroicons-play-solid'"
@@ -699,7 +707,7 @@ onUnmounted(() => {
                             <!-- Skip forward -->
                             <button
                                 @click="activeTab === 'local' ? skipLocal(30) : skipCloud(30)"
-                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
+                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white btn-press"
                             >
                                 <UIcon name="i-heroicons-forward" class="w-5 h-5" />
                             </button>
@@ -714,7 +722,7 @@ onUnmounted(() => {
                                 :max="currentPlaybackState.duration || 100"
                                 :value="currentPlaybackState.currentTime"
                                 @input="(e) => activeTab === 'local' ? seekLocal(Number((e.target as HTMLInputElement).value)) : seekCloud(Number((e.target as HTMLInputElement).value))"
-                                class="flex-1 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-orange-500"
+                                :class="[`flex-1 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-${themeColor}-500`]"
                             />
                             <span class="text-gray-500 text-xs w-12">{{ formatDuration(currentPlaybackState.duration) }}</span>
                         </div>
@@ -724,7 +732,7 @@ onUnmounted(() => {
                             <select
                                 :value="currentPlaybackState.playbackSpeed"
                                 @change="(e) => activeTab === 'local' ? setLocalPlaybackSpeed(Number((e.target as HTMLSelectElement).value)) : setCloudPlaybackSpeed(Number((e.target as HTMLSelectElement).value))"
-                                class="bg-gray-800 text-gray-300 text-sm rounded-lg px-2 py-1 border-none focus:ring-1 focus:ring-orange-500"
+                                :class="[`bg-gray-800 text-gray-300 text-sm rounded-lg px-2 py-1 border-none focus:ring-1 focus:ring-${themeColor}-500`]"
                             >
                                 <option :value="0.5">0.5x</option>
                                 <option :value="0.75">0.75x</option>
@@ -739,7 +747,7 @@ onUnmounted(() => {
                         <div class="hidden lg:flex items-center gap-2">
                             <button
                                 @click="activeTab === 'local' ? toggleLocalMute() : toggleCloudMute()"
-                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white"
+                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white btn-press"
                             >
                                 <UIcon
                                     :name="currentPlaybackState.isMuted ? 'i-heroicons-speaker-x-mark' : 'i-heroicons-speaker-wave'"
@@ -753,7 +761,7 @@ onUnmounted(() => {
                                 step="0.1"
                                 :value="currentPlaybackState.isMuted ? 0 : currentPlaybackState.volume"
                                 @input="(e) => activeTab === 'local' ? setLocalVolume(Number((e.target as HTMLInputElement).value)) : setCloudVolume(Number((e.target as HTMLInputElement).value))"
-                                class="w-20 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-orange-500"
+                                :class="[`w-20 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-${themeColor}-500`]"
                             />
                         </div>
                     </div>
@@ -773,14 +781,14 @@ onUnmounted(() => {
 
                         <div class="flex items-start gap-4">
                             <div :class="[
-                                'w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0',
-                                isLocalPodcast ? getLocalPodcastColor(selectedPodcast) : getCloudPodcastColor(selectedPodcast)
+                                'w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform hover:scale-105',
+                                theme.bg
                             ]">
                                 <UIcon name="i-heroicons-microphone" class="w-10 h-10 text-white/80" />
                             </div>
                             <div class="flex-1 min-w-0 pt-1">
                                 <h2 class="text-xl font-bold text-white truncate">{{ selectedPodcast.title || selectedPodcast.fileName }}</h2>
-                                <p class="text-orange-400 truncate">{{ selectedPodcast.album || t('podcasts.unknownShow') }}</p>
+                                <p :class="['truncate', theme.textLight]">{{ selectedPodcast.album || t('podcasts.unknownShow') }}</p>
                                 <p class="text-gray-500 text-sm mt-1">{{ isLocalPodcast ? formatLocalDuration(selectedPodcast.duration) : formatCloudDuration(selectedPodcast.duration) }}</p>
                             </div>
                         </div>
@@ -789,24 +797,24 @@ onUnmounted(() => {
                     <!-- Content -->
                     <div class="px-6 pb-6 space-y-4">
                         <!-- Progress -->
-                        <div v-if="selectedPodcast.progress > 0" class="bg-gray-800 rounded-lg p-3">
+                        <div v-if="selectedPodcast.progress > 0" class="bg-gray-800/60 rounded-lg p-3 backdrop-blur-sm">
                             <div class="flex justify-between text-sm mb-2">
                                 <span class="text-gray-400">{{ t('podcasts.info.progress') }}</span>
-                                <span class="text-orange-400">{{ Math.round(selectedPodcast.progress) }}%</span>
+                                <span :class="theme.textLight">{{ Math.round(selectedPodcast.progress) }}%</span>
                             </div>
                             <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
                                 <div
-                                    class="h-full bg-orange-500 rounded-full transition-all"
+                                    :class="['h-full rounded-full transition-all', theme.bg]"
                                     :style="{ width: `${selectedPodcast.progress}%` }"
                                 />
                             </div>
                         </div>
 
                         <!-- Notes -->
-                        <div class="bg-gray-800 rounded-lg p-3">
+                        <div class="bg-gray-800/60 rounded-lg p-3 backdrop-blur-sm">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-gray-400 text-sm">{{ t('podcasts.info.notes') }}</span>
-                                <button @click="openEditNotes" class="text-orange-400 text-sm hover:text-orange-300 transition-colors">
+                                <button @click="openEditNotes" :class="['text-sm hover:opacity-80 transition-colors', theme.textLight]">
                                     {{ t('podcasts.info.edit') }}
                                 </button>
                             </div>
@@ -840,9 +848,9 @@ onUnmounted(() => {
                             <button
                                 @click="handleToggleLike(selectedPodcast, isLocalPodcast)"
                                 :class="[
-                                    'flex-1 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2',
+                                    'flex-1 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 btn-press',
                                     selectedPodcast.isLiked
-                                        ? 'bg-orange-500/20 text-orange-400 ring-1 ring-orange-500/50'
+                                        ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
                                         : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                                 ]"
                             >
@@ -851,8 +859,7 @@ onUnmounted(() => {
                             </button>
                             <button
                                 @click="handlePlay(selectedPodcast, isLocalPodcast); closePodcastInfo()"
-                                class="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
-                            >
+                                :class="[`flex-1 py-3 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2 btn-press`, theme.bg]">
                                 <UIcon name="i-heroicons-play-solid" class="w-5 h-5" />
                                 {{ t('podcasts.info.play') }}
                             </button>
@@ -873,8 +880,8 @@ onUnmounted(() => {
 
         <!-- Edit Notes Modal -->
         <Transition name="modal">
-            <div v-if="showEditNotes" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70" @click.self="showEditNotes = false">
-                <div class="bg-gray-900 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-modal-in">
+            <div v-if="showEditNotes" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" @click.self="showEditNotes = false">
+                <div class="bg-gray-900 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-modal-in border border-gray-700/30">
                     <div class="p-6">
                         <h2 class="text-xl font-bold text-white mb-4">{{ t('podcasts.editNotes.title') }}</h2>
 
@@ -885,7 +892,7 @@ onUnmounted(() => {
                                     v-model="editNotesText"
                                     :placeholder="t('podcasts.editNotes.notesPlaceholder')"
                                     rows="3"
-                                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-3 border-none focus:ring-2 focus:ring-orange-500 resize-none"
+                                    :class="[`w-full bg-gray-800 text-white rounded-lg px-4 py-3 border-none focus:ring-2 focus:ring-${themeColor}-500 resize-none`]"
                                 />
                             </div>
 
@@ -895,7 +902,7 @@ onUnmounted(() => {
                                     v-model="editCommentText"
                                     :placeholder="t('podcasts.editNotes.commentPlaceholder')"
                                     rows="4"
-                                    class="w-full bg-gray-800 text-white rounded-lg px-4 py-3 border-none focus:ring-2 focus:ring-orange-500 resize-none"
+                                    :class="[`w-full bg-gray-800 text-white rounded-lg px-4 py-3 border-none focus:ring-2 focus:ring-${themeColor}-500 resize-none`]"
                                 />
                             </div>
                         </div>
@@ -903,13 +910,13 @@ onUnmounted(() => {
                         <div class="flex gap-3 mt-6">
                             <button
                                 @click="showEditNotes = false"
-                                class="flex-1 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium transition-colors"
+                                class="flex-1 py-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-medium transition-colors btn-press"
                             >
                                 {{ t('common.cancel') }}
                             </button>
                             <button
                                 @click="saveNotes"
-                                class="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                                :class="[`flex-1 py-3 text-white rounded-lg font-medium transition-colors btn-press`, theme.bg]"
                             >
                                 {{ t('common.save') }}
                             </button>

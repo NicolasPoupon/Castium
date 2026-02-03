@@ -27,6 +27,7 @@ if (isDev) {
 }
 
 export default defineNuxtConfig({
+    ssr: false,
     devServer: devServerConfig,
     compatibilityDate: "2025-07-15",
     devtools: { enabled: true },

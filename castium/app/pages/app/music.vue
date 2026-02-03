@@ -2,8 +2,14 @@
 import { useI18n } from "#imports"
 import type { LocalTrack, LocalPlaylist } from "~/composables/useLocalMusic"
 import type { CloudTrack, CloudPlaylist } from "~/composables/useCloudMusic"
+import type { ThemeColor } from "~/composables/useTheme"
 
 const { t } = useI18n()
+const { colors, colorClasses } = useTheme()
+
+// Get theme classes for music
+const themeColor = computed(() => colors.value.music as ThemeColor)
+const theme = computed(() => colorClasses[themeColor.value] || colorClasses.green)
 
 definePageMeta({
     title: "Music",
@@ -299,11 +305,14 @@ const handleSeek = (e: MouseEvent) => {
     seek(time)
 }
 
-// Get thumbnail color based on track
+// Get thumbnail color based on track - use theme colors
 const getTrackColor = (track: LocalTrack) => {
+    const themeColorValue = theme.value.bg.replace('bg-', '')
     const colors = [
-        "#dc2626", "#ea580c", "#d97706", "#65a30d", "#16a34a",
-        "#0891b2", "#2563eb", "#7c3aed", "#c026d3", "#e11d48",
+        `var(--color-${themeColorValue.replace('-500', '-600')})`,
+        `var(--color-${themeColorValue.replace('-500', '-700')})`,
+        "#dc2626", "#ea580c", "#d97706", "#16a34a",
+        "#0891b2", "#2563eb", "#7c3aed", "#c026d3",
     ]
     const index = (track.title?.length || track.fileName.length) % colors.length
     return colors[index]
@@ -482,7 +491,7 @@ watch(activeTab, async (tab) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-900 flex flex-col">
+    <div class="min-h-screen bg-gray-900 flex flex-col theme-transition">
         <Navbar mode="app" />
 
         <div class="pt-24 pb-32">
@@ -491,38 +500,38 @@ watch(activeTab, async (tab) => {
                 <div class="flex items-center gap-4 mb-8">
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'local'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                         ]"
                         @click="activeTab = 'local'"
                     >
-                        <UIcon name="i-heroicons-folder" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-folder" class="w-5 h-5 icon-bounce" />
                         {{ t("music.tabs.local") }}
                     </button>
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'upload'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                         ]"
                         @click="activeTab = 'upload'"
                     >
-                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5 icon-bounce" />
                         {{ t("music.tabs.upload") || "Cloud" }}
                     </button>
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'spotify'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? 'bg-green-600 text-white shadow-lg shadow-green-500/25'
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                         ]"
                         @click="activeTab = 'spotify'"
                     >
-                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5 icon-bounce" />
                         Spotify
                     </button>
                 </div>
@@ -538,7 +547,7 @@ watch(activeTab, async (tab) => {
                             <div class="mb-8">
                                 <UIcon
                                     name="i-heroicons-musical-note"
-                                    class="w-24 h-24 text-purple-500 mx-auto mb-6"
+                                    :class="['w-24 h-24 mx-auto mb-6 icon-bounce', theme.text]"
                                 />
                                 <h1 class="text-4xl font-bold text-white mb-4">
                                     {{ t("music.local.title") }}
@@ -555,7 +564,7 @@ watch(activeTab, async (tab) => {
                             >
                                 <p class="text-gray-300 mb-4">
                                     {{ t("music.local.previousFolder") }}:
-                                    <span class="text-purple-400 font-medium">
+                                    <span :class="['font-medium', theme.textLight]">
                                         {{ savedFolderName }}
                                     </span>
                                 </p>
@@ -564,7 +573,7 @@ watch(activeTab, async (tab) => {
                                     size="xl"
                                     :label="t('music.local.reauthorize')"
                                     :loading="localLoading"
-                                    class="bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+                                    :class="[theme.bg, `hover:${theme.bgLight}`, 'text-white font-semibold btn-press']"
                                     @click="handleReauthorize"
                                 />
                                 <p class="text-gray-500 text-sm mt-4">
@@ -580,8 +589,8 @@ watch(activeTab, async (tab) => {
                                 :variant="needsReauthorization ? 'outline' : 'solid'"
                                 :class="
                                     needsReauthorization
-                                        ? 'border-purple-600 text-purple-400 hover:bg-purple-600/20'
-                                        : 'bg-purple-600 hover:bg-purple-700 text-white font-semibold'
+                                        ? `${theme.border} ${theme.textLight} hover:bg-${themeColor}-600/20`
+                                        : `${theme.bg} hover:${theme.bgLight} text-white font-semibold btn-press`
                                 "
                                 @click="handleSelectFolder"
                             />
@@ -596,27 +605,27 @@ watch(activeTab, async (tab) => {
                     <div v-else class="flex gap-6">
                         <!-- Sidebar: Playlists -->
                         <aside class="w-64 flex-shrink-0">
-                            <div class="bg-gray-800/50 rounded-xl p-4 sticky top-24">
+                            <div class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30">
                                 <!-- Navigation -->
                                 <nav class="space-y-1 mb-6">
                                     <button
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left btn-press',
                                             viewMode === 'all'
-                                                ? 'bg-purple-600/20 text-purple-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                         @click="handleViewAll"
                                     >
-                                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5" />
+                                        <UIcon name="i-heroicons-musical-note" :class="['w-5 h-5', viewMode === 'all' ? theme.text : '']" />
                                         <span>{{ t("music.local.allTracks") }}</span>
                                         <span class="ml-auto text-sm text-gray-500">{{ tracks.length }}</span>
                                     </button>
                                     <button
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left btn-press',
                                             viewMode === 'liked'
-                                                ? 'bg-purple-600/20 text-purple-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                         @click="handleViewLiked"
@@ -646,9 +655,9 @@ watch(activeTab, async (tab) => {
                                         v-for="playlist in playlists"
                                         :key="playlist.id"
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left group',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left group btn-press',
                                             selectedPlaylist?.id === playlist.id
-                                                ? 'bg-purple-600/20 text-purple-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                     >
@@ -657,8 +666,7 @@ watch(activeTab, async (tab) => {
                                             @click="handleSelectPlaylist(playlist)"
                                         >
                                             <div
-                                                class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
-                                                :style="{ backgroundColor: playlist.coverColor }"
+                                                :class="['w-8 h-8 rounded flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110', theme.bg]"
                                             >
                                                 <UIcon name="i-heroicons-musical-note" class="w-4 h-4 text-white" />
                                             </div>
@@ -677,13 +685,13 @@ watch(activeTab, async (tab) => {
                                 <!-- Create playlist modal -->
                                 <div
                                     v-if="showCreatePlaylist"
-                                    class="mt-4 p-3 bg-gray-700/50 rounded-lg"
+                                    class="mt-4 p-3 bg-gray-700/40 backdrop-blur-sm rounded-lg border border-gray-600/30"
                                 >
                                     <input
                                         v-model="newPlaylistName"
                                         type="text"
                                         :placeholder="t('music.local.playlistName')"
-                                        class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        :class="['w-full bg-gray-800/80 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2', `focus:${theme.ring}`]"
                                         @keyup.enter="handleCreatePlaylist"
                                     />
                                     <div class="flex gap-2 mt-2">
@@ -696,7 +704,7 @@ watch(activeTab, async (tab) => {
                                         </UButton>
                                         <UButton
                                             size="xs"
-                                            class="bg-purple-600 hover:bg-purple-700"
+                                            :class="[theme.bg, `hover:${theme.bgLight}`, 'btn-press']"
                                             :disabled="!newPlaylistName.trim()"
                                             @click="handleCreatePlaylist"
                                         >
@@ -779,12 +787,12 @@ watch(activeTab, async (tab) => {
                             >
                                 <UIcon
                                     name="i-heroicons-arrow-path"
-                                    class="w-12 h-12 text-purple-500 animate-spin"
+                                    :class="['w-12 h-12 animate-spin', theme.text]"
                                 />
                             </div>
 
                             <!-- Track list -->
-                            <div v-else-if="filteredTracks.length > 0" class="bg-gray-800/30 rounded-xl overflow-hidden">
+                            <div v-else-if="filteredTracks.length > 0" class="bg-gray-800/20 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/30">
                                 <!-- Header row -->
                                 <div class="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-700/50">
                                     <span class="w-10 text-center">#</span>
@@ -801,12 +809,12 @@ watch(activeTab, async (tab) => {
                                     v-for="(track, index) in filteredTracks"
                                     :key="track.filePath"
                                     :class="[
-                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-colors',
+                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-all',
                                         track.isAvailable === false
                                             ? 'opacity-50 cursor-not-allowed'
                                             : 'cursor-pointer',
                                         playbackState.currentTrack?.filePath === track.filePath
-                                            ? 'bg-purple-600/20'
+                                            ? `bg-${themeColor}-600/20`
                                             : track.isAvailable !== false ? 'hover:bg-gray-700/30' : '',
                                     ]"
                                     @dblclick="handlePlayTrack(track, index)"
@@ -819,7 +827,7 @@ watch(activeTab, async (tab) => {
                                         <template v-else>
                                             <span
                                                 v-if="playbackState.currentTrack?.filePath === track.filePath && playbackState.isPlaying"
-                                                class="text-purple-400"
+                                                :class="theme.textLight"
                                             >
                                                 <UIcon name="i-heroicons-speaker-wave" class="w-4 h-4 animate-pulse" />
                                             </span>
@@ -839,10 +847,10 @@ watch(activeTab, async (tab) => {
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div
                                             :class="[
-                                                'w-10 h-10 rounded flex items-center justify-center flex-shrink-0',
+                                                'w-10 h-10 rounded flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105',
                                                 track.isAvailable === false ? 'grayscale' : '',
+                                                theme.bg
                                             ]"
-                                            :style="{ backgroundColor: getTrackColor(track) }"
                                         >
                                             <UIcon name="i-heroicons-musical-note" class="w-5 h-5 text-white" />
                                         </div>
@@ -853,7 +861,7 @@ watch(activeTab, async (tab) => {
                                                     track.isAvailable === false
                                                         ? 'text-gray-500'
                                                         : playbackState.currentTrack?.filePath === track.filePath
-                                                            ? 'text-purple-400'
+                                                            ? theme.textLight
                                                             : 'text-white',
                                                 ]"
                                             >
@@ -1054,27 +1062,27 @@ watch(activeTab, async (tab) => {
                     <div class="flex gap-6">
                         <!-- Sidebar: Playlists -->
                         <aside class="w-64 flex-shrink-0">
-                            <div class="bg-gray-800/50 rounded-xl p-4 sticky top-24">
+                            <div class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30">
                                 <!-- Navigation -->
                                 <nav class="space-y-1 mb-6">
                                     <button
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left btn-press',
                                             cloudViewMode === 'all'
-                                                ? 'bg-blue-600/20 text-blue-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                         @click="handleCloudViewAll"
                                     >
-                                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5" />
+                                        <UIcon name="i-heroicons-musical-note" :class="['w-5 h-5', cloudViewMode === 'all' ? theme.text : '']" />
                                         <span>{{ t("music.cloud.allTracks") || "All Tracks" }}</span>
                                         <span class="ml-auto text-sm text-gray-500">{{ cloudTracks.length }}</span>
                                     </button>
                                     <button
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left btn-press',
                                             cloudViewMode === 'liked'
-                                                ? 'bg-blue-600/20 text-blue-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                         @click="handleCloudViewLiked"

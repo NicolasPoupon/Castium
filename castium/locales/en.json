@@ -156,10 +156,71 @@
             "title": "Session",
             "description": "Log out from your account on this device."
         },
+        "language": {
+            "title": "Language",
+            "description": "Choose the interface language."
+        },
         "logout": {
             "button": "Log out",
             "success": "Logged out successfully",
             "error": "Error logging out"
+        },
+        "theme": {
+            "title": "Category Colors",
+            "description": "Customize the colors for each content category.",
+            "resetAll": "Reset",
+            "resetSuccess": "Colors reset",
+            "movies": "Movies & Series",
+            "music": "Music",
+            "podcasts": "Podcasts",
+            "tv": "TV",
+            "radio": "Radio",
+            "lectures": "Reading"
+        },
+        "streams": {
+            "radioTitle": "My custom radios",
+            "radioDescription": "Add M3U8 links to listen to your favorite radios",
+            "tvTitle": "My custom TV channels",
+            "tvDescription": "Add M3U8 links to watch your favorite channels",
+            "namePlaceholder": "Station name",
+            "urlPlaceholder": "M3U8 stream URL",
+            "addButton": "Add",
+            "noStreams": "No custom streams",
+            "deleteConfirm": "Delete this stream?",
+            "loading": "Loading...",
+            "emptyRadio": "No custom radios",
+            "emptyTv": "No custom channels",
+            "addedRadio": "Radio added successfully",
+            "addedTv": "Channel added successfully",
+            "deleted": "Stream deleted",
+            "errorEmpty": "Please fill in all fields",
+            "errorAdd": "Error adding stream"
+        },
+        "data": {
+            "title": "Data Management",
+            "description": "Manage your personal data. These actions are irreversible.",
+            "byCategory": "Delete by category",
+            "categories": {
+                "movies": "Movies & Series",
+                "music": "Music",
+                "radio": "Radio",
+                "tv": "TV",
+                "podcasts": "Podcasts"
+            },
+            "deletedCategory": "{category} data deleted",
+            "deleteError": "Error deleting data",
+            "deleteAllTitle": "Delete all data",
+            "deleteAllDescription": "Deletes all your data except your profile and login.",
+            "deleteAllButton": "Delete all",
+            "deletedAll": "All data has been deleted",
+            "deleteAccountTitle": "Delete account",
+            "deleteAccountDescription": "Permanently deletes your account and all your data.",
+            "deleteAccountButton": "Delete my account",
+            "deleteAccountWarning": "This action is irreversible!",
+            "deleteAccountConfirmText": "Type DELETE to confirm:",
+            "deleteAccountPlaceholder": "DELETE",
+            "confirmTextError": "Please type DELETE to confirm",
+            "accountDeleted": "Account deleted successfully"
         }
     },
     "movies": {
@@ -415,6 +476,7 @@
         "subtitle": "Browse channels by category or language",
         "searchPlaceholder": "Search for a channel...",
         "favoritesTitle": "My favorite channels",
+        "myChannels": "My channels",
         "loading": "Loading channels...",
         "back": "Back",
         "channelCount": "{count} channels of {total}",
@@ -441,6 +503,7 @@
         "searchPlaceholder": "Search for a station...",
         "allCountries": "All countries",
         "favorites": "Favorites",
+        "myRadios": "My radios",
         "loading": "Loading stations...",
         "retry": "Retry",
         "stationCount": "{count} stations of {total}",

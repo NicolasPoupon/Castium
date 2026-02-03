@@ -156,6 +156,10 @@
             "title": "Sesja",
             "description": "Wyloguj się z konta na tym urządzeniu."
         },
+        "language": {
+            "title": "Język",
+            "description": "Wybierz język interfejsu."
+        },
         "logout": {
             "button": "Wyloguj się",
             "success": "Wylogowano pomyślnie",

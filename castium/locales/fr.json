@@ -154,10 +154,71 @@
             "title": "Session",
             "description": "Déconnectez-vous de votre compte sur cet appareil."
         },
+        "language": {
+            "title": "Langue",
+            "description": "Choisissez la langue de l'interface."
+        },
         "logout": {
             "button": "Se déconnecter",
             "success": "Déconnexion réussie",
             "error": "Erreur lors de la déconnexion"
+        },
+        "theme": {
+            "title": "Couleurs des catégories",
+            "description": "Personnalisez les couleurs de chaque catégorie de contenu.",
+            "resetAll": "Réinitialiser",
+            "resetSuccess": "Couleurs réinitialisées",
+            "movies": "Films & Séries",
+            "music": "Musique",
+            "podcasts": "Podcasts",
+            "tv": "TV",
+            "radio": "Radio",
+            "lectures": "Lectures"
+        },
+        "streams": {
+            "radioTitle": "Mes radios personnalisées",
+            "radioDescription": "Ajoutez des liens M3U8 pour écouter vos radios préférées",
+            "tvTitle": "Mes chaînes TV personnalisées",
+            "tvDescription": "Ajoutez des liens M3U8 pour regarder vos chaînes préférées",
+            "namePlaceholder": "Nom de la station",
+            "urlPlaceholder": "URL du flux M3U8",
+            "addButton": "Ajouter",
+            "noStreams": "Aucun flux personnalisé",
+            "deleteConfirm": "Supprimer ce flux ?",
+            "loading": "Chargement...",
+            "emptyRadio": "Aucune radio personnalisée",
+            "emptyTv": "Aucune chaîne personnalisée",
+            "addedRadio": "Radio ajoutée avec succès",
+            "addedTv": "Chaîne ajoutée avec succès",
+            "deleted": "Flux supprimé",
+            "errorEmpty": "Veuillez remplir tous les champs",
+            "errorAdd": "Erreur lors de l'ajout"
+        },
+        "data": {
+            "title": "Gestion des données",
+            "description": "Gérez vos données personnelles. Ces actions sont irréversibles.",
+            "byCategory": "Supprimer par catégorie",
+            "categories": {
+                "movies": "Films & Séries",
+                "music": "Musique",
+                "radio": "Radio",
+                "tv": "TV",
+                "podcasts": "Podcasts"
+            },
+            "deletedCategory": "Données {category} supprimées",
+            "deleteError": "Erreur lors de la suppression",
+            "deleteAllTitle": "Supprimer toutes les données",
+            "deleteAllDescription": "Supprime toutes vos données sauf votre profil et connexion.",
+            "deleteAllButton": "Tout supprimer",
+            "deletedAll": "Toutes les données ont été supprimées",
+            "deleteAccountTitle": "Supprimer le compte",
+            "deleteAccountDescription": "Supprime définitivement votre compte et toutes vos données.",
+            "deleteAccountButton": "Supprimer mon compte",
+            "deleteAccountWarning": "Cette action est irréversible !",
+            "deleteAccountConfirmText": "Tapez SUPPRIMER pour confirmer :",
+            "deleteAccountPlaceholder": "SUPPRIMER",
+            "confirmTextError": "Veuillez taper SUPPRIMER pour confirmer",
+            "accountDeleted": "Compte supprimé avec succès"
         }
     },
     "movies": {
@@ -413,6 +474,7 @@
         "subtitle": "Parcourez les chaînes par catégorie ou langue",
         "searchPlaceholder": "Rechercher une chaîne...",
         "favoritesTitle": "Mes chaînes favorites",
+        "myChannels": "Mes chaînes",
         "loading": "Chargement des chaînes...",
         "back": "Retour",
         "channelCount": "{count} chaînes sur {total}",
@@ -439,6 +501,7 @@
         "searchPlaceholder": "Rechercher une station...",
         "allCountries": "Tous les pays",
         "favorites": "Favoris",
+        "myRadios": "Mes radios",
         "loading": "Chargement des stations...",
         "retry": "Réessayer",
         "stationCount": "{count} stations sur {total}",
