@@ -1,6 +1,6 @@
 /**
  * Composable for Radio station management
- * Parses M3U playlist from iptv-org, handles favorites, and provides streaming
+ * Uses radio-browser.info API with HLS streams for better CORS compatibility
  */
 
 import { ref, computed, type Ref, type ComputedRef } from 'vue'
@@ -14,6 +14,24 @@ export interface RadioStation {
     language: string
     url: string
     isFavorite: boolean
+}
+
+// Radio Browser API response type
+interface RadioBrowserStation {
+    stationuuid: string
+    name: string
+    url_resolved: string
+    favicon: string
+    country: string
+    countrycode: string
+    language: string
+    tags: string
+    codec: string
+    bitrate: number
+    hls: number
+    lastcheckok: number
+    votes: number
+    clickcount: number
 }
 
 interface RadioState {
@@ -67,64 +85,26 @@ const state = ref<RadioState>({
     showFavoritesOnly: false
 })
 
-// Parse M3U playlist for radio stations
-function parseM3U(content: string): Omit<RadioStation, 'isFavorite'>[] {
-    const lines = content.split('\n')
-    const stations: Omit<RadioStation, 'isFavorite'>[] = []
+// Radio Browser API base URL (uses HLS streams which work better with CORS)
+const RADIO_BROWSER_API = 'https://de1.api.radio-browser.info'
 
-    let currentInfo: Partial<Omit<RadioStation, 'isFavorite'>> = {}
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim()
-
-        if (line.startsWith('#EXTINF:')) {
-            // Parse station info
-            // Format: #EXTINF:-1 tvg-name="Name" tvg-logo="URL" group-title="Group" tvg-language="Lang",Display Name
-
-            // Extract tvg-name
-            const nameMatch = line.match(/tvg-name="([^"]*)"/)
-            // Extract tvg-logo
-            const logoMatch = line.match(/tvg-logo="([^"]*)"/)
-            // Extract group-title (country)
-            const groupMatch = line.match(/group-title="([^"]*)"/)
-            // Extract tvg-language
-            const langMatch = line.match(/tvg-language="([^"]*)"/)
-            // Extract display name (after the comma)
-            const displayNameMatch = line.match(/,([^,]+)$/)
-
-            const name = nameMatch?.[1] || displayNameMatch?.[1] || 'Unknown'
-
-            currentInfo = {
-                id: `${name}-${i}`.replace(/[^a-zA-Z0-9-]/g, '_'),
-                name: name.trim(),
-                logo: logoMatch?.[1] || '',
-                country: groupMatch?.[1] || 'Unknown',
-                language: langMatch?.[1] || ''
-            }
-        } else if (line && !line.startsWith('#') && currentInfo.name) {
-            // This is the URL line
-            currentInfo.url = line
-
-            // Only include audio streams (radio)
-            if (currentInfo.url && currentInfo.name) {
-                stations.push(currentInfo as Omit<RadioStation, 'isFavorite'>)
-            }
-
-            currentInfo = {}
-        }
+// Transform API response to our RadioStation format
+function transformStation(station: RadioBrowserStation): Omit<RadioStation, 'isFavorite'> {
+    return {
+        id: station.stationuuid,
+        name: station.name,
+        logo: station.favicon || '',
+        country: station.country || 'Unknown',
+        language: station.language || '',
+        url: station.url_resolved || ''
     }
-
-    return stations
 }
-
-// Radio playlist URL
-const RADIO_PLAYLIST_URL = 'https://iptv-org.github.io/iptv/categories/radio.m3u'
 
 export function useRadio(): UseRadioReturn {
     const supabase = useSupabase()
     const { user } = useAuth()
 
-    // Load stations from the M3U file
+    // Load stations from radio-browser.info API (HLS streams only)
     const loadStations = async (): Promise<void> => {
         if (state.value.stations.length > 0) {
             // Already loaded, just refresh favorites
@@ -136,14 +116,36 @@ export function useRadio(): UseRadioReturn {
         state.value.error = null
 
         try {
-            // Fetch the radio playlist
-            const response = await fetch(RADIO_PLAYLIST_URL)
+            // Fetch HLS radio stations from radio-browser.info
+            // hls=1 filters for HLS streams which work better with CORS
+            // lastcheckok=1 ensures the station is currently working
+            // order=clickcount gives us the most popular stations first
+            const params = new URLSearchParams({
+                hidebroken: 'true',
+                order: 'clickcount',
+                reverse: 'true',
+                limit: '500'
+            })
+
+            const response = await fetch(
+                `${RADIO_BROWSER_API}/json/stations/search?${params}`,
+                {
+                    headers: {
+                        'User-Agent': 'Castium/1.0'
+                    }
+                }
+            )
+
             if (!response.ok) {
-                throw new Error('Failed to load radio playlist')
+                throw new Error('Failed to load radio stations from API')
             }
 
-            const content = await response.text()
-            const parsedStations = parseM3U(content)
+            const data: RadioBrowserStation[] = await response.json()
+
+            // Filter for working stations and transform to our format
+            const parsedStations = data
+                .filter(s => s.lastcheckok === 1 && s.url_resolved)
+                .map(transformStation)
 
             // Load favorites from database
             await loadFavorites()
@@ -154,7 +156,7 @@ export function useRadio(): UseRadioReturn {
                 isFavorite: state.value.favorites.has(station.id)
             }))
 
-            console.log(`[Radio] Loaded ${state.value.stations.length} stations`)
+            console.log(`[Radio] Loaded ${state.value.stations.length} stations from radio-browser.info`)
         } catch (e: any) {
             console.error('[Radio] Failed to load stations:', e)
             state.value.error = e.message || 'Failed to load stations'

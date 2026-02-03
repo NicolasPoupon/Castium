@@ -68,7 +68,9 @@ const activeTab = computed({
     },
     set(value: string) {
         const item = items.value.find((i) => i.value === value)
-        if (item?.to) router.push(item.to)
+        if (item?.to) {
+            router.push(item.to)
+        }
     },
 })
 
@@ -104,11 +106,12 @@ const userInitials = computed(() => {
 
 const userAvatar = computed(() => {
     if (!user.value) return null
-    return (
-        user.value.user_metadata?.avatar_url ||
+    const avatar = user.value.user_metadata?.avatar_url ||
         user.value.user_metadata?.picture ||
         null
-    )
+    // Guard against string "null" or empty strings
+    if (!avatar || avatar === 'null' || avatar === '') return null
+    return avatar
 })
 
 const userMenuItems = computed(() => [
@@ -194,10 +197,11 @@ const userMenuItems = computed(() => [
                             class="rounded-full p-0"
                         >
                             <UAvatar
-                                v-if="userAvatar"
+                                v-if="userAvatar && userAvatar !== 'null'"
                                 :src="userAvatar"
                                 :alt="userName"
                                 size="md"
+                                @error="($event.target as HTMLImageElement).style.display = 'none'"
                             />
                             <UAvatar
                                 v-else
