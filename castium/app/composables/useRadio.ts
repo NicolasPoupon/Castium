@@ -82,7 +82,7 @@ const state = ref<RadioState>({
     isPlaying: false,
     searchQuery: '',
     selectedCountry: '',
-    showFavoritesOnly: false
+    showFavoritesOnly: false,
 })
 
 // Radio Browser API base URL (uses HLS streams which work better with CORS)
@@ -96,7 +96,7 @@ function transformStation(station: RadioBrowserStation): Omit<RadioStation, 'isF
         logo: station.favicon || '',
         country: station.country || 'Unknown',
         language: station.language || '',
-        url: station.url_resolved || ''
+        url: station.url_resolved || '',
     }
 }
 
@@ -124,17 +124,14 @@ export function useRadio(): UseRadioReturn {
                 hidebroken: 'true',
                 order: 'clickcount',
                 reverse: 'true',
-                limit: '500'
+                limit: '500',
             })
 
-            const response = await fetch(
-                `${RADIO_BROWSER_API}/json/stations/search?${params}`,
-                {
-                    headers: {
-                        'User-Agent': 'Castium/1.0'
-                    }
-                }
-            )
+            const response = await fetch(`${RADIO_BROWSER_API}/json/stations/search?${params}`, {
+                headers: {
+                    'User-Agent': 'Castium/1.0',
+                },
+            })
 
             if (!response.ok) {
                 throw new Error('Failed to load radio stations from API')
@@ -144,19 +141,21 @@ export function useRadio(): UseRadioReturn {
 
             // Filter for working stations and transform to our format
             const parsedStations = data
-                .filter(s => s.lastcheckok === 1 && s.url_resolved)
+                .filter((s) => s.lastcheckok === 1 && s.url_resolved)
                 .map(transformStation)
 
             // Load favorites from database
             await loadFavorites()
 
             // Apply favorites to stations
-            state.value.stations = parsedStations.map(station => ({
+            state.value.stations = parsedStations.map((station) => ({
                 ...station,
-                isFavorite: state.value.favorites.has(station.id)
+                isFavorite: state.value.favorites.has(station.id),
             }))
 
-            console.log(`[Radio] Loaded ${state.value.stations.length} stations from radio-browser.info`)
+            console.log(
+                `[Radio] Loaded ${state.value.stations.length} stations from radio-browser.info`
+            )
         } catch (e: any) {
             console.error('[Radio] Failed to load stations:', e)
             state.value.error = e.message || 'Failed to load stations'
@@ -180,9 +179,9 @@ export function useRadio(): UseRadioReturn {
             state.value.favorites = new Set(data?.map((f: any) => f.station_id) || [])
 
             // Update stations with favorite status
-            state.value.stations = state.value.stations.map(station => ({
+            state.value.stations = state.value.stations.map((station) => ({
                 ...station,
-                isFavorite: state.value.favorites.has(station.id)
+                isFavorite: state.value.favorites.has(station.id),
             }))
         } catch (e) {
             console.error('[Radio] Failed to load favorites:', e)
@@ -207,25 +206,23 @@ export function useRadio(): UseRadioReturn {
                 state.value.favorites.delete(station.id)
             } else {
                 // Add to favorites
-                await supabase
-                    .from('radio_favorites')
-                    .insert({
-                        user_id: user.value.id,
-                        station_id: station.id,
-                        station_name: station.name,
-                        station_logo: station.logo,
-                        station_country: station.country
-                    })
+                await supabase.from('radio_favorites').insert({
+                    user_id: user.value.id,
+                    station_id: station.id,
+                    station_name: station.name,
+                    station_logo: station.logo,
+                    station_country: station.country,
+                })
 
                 state.value.favorites.add(station.id)
             }
 
             // Update station in list
-            const idx = state.value.stations.findIndex(s => s.id === station.id)
+            const idx = state.value.stations.findIndex((s) => s.id === station.id)
             if (idx !== -1) {
                 state.value.stations[idx] = {
                     ...state.value.stations[idx],
-                    isFavorite: !isCurrentlyFavorite
+                    isFavorite: !isCurrentlyFavorite,
                 }
             }
 
@@ -233,7 +230,7 @@ export function useRadio(): UseRadioReturn {
             if (state.value.currentStation?.id === station.id) {
                 state.value.currentStation = {
                     ...state.value.currentStation,
-                    isFavorite: !isCurrentlyFavorite
+                    isFavorite: !isCurrentlyFavorite,
                 }
             }
         } catch (e) {
@@ -272,21 +269,22 @@ export function useRadio(): UseRadioReturn {
 
         // Filter by favorites
         if (state.value.showFavoritesOnly) {
-            result = result.filter(s => s.isFavorite)
+            result = result.filter((s) => s.isFavorite)
         }
 
         // Filter by country
         if (state.value.selectedCountry) {
-            result = result.filter(s => s.country === state.value.selectedCountry)
+            result = result.filter((s) => s.country === state.value.selectedCountry)
         }
 
         // Filter by search
         if (state.value.searchQuery) {
             const query = state.value.searchQuery.toLowerCase()
-            result = result.filter(s =>
-                s.name.toLowerCase().includes(query) ||
-                s.country.toLowerCase().includes(query) ||
-                s.language.toLowerCase().includes(query)
+            result = result.filter(
+                (s) =>
+                    s.name.toLowerCase().includes(query) ||
+                    s.country.toLowerCase().includes(query) ||
+                    s.language.toLowerCase().includes(query)
             )
         }
 
@@ -295,13 +293,13 @@ export function useRadio(): UseRadioReturn {
 
     // Computed: unique countries
     const countries = computed<string[]>(() => {
-        const countrySet = new Set(state.value.stations.map(s => s.country))
+        const countrySet = new Set(state.value.stations.map((s) => s.country))
         return Array.from(countrySet).sort()
     })
 
     // Computed: favorites list
     const favorites = computed<RadioStation[]>(() => {
-        return state.value.stations.filter(s => s.isFavorite)
+        return state.value.stations.filter((s) => s.isFavorite)
     })
 
     return {
@@ -327,6 +325,6 @@ export function useRadio(): UseRadioReturn {
         toggleFavorite,
         setSearchQuery,
         setSelectedCountry,
-        setShowFavoritesOnly
+        setShowFavoritesOnly,
     }
 }

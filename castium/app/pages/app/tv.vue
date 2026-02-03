@@ -2,15 +2,22 @@
 /**
  * TV Page - Live TV Streaming with Categories and Languages
  * Browse by category or language, then view channels
+ * Dynamic theme colors with modern design
  */
 import Hls from 'hls.js'
 import { useI18n } from '#imports'
+import type { ThemeColor } from '~/composables/useTheme'
 
 definePageMeta({
     ssr: false,
 })
 
 const { t } = useI18n()
+const { colors, colorClasses } = useTheme()
+
+// Get theme classes for TV
+const themeColor = computed(() => colors.value.tv as ThemeColor)
+const theme = computed(() => colorClasses[themeColor.value] || colorClasses.orange)
 
 const {
     channels,
@@ -35,6 +42,10 @@ const {
     goBackToBrowse,
 } = useIPTV()
 
+// Custom streams
+const { tvStreams, loadStreams: loadCustomStreams } = useCustomStreams()
+const showMyChannels = ref(false)
+
 // Local state
 const searchInput = ref('')
 const videoRef = ref<HTMLVideoElement | null>(null)
@@ -54,7 +65,19 @@ watch(searchInput, (val) => {
 
 // Initialize
 onMounted(async () => {
+    await Promise.all([loadFavorites(), loadCustomStreams()])
+})
+
+// Subscribe to data refresh events (for when user deletes data from settings)
+const { onRefresh } = useDataRefresh()
+const refreshTvData = async () => {
+    console.log('[TV] Refreshing all data...')
     await loadFavorites()
+    await loadCustomStreams()
+}
+onMounted(() => {
+    const unsubscribe = onRefresh('tv', refreshTvData)
+    onUnmounted(() => unsubscribe())
 })
 
 // Cleanup HLS on unmount
@@ -68,6 +91,19 @@ const destroyHls = () => {
         hlsInstance.value.destroy()
         hlsInstance.value = null
     }
+}
+
+// Play custom TV stream
+const playCustomChannel = (stream: { id: string; name: string; url: string; logo?: string }) => {
+    const channel = {
+        id: `custom-${stream.id}`,
+        name: stream.name,
+        logo: stream.logo || '',
+        group: t('tv.myChannels'),
+        url: stream.url,
+        isFavorite: false,
+    }
+    handlePlayChannel(channel)
 }
 
 // Play channel
@@ -160,21 +196,21 @@ const handleClosePlayer = () => {
     stopPlayback()
 }
 
-// Play favorite channel - needs to load its category first to get URL
+// Play favorite channel - use stored URL or try to find in loaded channels
 const handlePlayFavorite = async (channel: any) => {
-    // For favorites, we need to find the channel in a loaded category
-    // For now, open a search with the channel name
-    if (!channel.url) {
-        // Try to find in current channels
-        const found = channels.value.find(c => c.id === channel.id)
-        if (found) {
-            handlePlayChannel(found)
-        } else {
-            // Need to load category/language first
-            playerError.value = t('tv.errors.selectCategoryFirst')
-        }
-    } else {
+    // If favorite has URL stored, play directly
+    if (channel.url) {
         handlePlayChannel(channel)
+        return
+    }
+
+    // Fallback: try to find in current channels
+    const found = channels.value.find((c) => c.id === channel.id)
+    if (found) {
+        handlePlayChannel(found)
+    } else {
+        // Need to load category/language first
+        playerError.value = t('tv.errors.selectCategoryFirst')
     }
 }
 
@@ -187,37 +223,51 @@ const getChannelInitials = (name: string): string => {
     return name.slice(0, 2).toUpperCase()
 }
 
-// Get current selection label
-const currentSelectionLabel = computed(() => {
+// Get current selection (used in channels view pill)
+const currentSelection = computed(() => {
     if (selectedCategory.value) {
-        const cat = categories.find(c => c.code === selectedCategory.value)
-        return cat ? `${cat.icon} ${cat.name}` : selectedCategory.value
+        const cat = categories.find((c) => c.code === selectedCategory.value)
+        return {
+            icon: cat?.icon || 'i-heroicons-squares-2x2',
+            label: cat?.name || selectedCategory.value,
+        }
     }
+
     if (selectedLanguage.value) {
-        const lang = languages.find(l => l.code === selectedLanguage.value)
-        return lang ? `${lang.flag} ${lang.name}` : selectedLanguage.value
+        const lang = languages.find((l) => l.code === selectedLanguage.value)
+        return {
+            icon: 'i-heroicons-language',
+            label: lang?.name || selectedLanguage.value,
+            code: lang?.code,
+        }
     }
-    return ''
+
+    return null
 })
 </script>
 
 <template>
-    <div class="min-h-screen bg-stone-900 flex flex-col">
+    <div class="min-h-screen bg-gray-900 flex flex-col theme-transition">
         <Navbar mode="app" />
 
         <div class="pt-20 pb-32 flex-1">
             <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
                 <!-- Header -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8"
+                >
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center shadow-lg shadow-amber-900/50">
-                            <svg class="w-6 h-6 text-amber-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
+                        <div
+                            :class="[
+                                'w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-lg transition-all duration-300',
+                                theme.gradient,
+                            ]"
+                        >
+                            <UIcon name="i-heroicons-tv" class="w-6 h-6 text-white" />
                         </div>
                         <div>
                             <h1 class="text-2xl font-bold text-white">{{ t('tv.title') }}</h1>
-                            <p class="text-stone-400 text-sm">{{ t('tv.subtitle') }}</p>
+                            <p class="text-gray-400 text-sm">{{ t('tv.subtitle') }}</p>
                         </div>
                     </div>
                 </div>
@@ -225,30 +275,84 @@ const currentSelectionLabel = computed(() => {
                 <!-- Favorites Section (always visible at top) -->
                 <div v-if="favorites.length > 0" class="mb-8">
                     <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
-                        </svg>
+                        <UIcon name="i-heroicons-heart-solid" class="w-5 h-5 text-red-400" />
                         {{ t('tv.favoritesTitle') }}
                     </h2>
-                    <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-stone-700">
+                    <div
+                        class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-700"
+                    >
                         <div
                             v-for="channel in favorites"
                             :key="channel.id"
-                            class="flex-shrink-0 w-32 bg-stone-800/50 rounded-xl p-3 cursor-pointer hover:bg-stone-700/50 transition-all border border-stone-700/50 hover:border-amber-600/50"
+                            :class="[
+                                'flex-shrink-0 w-32 bg-gray-800/40 rounded-xl p-3 cursor-pointer hover:bg-gray-800/60 transition-all border backdrop-blur-sm card-hover',
+                                `border-gray-700/30 hover:${theme.border}`,
+                            ]"
                             @click="handlePlayFavorite(channel)"
                         >
-                            <div class="w-16 h-16 mx-auto mb-2 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden">
+                            <div
+                                class="w-16 h-16 mx-auto mb-2 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden"
+                            >
                                 <img
                                     v-if="channel.logo"
                                     :src="channel.logo"
                                     :alt="channel.name"
                                     class="w-full h-full object-cover"
                                     loading="lazy"
-                                    @error="($event.target as HTMLImageElement).style.display = 'none'"
+                                    @error="
+                                        ($event.target as HTMLImageElement).style.display = 'none'
+                                    "
                                 />
-                                <span v-else class="text-white font-bold text-lg">{{ getChannelInitials(channel.name) }}</span>
+                                <span v-else class="text-white font-bold text-lg">
+                                    {{ getChannelInitials(channel.name) }}
+                                </span>
                             </div>
-                            <p class="text-white text-xs text-center truncate">{{ channel.name }}</p>
+                            <p class="text-white text-xs text-center truncate">
+                                {{ channel.name }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Channels Section (custom streams) -->
+                <div v-if="tvStreams.length > 0" class="mb-8">
+                    <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <UIcon name="i-heroicons-tv" :class="['w-5 h-5', theme.text]" />
+                        {{ t('tv.myChannels') }}
+                    </h2>
+                    <div
+                        class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-700"
+                    >
+                        <div
+                            v-for="stream in tvStreams"
+                            :key="stream.id"
+                            :class="[
+                                'flex-shrink-0 w-32 bg-gray-800/40 rounded-xl p-3 cursor-pointer hover:bg-gray-800/60 transition-all border backdrop-blur-sm card-hover',
+                                `border-${themeColor}-600/30 hover:${theme.border}`,
+                            ]"
+                            @click="playCustomChannel(stream)"
+                        >
+                            <div
+                                :class="[
+                                    'w-16 h-16 mx-auto mb-2 rounded-lg bg-gradient-to-br flex items-center justify-center overflow-hidden',
+                                    `from-${themeColor}-600/30 to-${themeColor}-800/30`,
+                                ]"
+                            >
+                                <img
+                                    v-if="stream.logo"
+                                    :src="stream.logo"
+                                    :alt="stream.name"
+                                    class="w-full h-full object-cover"
+                                    loading="lazy"
+                                    @error="
+                                        ($event.target as HTMLImageElement).style.display = 'none'
+                                    "
+                                />
+                                <span v-else :class="['font-bold text-lg', theme.textLight]">
+                                    {{ getChannelInitials(stream.name) }}
+                                </span>
+                            </div>
+                            <p class="text-white text-xs text-center truncate">{{ stream.name }}</p>
                         </div>
                     </div>
                 </div>
@@ -259,53 +363,102 @@ const currentSelectionLabel = computed(() => {
                     <div class="flex gap-2 mb-6">
                         <button
                             :class="[
-                                'px-4 py-2 rounded-lg font-medium transition-all',
+                                'px-4 py-2 rounded-lg font-medium transition-all btn-press',
                                 activeTab === 'categories'
-                                    ? 'bg-amber-600 text-white'
-                                    : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                                    ? `${theme.bg} text-white`
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                             ]"
                             @click="activeTab = 'categories'"
                         >
+                            <UIcon name="i-heroicons-squares-2x2" class="w-4 h-4 inline mr-2" />
                             {{ t('tv.browseByCategory') }}
                         </button>
                         <button
                             :class="[
-                                'px-4 py-2 rounded-lg font-medium transition-all',
+                                'px-4 py-2 rounded-lg font-medium transition-all btn-press',
                                 activeTab === 'languages'
-                                    ? 'bg-amber-600 text-white'
-                                    : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                                    ? `${theme.bg} text-white`
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                             ]"
                             @click="activeTab = 'languages'"
                         >
+                            <UIcon name="i-heroicons-language" class="w-4 h-4 inline mr-2" />
                             {{ t('tv.browseByLanguage') }}
                         </button>
                     </div>
 
                     <!-- Categories Grid -->
-                    <div v-if="activeTab === 'categories'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <div
+                        v-if="activeTab === 'categories'"
+                        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+                    >
                         <div
                             v-for="category in categories"
                             :key="category.id"
-                            class="bg-stone-800/50 hover:bg-stone-700/70 rounded-2xl p-4 cursor-pointer transition-all border border-stone-700/50 hover:border-amber-600/50 hover:shadow-lg hover:shadow-amber-900/20 group"
+                            :class="[
+                                'bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-4 cursor-pointer transition-all border group card-hover',
+                                `border-gray-700/30 hover:${theme.border} hover:shadow-lg hover:shadow-${themeColor}-900/20`,
+                            ]"
                             @click="loadChannelsByCategory(category.code)"
                         >
-                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">{{ category.icon }}</div>
+                            <div
+                                :class="[
+                                    `w-12 h-12 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform icon-bounce`,
+                                    `bg-${themeColor}-500/20`,
+                                ]"
+                            >
+                                <UIcon
+                                    :name="category.icon"
+                                    :class="['w-6 h-6', theme.textLight]"
+                                />
+                            </div>
                             <h3 class="text-white font-medium text-sm">{{ category.name }}</h3>
-                            <p class="text-stone-500 text-xs mt-1">{{ category.count }} {{ t('tv.channelsLabel') }}</p>
+                            <p class="text-gray-500 text-xs mt-1">
+                                {{ category.count }} {{ t('tv.channelsLabel') }}
+                            </p>
                         </div>
                     </div>
 
                     <!-- Languages Grid -->
-                    <div v-if="activeTab === 'languages'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <div
+                        v-if="activeTab === 'languages'"
+                        class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+                    >
                         <div
                             v-for="lang in languages"
                             :key="lang.id"
-                            class="bg-stone-800/50 hover:bg-stone-700/70 rounded-2xl p-4 cursor-pointer transition-all border border-stone-700/50 hover:border-amber-600/50 hover:shadow-lg hover:shadow-amber-900/20 group"
+                            :class="[
+                                'bg-gray-800/40 hover:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-4 cursor-pointer transition-all border group card-hover',
+                                `border-gray-700/30 hover:${theme.border} hover:shadow-lg hover:shadow-${themeColor}-900/20`,
+                            ]"
                             @click="loadChannelsByLanguage(lang.code)"
                         >
-                            <div class="text-4xl mb-3 group-hover:scale-110 transition-transform">{{ lang.flag }}</div>
+                            <div class="flex items-center justify-between gap-2 mb-3">
+                                <div
+                                    :class="[
+                                        `w-12 h-12 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform icon-bounce`,
+                                        `bg-${themeColor}-500/20`,
+                                    ]"
+                                >
+                                    <UIcon
+                                        name="i-heroicons-language"
+                                        :class="['w-6 h-6', theme.textLight]"
+                                    />
+                                </div>
+                                <span
+                                    :class="[
+                                        'text-xs font-semibold tracking-wider px-2 py-1 rounded-lg ring-1',
+                                        theme.textLight,
+                                        `bg-${themeColor}-500/10 ring-${themeColor}-500/20`,
+                                    ]"
+                                >
+                                    {{ lang.code.toUpperCase() }}
+                                </span>
+                            </div>
                             <h3 class="text-white font-medium text-sm">{{ lang.name }}</h3>
-                            <p class="text-stone-500 text-xs mt-1">{{ lang.count }} {{ t('tv.channelsLabel') }}</p>
+                            <p class="text-gray-500 text-xs mt-1">
+                                {{ lang.count }} {{ t('tv.channelsLabel') }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -315,29 +468,43 @@ const currentSelectionLabel = computed(() => {
                     <!-- Back button and search -->
                     <div class="flex flex-wrap gap-4 items-center mb-6">
                         <button
-                            class="flex items-center gap-2 px-4 py-2 bg-stone-800 hover:bg-stone-700 text-white rounded-lg transition-colors"
+                            class="flex items-center gap-2 px-4 py-2 bg-gray-800/60 hover:bg-gray-700/60 text-white rounded-lg transition-colors btn-press"
                             @click="goBackToBrowse"
                         >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
+                            <UIcon name="i-heroicons-arrow-left" class="w-5 h-5" />
                             {{ t('tv.back') }}
                         </button>
 
-                        <div class="flex items-center gap-2 px-3 py-2 bg-amber-600/20 text-amber-400 rounded-lg border border-amber-600/30">
-                            <span class="text-lg">{{ currentSelectionLabel.split(' ')[0] }}</span>
-                            <span class="font-medium">{{ currentSelectionLabel.split(' ').slice(1).join(' ') }}</span>
+                        <div
+                            v-if="currentSelection"
+                            :class="[
+                                'flex items-center gap-2 px-3 py-2 rounded-lg border',
+                                `bg-${themeColor}-600/20 ${theme.textLight} border-${themeColor}-600/30`,
+                            ]"
+                        >
+                            <UIcon :name="currentSelection.icon" class="w-5 h-5" />
+                            <span class="font-medium">{{ currentSelection.label }}</span>
+                            <span
+                                v-if="'code' in currentSelection && currentSelection.code"
+                                class="text-xs opacity-80"
+                            >
+                                {{ currentSelection.code.toUpperCase() }}
+                            </span>
                         </div>
 
                         <div class="relative flex-1 min-w-[200px] max-w-md">
-                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+                            <UIcon
+                                name="i-heroicons-magnifying-glass"
+                                class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
+                            />
                             <input
                                 v-model="searchInput"
                                 type="text"
                                 :placeholder="t('tv.searchPlaceholder')"
-                                class="w-full pl-10 pr-4 py-2 bg-stone-800/50 border border-stone-700 rounded-xl text-white placeholder-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                :class="[
+                                    'w-full pl-10 pr-4 py-2 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:border-transparent transition-all',
+                                    `focus:${theme.ring}`,
+                                ]"
                             />
                         </div>
                     </div>
@@ -345,73 +512,107 @@ const currentSelectionLabel = computed(() => {
                     <!-- Loading state -->
                     <div v-if="loading" class="flex items-center justify-center py-20">
                         <div class="text-center">
-                            <div class="w-12 h-12 border-4 border-stone-700 border-t-amber-500 rounded-full animate-spin mx-auto mb-4"></div>
-                            <p class="text-stone-400">{{ t('tv.loading') }}</p>
+                            <div
+                                :class="[
+                                    'w-12 h-12 border-4 border-gray-700 rounded-full animate-spin mx-auto mb-4',
+                                    `border-t-${themeColor}-500`,
+                                ]"
+                            ></div>
+                            <p class="text-gray-400">{{ t('tv.loading') }}</p>
                         </div>
                     </div>
 
                     <!-- Error state -->
                     <div v-else-if="error" class="text-center py-20">
-                        <div class="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                        <div
+                            class="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4"
+                        >
+                            <UIcon
+                                name="i-heroicons-exclamation-circle"
+                                class="w-8 h-8 text-red-400"
+                            />
                         </div>
                         <p class="text-red-400 mb-4">{{ error }}</p>
-                        <button class="px-6 py-2 bg-stone-700 hover:bg-stone-600 text-white rounded-lg transition-colors" @click="goBackToBrowse">
+                        <button
+                            class="px-6 py-2 bg-gray-800/60 hover:bg-gray-700/60 text-white rounded-lg transition-colors btn-press"
+                            @click="goBackToBrowse"
+                        >
                             {{ t('tv.back') }}
                         </button>
                     </div>
 
                     <!-- Channels list -->
                     <div v-else>
-                        <div class="mb-4 text-stone-400 text-sm">
-                            {{ t('tv.channelCount', { count: filteredChannels.length, total: channels.length }) }}
+                        <div class="mb-4 text-gray-400 text-sm">
+                            {{
+                                t('tv.channelCount', {
+                                    count: filteredChannels.length,
+                                    total: channels.length,
+                                })
+                            }}
                         </div>
 
                         <div v-if="filteredChannels.length === 0" class="text-center py-20">
                             <p class="text-stone-500">{{ t('tv.noChannels') }}</p>
                         </div>
 
-                        <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        <div
+                            v-else
+                            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+                        >
                             <div
                                 v-for="channel in filteredChannels"
                                 :key="channel.id"
-                                class="group bg-stone-800/40 hover:bg-stone-700/60 rounded-xl p-3 cursor-pointer transition-all border border-stone-700/50 hover:border-amber-600/50"
+                                :class="[
+                                    'group bg-stone-800/40 hover:bg-stone-700/60 rounded-xl p-3 cursor-pointer transition-all border card-hover',
+                                    `border-stone-700/50 hover:${theme.border}`,
+                                ]"
                                 @click="handlePlayChannel(channel)"
                             >
-                                <div class="relative aspect-video mb-2 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden">
+                                <div
+                                    class="relative aspect-video mb-2 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden"
+                                >
                                     <img
                                         v-if="channel.logo"
                                         :src="channel.logo"
                                         :alt="channel.name"
                                         class="w-full h-full object-contain p-2"
                                         loading="lazy"
-                                        @error="($event.target as HTMLImageElement).style.display = 'none'"
+                                        @error="
+                                            ($event.target as HTMLImageElement).style.display =
+                                                'none'
+                                        "
                                     />
-                                    <span v-else class="text-white font-bold text-xl">{{ getChannelInitials(channel.name) }}</span>
+                                    <span v-else class="text-white font-bold text-xl">
+                                        {{ getChannelInitials(channel.name) }}
+                                    </span>
 
                                     <!-- Play overlay -->
-                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M8 5v14l11-7z" />
-                                        </svg>
+                                    <div
+                                        class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                    >
+                                        <UIcon
+                                            name="i-heroicons-play-solid"
+                                            class="w-10 h-10 text-white"
+                                        />
                                     </div>
 
                                     <!-- Favorite button -->
                                     <button
-                                        class="absolute top-1 right-1 p-1.5 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        class="absolute top-1 right-1 p-1.5 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity btn-press"
                                         @click.stop="toggleFavorite(channel)"
                                     >
-                                        <svg
-                                            class="w-4 h-4"
-                                            :class="channel.isFavorite ? 'text-red-400' : 'text-white'"
-                                            :fill="channel.isFavorite ? 'currentColor' : 'none'"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
+                                        <UIcon
+                                            :name="
+                                                channel.isFavorite
+                                                    ? 'i-heroicons-heart-solid'
+                                                    : 'i-heroicons-heart'
+                                            "
+                                            :class="[
+                                                'w-4 h-4',
+                                                channel.isFavorite ? 'text-red-400' : 'text-white',
+                                            ]"
+                                        />
                                     </button>
                                 </div>
                                 <p class="text-white text-sm truncate">{{ channel.name }}</p>
@@ -434,15 +635,15 @@ const currentSelectionLabel = computed(() => {
                     class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
                     @click.self="handleClosePlayer"
                 >
-                    <div class="relative w-full max-w-5xl bg-stone-900 rounded-2xl overflow-hidden shadow-2xl">
+                    <div
+                        class="relative w-full max-w-5xl bg-stone-900 rounded-2xl overflow-hidden shadow-2xl scale-fade-enter-active"
+                    >
                         <!-- Close button -->
                         <button
-                            class="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                            class="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors btn-press"
                             @click="handleClosePlayer"
                         >
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <UIcon name="i-heroicons-x-mark" class="w-6 h-6 text-white" />
                         </button>
 
                         <!-- Video container -->
@@ -460,7 +661,12 @@ const currentSelectionLabel = computed(() => {
                                 v-if="isBuffering"
                                 class="absolute inset-0 flex items-center justify-center bg-black/50"
                             >
-                                <div class="w-12 h-12 border-4 border-stone-600 border-t-amber-500 rounded-full animate-spin"></div>
+                                <div
+                                    :class="[
+                                        'w-12 h-12 border-4 border-stone-600 rounded-full animate-spin',
+                                        `border-t-${themeColor}-500`,
+                                    ]"
+                                ></div>
                             </div>
 
                             <!-- Error message -->
@@ -469,9 +675,10 @@ const currentSelectionLabel = computed(() => {
                                 class="absolute inset-0 flex items-center justify-center bg-black/80"
                             >
                                 <div class="text-center p-4">
-                                    <svg class="w-12 h-12 text-red-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
+                                    <UIcon
+                                        name="i-heroicons-exclamation-circle"
+                                        class="w-12 h-12 text-red-400 mx-auto mb-4"
+                                    />
                                     <p class="text-red-400">{{ playerError }}</p>
                                 </div>
                             </div>
@@ -480,35 +687,45 @@ const currentSelectionLabel = computed(() => {
                         <!-- Channel info bar -->
                         <div class="p-4 bg-stone-800 flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-stone-700 flex items-center justify-center overflow-hidden"
+                                >
                                     <img
                                         v-if="currentChannel.logo"
                                         :src="currentChannel.logo"
                                         :alt="currentChannel.name"
                                         class="w-full h-full object-cover"
                                     />
-                                    <span v-else class="text-white font-bold text-sm">{{ getChannelInitials(currentChannel.name) }}</span>
+                                    <span v-else class="text-white font-bold text-sm">
+                                        {{ getChannelInitials(currentChannel.name) }}
+                                    </span>
                                 </div>
                                 <div>
-                                    <h3 class="text-white font-medium">{{ currentChannel.name }}</h3>
+                                    <h3 class="text-white font-medium">
+                                        {{ currentChannel.name }}
+                                    </h3>
                                     <p class="text-stone-400 text-sm">{{ currentChannel.group }}</p>
                                 </div>
                             </div>
 
                             <!-- Favorite button -->
                             <button
-                                class="p-2 rounded-full hover:bg-stone-700 transition-colors"
+                                class="p-2 rounded-full hover:bg-stone-700 transition-colors btn-press"
                                 @click="toggleFavorite(currentChannel)"
                             >
-                                <svg
-                                    class="w-6 h-6"
-                                    :class="currentChannel.isFavorite ? 'text-red-400' : 'text-stone-400'"
-                                    :fill="currentChannel.isFavorite ? 'currentColor' : 'none'"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
+                                <UIcon
+                                    :name="
+                                        currentChannel.isFavorite
+                                            ? 'i-heroicons-heart-solid'
+                                            : 'i-heroicons-heart'
+                                    "
+                                    :class="[
+                                        'w-6 h-6',
+                                        currentChannel.isFavorite
+                                            ? 'text-red-400'
+                                            : 'text-stone-400',
+                                    ]"
+                                />
                             </button>
                         </div>
                     </div>

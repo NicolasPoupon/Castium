@@ -8,10 +8,10 @@ onMounted(async () => {
     if (code) {
         try {
             await exchangeCodeForToken(code)
-            await router.push("/app/music")
+            await router.push('/app/music')
         } catch (error) {
-            console.error("Error during Spotify authentication:", error)
-            await router.push("/app/music?error=auth_failed")
+            console.error('Error during Spotify authentication:', error)
+            await router.push('/app/music?error=auth_failed')
         }
     }
 })

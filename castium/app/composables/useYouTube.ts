@@ -44,9 +44,9 @@ interface YouTubeWatchProgress {
     watchedAt: number
 }
 
-const YOUTUBE_STORAGE_KEY = "castium-youtube-tokens"
-const YOUTUBE_PROGRESS_KEY = "castium-youtube-progress"
-const YOUTUBE_FAVORITES_KEY = "castium-youtube-favorites"
+const YOUTUBE_STORAGE_KEY = 'castium-youtube-tokens'
+const YOUTUBE_PROGRESS_KEY = 'castium-youtube-progress'
+const YOUTUBE_FAVORITES_KEY = 'castium-youtube-favorites'
 
 // Global state (persisted across navigation)
 const globalIsAuthenticated = ref(false)
@@ -111,11 +111,7 @@ export const useYouTube = () => {
     }
 
     // Save watch progress
-    const saveWatchProgress = (
-        videoId: string,
-        progress: number,
-        duration: number,
-    ) => {
+    const saveWatchProgress = (videoId: string, progress: number, duration: number) => {
         if (import.meta.server) return
         const allProgress = getWatchProgress()
         allProgress[videoId] = {
@@ -191,8 +187,8 @@ export const useYouTube = () => {
             const response = await $fetch<{
                 access_token: string
                 expires_in: number
-            }>("/api/youtube/refresh", {
-                method: "POST",
+            }>('/api/youtube/refresh', {
+                method: 'POST',
                 body: { refreshToken: tokens.refreshToken },
             })
 
@@ -204,7 +200,7 @@ export const useYouTube = () => {
             saveTokens(newTokens)
             return response.access_token
         } catch (e) {
-            console.error("[YouTube] Failed to refresh token:", e)
+            console.error('[YouTube] Failed to refresh token:', e)
             clearTokens()
             isAuthenticated.value = false
             return null
@@ -212,33 +208,24 @@ export const useYouTube = () => {
     }
 
     // Make authenticated API request
-    const youtubeApiFetch = async <T>(
-        endpoint: string,
-        options: RequestInit = {},
-    ): Promise<T> => {
+    const youtubeApiFetch = async <T>(endpoint: string, options: RequestInit = {}): Promise<T> => {
         const accessToken = await getValidAccessToken()
         if (!accessToken) {
-            throw new Error("Not authenticated")
+            throw new Error('Not authenticated')
         }
 
-        const response = await fetch(
-            `https://www.googleapis.com/youtube/v3${endpoint}`,
-            {
-                ...options,
-                headers: {
-                    ...options.headers,
-                    Authorization: `Bearer ${accessToken}`,
-                    Accept: "application/json",
-                },
+        const response = await fetch(`https://www.googleapis.com/youtube/v3${endpoint}`, {
+            ...options,
+            headers: {
+                ...options.headers,
+                Authorization: `Bearer ${accessToken}`,
+                Accept: 'application/json',
             },
-        )
+        })
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
-            throw new Error(
-                errorData.error?.message ||
-                    `YouTube API error: ${response.status}`,
-            )
+            throw new Error(errorData.error?.message || `YouTube API error: ${response.status}`)
         }
 
         return response.json()
@@ -253,12 +240,12 @@ export const useYouTube = () => {
 
         const tokens = getStoredTokens()
         if (tokens) {
-            console.log("[YouTube] Found stored tokens, authenticating...")
+            console.log('[YouTube] Found stored tokens, authenticating...')
             isAuthenticated.value = true
             globalInitialized.value = true
             await fetchChannelInfo()
         } else {
-            console.log("[YouTube] No stored tokens found")
+            console.log('[YouTube] No stored tokens found')
             globalInitialized.value = true
         }
     }
@@ -267,19 +254,18 @@ export const useYouTube = () => {
     const getOAuthUrl = (): string => {
         const clientId = config.public.youtubeClientId
         const redirectUri =
-            config.public.youtubeRedirectUri ||
-            `${window.location.origin}/auth/youtube/callback`
+            config.public.youtubeRedirectUri || `${window.location.origin}/auth/youtube/callback`
 
         const params = new URLSearchParams({
             client_id: clientId,
             redirect_uri: redirectUri,
-            response_type: "code",
+            response_type: 'code',
             scope: [
-                "https://www.googleapis.com/auth/youtube.readonly",
-                "https://www.googleapis.com/auth/youtube",
-            ].join(" "),
-            access_type: "offline",
-            prompt: "consent",
+                'https://www.googleapis.com/auth/youtube.readonly',
+                'https://www.googleapis.com/auth/youtube',
+            ].join(' '),
+            access_type: 'offline',
+            prompt: 'consent',
         })
 
         return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`
@@ -300,8 +286,8 @@ export const useYouTube = () => {
                 access_token: string
                 refresh_token: string
                 expires_in: number
-            }>("/api/youtube/token", {
-                method: "POST",
+            }>('/api/youtube/token', {
+                method: 'POST',
                 body: { code },
             })
 
@@ -311,7 +297,7 @@ export const useYouTube = () => {
                 expiresAt: Date.now() + response.expires_in * 1000,
             }
 
-            console.log("[YouTube] Tokens received and saved")
+            console.log('[YouTube] Tokens received and saved')
             saveTokens(tokens)
             isAuthenticated.value = true
             globalInitialized.value = true
@@ -319,8 +305,8 @@ export const useYouTube = () => {
 
             return true
         } catch (e: any) {
-            console.error("[YouTube] OAuth callback error:", e)
-            error.value = e.message || "Failed to authenticate with YouTube"
+            console.error('[YouTube] OAuth callback error:', e)
+            error.value = e.message || 'Failed to authenticate with YouTube'
             return false
         } finally {
             loading.value = false
@@ -342,21 +328,19 @@ export const useYouTube = () => {
     // Fetch channel info
     const fetchChannelInfo = async () => {
         try {
-            const data = await youtubeApiFetch<any>(
-                "/channels?part=snippet,statistics&mine=true",
-            )
+            const data = await youtubeApiFetch<any>('/channels?part=snippet,statistics&mine=true')
 
             if (data.items && data.items.length > 0) {
                 const ch = data.items[0]
                 channel.value = {
                     id: ch.id,
                     title: ch.snippet.title,
-                    thumbnail: ch.snippet.thumbnails.default?.url || "",
+                    thumbnail: ch.snippet.thumbnails.default?.url || '',
                     subscriberCount: ch.statistics.subscriberCount,
                 }
             }
         } catch (e) {
-            console.error("[YouTube] Failed to fetch channel info:", e)
+            console.error('[YouTube] Failed to fetch channel info:', e)
         }
     }
 
@@ -367,7 +351,7 @@ export const useYouTube = () => {
 
         try {
             const data = await youtubeApiFetch<any>(
-                "/playlists?part=snippet,contentDetails,status&mine=true&maxResults=50",
+                '/playlists?part=snippet,contentDetails,status&mine=true&maxResults=50'
             )
 
             playlists.value = (data.items || []).map((item: any) => ({
@@ -377,12 +361,12 @@ export const useYouTube = () => {
                 thumbnail:
                     item.snippet.thumbnails.medium?.url ||
                     item.snippet.thumbnails.default?.url ||
-                    "",
+                    '',
                 itemCount: item.contentDetails.itemCount,
                 privacyStatus: item.status.privacyStatus,
             }))
         } catch (e: any) {
-            console.error("[YouTube] Failed to fetch playlists:", e)
+            console.error('[YouTube] Failed to fetch playlists:', e)
             error.value = e.message
         } finally {
             loading.value = false
@@ -396,40 +380,38 @@ export const useYouTube = () => {
 
         try {
             const data = await youtubeApiFetch<any>(
-                `/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=50`,
+                `/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=50`
             )
 
             const videoIds = (data.items || [])
                 .map((item: any) => item.contentDetails.videoId)
                 .filter(Boolean)
-                .join(",")
+                .join(',')
 
             if (videoIds) {
                 const videoData = await youtubeApiFetch<any>(
-                    `/videos?part=snippet,contentDetails,statistics&id=${videoIds}`,
+                    `/videos?part=snippet,contentDetails,statistics&id=${videoIds}`
                 )
 
-                currentPlaylistVideos.value = (videoData.items || []).map(
-                    (item: any) => ({
-                        id: item.id,
-                        title: item.snippet.title,
-                        description: item.snippet.description,
-                        thumbnail:
-                            item.snippet.thumbnails.medium?.url ||
-                            item.snippet.thumbnails.default?.url ||
-                            "",
-                        duration: parseDuration(item.contentDetails.duration),
-                        channelTitle: item.snippet.channelTitle,
-                        publishedAt: item.snippet.publishedAt,
-                        viewCount: item.statistics?.viewCount,
-                        likeCount: item.statistics?.likeCount,
-                    }),
-                )
+                currentPlaylistVideos.value = (videoData.items || []).map((item: any) => ({
+                    id: item.id,
+                    title: item.snippet.title,
+                    description: item.snippet.description,
+                    thumbnail:
+                        item.snippet.thumbnails.medium?.url ||
+                        item.snippet.thumbnails.default?.url ||
+                        '',
+                    duration: parseDuration(item.contentDetails.duration),
+                    channelTitle: item.snippet.channelTitle,
+                    publishedAt: item.snippet.publishedAt,
+                    viewCount: item.statistics?.viewCount,
+                    likeCount: item.statistics?.likeCount,
+                }))
             } else {
                 currentPlaylistVideos.value = []
             }
         } catch (e: any) {
-            console.error("[YouTube] Failed to fetch playlist videos:", e)
+            console.error('[YouTube] Failed to fetch playlist videos:', e)
             error.value = e.message
         } finally {
             loading.value = false
@@ -443,7 +425,7 @@ export const useYouTube = () => {
 
         try {
             const data = await youtubeApiFetch<any>(
-                "/videos?part=snippet,contentDetails,statistics&myRating=like&maxResults=50",
+                '/videos?part=snippet,contentDetails,statistics&myRating=like&maxResults=50'
             )
 
             likedVideos.value = (data.items || []).map((item: any) => ({
@@ -453,7 +435,7 @@ export const useYouTube = () => {
                 thumbnail:
                     item.snippet.thumbnails.medium?.url ||
                     item.snippet.thumbnails.default?.url ||
-                    "",
+                    '',
                 duration: parseDuration(item.contentDetails.duration),
                 channelTitle: item.snippet.channelTitle,
                 publishedAt: item.snippet.publishedAt,
@@ -461,7 +443,7 @@ export const useYouTube = () => {
                 likeCount: item.statistics?.likeCount,
             }))
         } catch (e: any) {
-            console.error("[YouTube] Failed to fetch liked videos:", e)
+            console.error('[YouTube] Failed to fetch liked videos:', e)
             error.value = e.message
         } finally {
             loading.value = false
@@ -476,12 +458,11 @@ export const useYouTube = () => {
         try {
             // Get the "Watch Later" playlist ID from channel
             const channelData = await youtubeApiFetch<any>(
-                "/channels?part=contentDetails&mine=true",
+                '/channels?part=contentDetails&mine=true'
             )
 
             const watchLaterId =
-                channelData.items?.[0]?.contentDetails?.relatedPlaylists
-                    ?.watchLater
+                channelData.items?.[0]?.contentDetails?.relatedPlaylists?.watchLater
 
             if (watchLaterId) {
                 await fetchPlaylistVideos(watchLaterId)
@@ -489,7 +470,7 @@ export const useYouTube = () => {
                 currentPlaylistVideos.value = []
             }
         } catch (e: any) {
-            console.error("[YouTube] Failed to fetch watch later:", e)
+            console.error('[YouTube] Failed to fetch watch later:', e)
             // Watch Later might not be accessible via API
             error.value = null
         } finally {
@@ -500,21 +481,21 @@ export const useYouTube = () => {
     // Parse ISO 8601 duration to readable format
     const parseDuration = (isoDuration: string): string => {
         const match = isoDuration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
-        if (!match) return "0:00"
+        if (!match) return '0:00'
 
-        const hours = parseInt(match[1] || "0")
-        const minutes = parseInt(match[2] || "0")
-        const seconds = parseInt(match[3] || "0")
+        const hours = parseInt(match[1] || '0')
+        const minutes = parseInt(match[2] || '0')
+        const seconds = parseInt(match[3] || '0')
 
         if (hours > 0) {
-            return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+            return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
         }
-        return `${minutes}:${seconds.toString().padStart(2, "0")}`
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`
     }
 
     // Format view count
     const formatViewCount = (count: string | undefined): string => {
-        if (!count) return ""
+        if (!count) return ''
         const num = parseInt(count)
         if (num >= 1000000) {
             return `${(num / 1000000).toFixed(1)}M`
@@ -531,8 +512,8 @@ export const useYouTube = () => {
         const diff = now.getTime() - d.getTime()
 
         const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-        if (days < 1) return "Today"
-        if (days === 1) return "Yesterday"
+        if (days < 1) return 'Today'
+        if (days === 1) return 'Yesterday'
         if (days < 7) return `${days} days ago`
         if (days < 30) return `${Math.floor(days / 7)} weeks ago`
         if (days < 365) return `${Math.floor(days / 30)} months ago`
@@ -542,9 +523,9 @@ export const useYouTube = () => {
     // Get YouTube embed URL
     const getEmbedUrl = (videoId: string, startTime: number = 0): string => {
         const params = new URLSearchParams({
-            autoplay: "1",
+            autoplay: '1',
             start: Math.floor(startTime).toString(),
-            enablejsapi: "1",
+            enablejsapi: '1',
             origin: window.location.origin,
         })
         return `https://www.youtube.com/embed/${videoId}?${params.toString()}`

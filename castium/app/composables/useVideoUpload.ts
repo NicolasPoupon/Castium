@@ -44,27 +44,71 @@ export interface UploadedVideo {
     createdAt: string
     updatedAt: string
     publicUrl?: string
+    rating?: number // 1-10
+    ratingComment?: string
+    playlist?: string // Playlist name for grouping
 }
 
-export interface UploadProgress {
+export interface VideoUploadProgress {
     fileName: string
     progress: number
     status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
     error?: string
 }
 
+export interface CloudVideoPlaylist {
+    name: string
+    videos: UploadedVideo[]
+    thumbnail?: string
+}
+
 const VIDEOS_BUCKET = 'videos'
 
 export const useVideoUpload = () => {
     const supabase = useSupabase()
-    const { user } = useAuth()
+    const { user, profile, updateProfile } = useAuth()
 
     // State
     const uploadedVideos = ref<UploadedVideo[]>([])
     const loading = ref(false)
     const uploading = ref(false)
-    const uploadProgress = ref<UploadProgress[]>([])
+    const uploadProgress = ref<VideoUploadProgress[]>([])
     const error = ref<string | null>(null)
+
+    // Clear state (for refresh after data deletion)
+    const clearState = () => {
+        uploadedVideos.value = []
+        loading.value = false
+        uploading.value = false
+        uploadProgress.value = []
+        error.value = null
+    }
+
+    // Cloud video ratings from profile
+    const cloudVideoRatings = computed(() => profile.value?.cloud_video_ratings || {} as Record<string, { rating: number; comment: string }>)
+
+    // Cloud video playlists from profile
+    const cloudPlaylists = computed(() => profile.value?.cloud_video_playlists || [] as string[])
+
+    // Cloud video watching progress from profile
+    const cloudWatchingProgress = computed(() => profile.value?.cloud_video_watching || {} as Record<string, number>)
+
+    // Cloud video favorites from profile
+    const cloudFavorites = computed(() => profile.value?.cloud_video_favorites || [] as string[])
+
+    // Continue watching videos (with progress)
+    const continueWatchingVideos = computed(() => {
+        const progress = cloudWatchingProgress.value
+        return uploadedVideos.value
+            .filter(v => progress[v.id] && progress[v.id] > 0)
+            .sort((a, b) => (progress[b.id] || 0) - (progress[a.id] || 0))
+    })
+
+    // Favorite videos
+    const favoriteVideos = computed(() => {
+        const favs = cloudFavorites.value
+        return uploadedVideos.value.filter(v => favs.includes(v.id))
+    })
 
     // Sort options
     const sortBy = ref<'name' | 'date' | 'size'>('date')
@@ -154,10 +198,14 @@ export const useVideoUpload = () => {
                 const ctx = canvas.getContext('2d')
                 if (ctx) {
                     ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-                    canvas.toBlob((blob) => {
-                        URL.revokeObjectURL(video.src)
-                        resolve(blob)
-                    }, 'image/jpeg', 0.8)
+                    canvas.toBlob(
+                        (blob) => {
+                            URL.revokeObjectURL(video.src)
+                            resolve(blob)
+                        },
+                        'image/jpeg',
+                        0.8
+                    )
                 } else {
                     URL.revokeObjectURL(video.src)
                     resolve(null)
@@ -185,14 +233,18 @@ export const useVideoUpload = () => {
         const filePath = `${userId}/${fileName}`
 
         // Update progress
-        const progressIndex = uploadProgress.value.findIndex(p => p.fileName === file.name)
-        const updateProgress = (progress: number, status: UploadProgress['status'], err?: string) => {
+        const progressIndex = uploadProgress.value.findIndex((p) => p.fileName === file.name)
+        const updateProgress = (
+            progress: number,
+            status: VideoUploadProgress['status'],
+            err?: string
+        ) => {
             if (progressIndex >= 0) {
                 uploadProgress.value[progressIndex] = {
                     fileName: file.name,
                     progress,
                     status,
-                    error: err
+                    error: err,
                 }
             }
         }
@@ -225,7 +277,7 @@ export const useVideoUpload = () => {
                 .from(VIDEOS_BUCKET)
                 .upload(filePath, file, {
                     contentType: file.type,
-                    upsert: false
+                    upsert: false,
                 })
 
             if (uploadError) {
@@ -234,9 +286,7 @@ export const useVideoUpload = () => {
             updateProgress(80, 'processing')
 
             // Get public URL
-            const { data: urlData } = supabase.storage
-                .from(VIDEOS_BUCKET)
-                .getPublicUrl(filePath)
+            const { data: urlData } = supabase.storage.from(VIDEOS_BUCKET).getPublicUrl(filePath)
 
             // Insert metadata into database
             // NOTE: Only include columns that exist in the prod schema (20260131_create_videos_table.sql).
@@ -253,21 +303,17 @@ export const useVideoUpload = () => {
                 duration: metadata.duration,
                 title: metadata.title,
                 artist: metadata.artist,
-                release_year: metadata.year,   // prod uses release_year, not year
-                description: metadata.description
+                release_year: metadata.year, // prod uses release_year, not year
+                description: metadata.description,
                 // status omitted – will default to 'not_started'
                 // width/height/thumbnail_path/album/genre not in prod schema
             }
 
             const tryInsert = async (payload: Record<string, any>) => {
-                return await supabase
-                    .from('videos')
-                    .insert(payload)
-                    .select()
-                    .single()
+                return await supabase.from('videos').insert(payload).select().single()
             }
 
-            let retryPayload: Record<string, any> = { ...insertPayload }
+            const retryPayload: Record<string, any> = { ...insertPayload }
             let { data: videoData, error: dbError } = await tryInsert(retryPayload)
 
             // Backward-compat: if prod schema is missing newer columns, retry without them.
@@ -276,9 +322,14 @@ export const useVideoUpload = () => {
             while (dbError && maxRetries-- > 0) {
                 const message = String((dbError as any)?.message || (dbError as any)?.details || '')
                 const code = (dbError as any)?.code || ''
-                console.warn('[VideoUpload] Insert error, attempting recovery:', { message, code, payload: Object.keys(retryPayload) })
+                console.warn('[VideoUpload] Insert error, attempting recovery:', {
+                    message,
+                    code,
+                    payload: Object.keys(retryPayload),
+                })
 
-                const unknownColumn = /Could not find the '([^']+)' column|column "([^"]+)" (?:of relation "[^"]+" )?does not exist/i
+                const unknownColumn =
+                    /Could not find the '([^']+)' column|column "([^"]+)" (?:of relation "[^"]+" )?does not exist/i
                 const match = message.match(unknownColumn)
                 const missingColumn = (match?.[1] || match?.[2] || '').trim()
 
@@ -287,7 +338,11 @@ export const useVideoUpload = () => {
                 console.log('[VideoUpload] Removing missing column from payload:', missingColumn)
 
                 // Friendly remap: some schemas use `release_year` instead of `year`.
-                if (missingColumn === 'year' && 'year' in retryPayload && !('release_year' in retryPayload)) {
+                if (
+                    missingColumn === 'year' &&
+                    'year' in retryPayload &&
+                    !('release_year' in retryPayload)
+                ) {
                     retryPayload.release_year = retryPayload.year
                     delete retryPayload.year
                     ;({ data: videoData, error: dbError } = await tryInsert(retryPayload))
@@ -331,7 +386,7 @@ export const useVideoUpload = () => {
                 status: videoData.status ?? 'not_started',
                 createdAt: videoData.created_at,
                 updatedAt: videoData.updated_at,
-                publicUrl: urlData.publicUrl
+                publicUrl: urlData.publicUrl,
             }
 
             return uploadedVideo
@@ -348,10 +403,10 @@ export const useVideoUpload = () => {
         error.value = null
 
         // Initialize progress for all files
-        uploadProgress.value = Array.from(files).map(file => ({
+        uploadProgress.value = Array.from(files).map((file) => ({
             fileName: file.name,
             progress: 0,
-            status: 'pending' as const
+            status: 'pending' as const,
         }))
 
         try {
@@ -421,7 +476,7 @@ export const useVideoUpload = () => {
                     errorMessage: video.error_message ?? undefined,
                     createdAt: video.created_at,
                     updatedAt: video.updated_at,
-                    publicUrl: urlData.publicUrl
+                    publicUrl: urlData.publicUrl,
                 }
             })
         } catch (e: any) {
@@ -434,7 +489,7 @@ export const useVideoUpload = () => {
 
     // Delete a video
     const deleteVideo = async (videoId: string): Promise<boolean> => {
-        const video = uploadedVideos.value.find(v => v.id === videoId)
+        const video = uploadedVideos.value.find((v) => v.id === videoId)
         if (!video) return false
 
         try {
@@ -449,23 +504,18 @@ export const useVideoUpload = () => {
 
             // Delete thumbnail if exists
             if (video.thumbnailPath) {
-                await supabase.storage
-                    .from(VIDEOS_BUCKET)
-                    .remove([video.thumbnailPath])
+                await supabase.storage.from(VIDEOS_BUCKET).remove([video.thumbnailPath])
             }
 
             // Delete from database
-            const { error: dbError } = await supabase
-                .from('videos')
-                .delete()
-                .eq('id', videoId)
+            const { error: dbError } = await supabase.from('videos').delete().eq('id', videoId)
 
             if (dbError) {
                 throw new Error(dbError.message)
             }
 
             // Remove from local state
-            uploadedVideos.value = uploadedVideos.value.filter(v => v.id !== videoId)
+            uploadedVideos.value = uploadedVideos.value.filter((v) => v.id !== videoId)
             return true
         } catch (e: any) {
             console.error('[VideoUpload] Delete failed:', e)
@@ -475,7 +525,10 @@ export const useVideoUpload = () => {
     }
 
     // Update video metadata
-    const updateVideoMetadata = async (videoId: string, metadata: Partial<VideoMetadata>): Promise<boolean> => {
+    const updateVideoMetadata = async (
+        videoId: string,
+        metadata: Partial<VideoMetadata>
+    ): Promise<boolean> => {
         try {
             const { error: updateError } = await supabase
                 .from('videos')
@@ -485,7 +538,7 @@ export const useVideoUpload = () => {
                     album: metadata.album,
                     year: metadata.year,
                     genre: metadata.genre,
-                    description: metadata.description
+                    description: metadata.description,
                 })
                 .eq('id', videoId)
 
@@ -494,11 +547,11 @@ export const useVideoUpload = () => {
             }
 
             // Update local state
-            const index = uploadedVideos.value.findIndex(v => v.id === videoId)
+            const index = uploadedVideos.value.findIndex((v) => v.id === videoId)
             if (index >= 0) {
                 uploadedVideos.value[index] = {
                     ...uploadedVideos.value[index],
-                    ...metadata
+                    ...metadata,
                 }
             }
 
@@ -514,9 +567,7 @@ export const useVideoUpload = () => {
     const getThumbnailUrl = (thumbnailPath: string | null | undefined): string | null => {
         if (!thumbnailPath) return null
 
-        const { data } = supabase.storage
-            .from(VIDEOS_BUCKET)
-            .getPublicUrl(thumbnailPath)
+        const { data } = supabase.storage.from(VIDEOS_BUCKET).getPublicUrl(thumbnailPath)
 
         return data.publicUrl
     }
@@ -542,6 +593,111 @@ export const useVideoUpload = () => {
         return `${m}:${s.toString().padStart(2, '0')}`
     }
 
+    // Watching progress functions
+    const getCloudProgress = (videoId: string): number => {
+        return cloudWatchingProgress.value[videoId] || 0
+    }
+
+    const saveCloudProgress = async (videoId: string, currentTime: number): Promise<void> => {
+        const progress = { ...cloudWatchingProgress.value }
+        if (currentTime > 0) {
+            progress[videoId] = currentTime
+        } else {
+            delete progress[videoId]
+        }
+        await updateProfile({ cloud_video_watching: progress })
+    }
+
+    const removeFromContinueWatching = async (videoId: string): Promise<void> => {
+        const progress = { ...cloudWatchingProgress.value }
+        delete progress[videoId]
+        await updateProfile({ cloud_video_watching: progress })
+    }
+
+    // Favorite functions
+    const isCloudFavorite = (videoId: string): boolean => {
+        return cloudFavorites.value.includes(videoId)
+    }
+
+    const toggleCloudFavorite = async (videoId: string): Promise<void> => {
+        const favs = [...cloudFavorites.value]
+        const index = favs.indexOf(videoId)
+        if (index >= 0) {
+            favs.splice(index, 1)
+        } else {
+            favs.push(videoId)
+        }
+        await updateProfile({ cloud_video_favorites: favs })
+    }
+
+    // Rating functions
+    const getCloudRating = (videoId: string): { rating: number; comment: string } | null => {
+        return cloudVideoRatings.value[videoId] || null
+    }
+
+    const setCloudRating = async (videoId: string, rating: number, comment: string = ''): Promise<void> => {
+        const ratings = { ...cloudVideoRatings.value }
+        ratings[videoId] = {
+            rating: Math.max(1, Math.min(10, rating)),
+            comment
+        }
+        await updateProfile({ cloud_video_ratings: ratings })
+    }
+
+    const removeCloudRating = async (videoId: string): Promise<void> => {
+        const ratings = { ...cloudVideoRatings.value }
+        delete ratings[videoId]
+        await updateProfile({ cloud_video_ratings: ratings })
+    }
+
+    // Playlist functions
+    const createCloudPlaylist = async (name: string): Promise<void> => {
+        const playlists = [...cloudPlaylists.value]
+        if (!playlists.includes(name)) {
+            playlists.push(name)
+            await updateProfile({ cloud_video_playlists: playlists })
+        }
+    }
+
+    const deleteCloudPlaylist = async (name: string): Promise<void> => {
+        const playlists = cloudPlaylists.value.filter((p: string) => p !== name)
+        await updateProfile({ cloud_video_playlists: playlists })
+
+        // Remove playlist assignment from videos
+        for (const video of uploadedVideos.value) {
+            if (video.playlist === name) {
+                await updateVideoMetadata(video.id, { playlist: undefined } as any)
+            }
+        }
+    }
+
+    const assignToPlaylist = async (videoId: string, playlistName: string | null): Promise<void> => {
+        // Auto-create playlist if it doesn't exist
+        if (playlistName && !cloudPlaylists.value.includes(playlistName)) {
+            await createCloudPlaylist(playlistName)
+        }
+        await updateVideoMetadata(videoId, { playlist: playlistName } as any)
+    }
+
+    // Get videos by playlist
+    const getVideosByPlaylist = (playlistName: string): UploadedVideo[] => {
+        return uploadedVideos.value.filter(v => v.playlist === playlistName)
+    }
+
+    // Get videos without playlist
+    const unassignedVideos = computed(() => {
+        return uploadedVideos.value.filter(v => !v.playlist)
+    })
+
+    // Get playlists with videos
+    const playlistsWithVideos = computed<CloudVideoPlaylist[]>(() => {
+        return cloudPlaylists.value.map((name: string) => ({
+            name,
+            videos: uploadedVideos.value.filter(v => v.playlist === name),
+            thumbnail: uploadedVideos.value.find(v => v.playlist === name)?.thumbnailPath
+        }))
+    })
+
     return {
         // State
         uploadedVideos,
@@ -552,6 +708,14 @@ export const useVideoUpload = () => {
         error,
         sortBy,
         sortOrder,
+        cloudVideoRatings,
+        cloudPlaylists,
+        cloudWatchingProgress,
+        cloudFavorites,
+        continueWatchingVideos,
+        favoriteVideos,
+        unassignedVideos,
+        playlistsWithVideos,
 
         // Methods
         fetchVideos,
@@ -561,6 +725,19 @@ export const useVideoUpload = () => {
         extractMetadata,
         getThumbnailUrl,
         formatFileSize,
-        formatDuration
+        formatDuration,
+        getCloudRating,
+        setCloudRating,
+        removeCloudRating,
+        getCloudProgress,
+        saveCloudProgress,
+        removeFromContinueWatching,
+        isCloudFavorite,
+        toggleCloudFavorite,
+        createCloudPlaylist,
+        deleteCloudPlaylist,
+        assignToPlaylist,
+        getVideosByPlaylist,
+        clearState,
     }
 }

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+/* ========================================
+   Gradient Text Classes
+   ======================================== */
 .gradient-text {
     background: linear-gradient(
         90deg,
@@ -21,4 +24,220 @@
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+/* ========================================
+   Modern UI/UX Transitions & Animations
+   ======================================== */
+
+/* Global smooth transitions for interactive elements */
+button,
+a,
+input,
+select,
+.card,
+.btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Page transition wrapper */
+.page-enter-active,
+.page-leave-active {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.page-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Fade slide up animation */
+.fade-slide-up-enter-active,
+.fade-slide-up-leave-active {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-slide-up-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.fade-slide-up-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Scale fade animation */
+.scale-fade-enter-active,
+.scale-fade-leave-active {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.scale-fade-enter-from,
+.scale-fade-leave-to {
+    opacity: 0;
+    transform: scale(0.95);
+}
+
+/* Card hover effects */
+.card-hover {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3),
+        0 8px 10px -6px rgb(0 0 0 / 0.3);
+}
+
+/* Icon bounce on hover */
+.icon-bounce:hover {
+    animation: icon-bounce 0.5s ease;
+}
+
+@keyframes icon-bounce {
+    0%,
+    100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+/* Pulse glow effect for live indicators */
+.pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 currentColor;
+    }
+    50% {
+        opacity: 0.8;
+        box-shadow: 0 0 12px 4px currentColor;
+    }
+}
+
+/* Shimmer loading effect */
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Smooth color transitions for theme changes */
+.theme-transition {
+    transition: background-color 0.4s ease, border-color 0.4s ease,
+        color 0.4s ease;
+}
+
+/* Button press effect */
+.btn-press:active {
+    transform: scale(0.97);
+}
+
+/* Gradient background animation */
+.gradient-animate {
+    background-size: 200% 200%;
+    animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Stagger animation for lists */
+.stagger-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: stagger-in 0.4s ease forwards;
+}
+
+@keyframes stagger-in {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Focus ring with animation */
+.focus-ring-animated:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-500), 0.4);
+    animation: focus-ring-pulse 1.5s ease infinite;
+}
+
+@keyframes focus-ring-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 3px rgba(var(--color-primary-500), 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(var(--color-primary-500), 0.2);
+    }
+}
+
+/* Slide in from left */
+.slide-left-enter-active,
+.slide-left-leave-active {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.slide-left-enter-from {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+.slide-left-leave-to {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
 }

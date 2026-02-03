@@ -143,7 +143,7 @@ export default defineEventHandler(async (event) => {
         setHeader(
             event,
             'content-type',
-            response.headers.get('content-type') || 'application/vnd.apple.mpegurl',
+            response.headers.get('content-type') || 'application/vnd.apple.mpegurl'
         )
         setHeader(event, 'cache-control', 'no-store')
         return rewritten
@@ -169,7 +169,7 @@ export default defineEventHandler(async (event) => {
         setHeader(
             event,
             'content-type',
-            upstream.headers.get('content-type') || 'application/octet-stream',
+            upstream.headers.get('content-type') || 'application/octet-stream'
         )
         setHeader(event, 'cache-control', 'no-store')
 

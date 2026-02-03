@@ -19,17 +19,13 @@ const emit = defineEmits<{
 }>()
 
 const albumArt = computed(
-    () =>
-        props.track.album.images?.[2]?.url ||
-        props.track.album.images?.[0]?.url,
+    () => props.track.album.images?.[2]?.url || props.track.album.images?.[0]?.url
 )
-const artistNames = computed(() =>
-    props.track.artists.map((a) => a.name).join(", "),
-)
+const artistNames = computed(() => props.track.artists.map((a) => a.name).join(', '))
 const duration = computed(() => {
     const minutes = Math.floor(props.track.duration_ms / 60000)
     const seconds = Math.floor((props.track.duration_ms % 60000) / 1000)
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
 })
 </script>
 

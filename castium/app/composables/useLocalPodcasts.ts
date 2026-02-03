@@ -146,7 +146,7 @@ export const useLocalPodcasts = () => {
         let hash = 0
         for (let i = 0; i < str.length; i++) {
             const char = str.charCodeAt(i)
-            hash = ((hash << 5) - hash) + char
+            hash = (hash << 5) - hash + char
             hash = hash & hash
         }
         return `local-podcast-${Math.abs(hash).toString(36)}`
@@ -183,7 +183,7 @@ export const useLocalPodcasts = () => {
             audio.onerror = () => {
                 URL.revokeObjectURL(audio.src)
                 resolve({
-                    title: file.name.replace(/\.[^/.]+$/, '').replace(/[._-]/g, ' ')
+                    title: file.name.replace(/\.[^/.]+$/, '').replace(/[._-]/g, ' '),
                 })
             }
 
@@ -204,7 +204,7 @@ export const useLocalPodcasts = () => {
                     const fileHandle = entry as FileSystemFileHandle
                     const name = fileHandle.name.toLowerCase()
 
-                    if (AUDIO_EXTENSIONS.some(ext => name.endsWith(ext))) {
+                    if (AUDIO_EXTENSIONS.some((ext) => name.endsWith(ext))) {
                         try {
                             const file = await fileHandle.getFile()
                             const filePath = path ? `${path}/${fileHandle.name}` : fileHandle.name
@@ -251,7 +251,7 @@ export const useLocalPodcasts = () => {
             const dbMap = new Map((dbPodcasts || []).map((p: any) => [p.file_path, p]))
 
             // Merge with DB data
-            podcasts.value = scannedPodcasts.map(podcast => {
+            podcasts.value = scannedPodcasts.map((podcast) => {
                 const dbData = dbMap.get(podcast.filePath)
                 if (dbData) {
                     return {
@@ -279,9 +279,9 @@ export const useLocalPodcasts = () => {
 
     // Update filtered lists
     const updateFilteredLists = () => {
-        likedPodcasts.value = podcasts.value.filter(p => p.isLiked)
-        inProgressPodcasts.value = podcasts.value.filter(p =>
-            p.currentTime && p.currentTime > 0 && !p.isCompleted
+        likedPodcasts.value = podcasts.value.filter((p) => p.isLiked)
+        inProgressPodcasts.value = podcasts.value.filter(
+            (p) => p.currentTime && p.currentTime > 0 && !p.isCompleted
         )
     }
 
@@ -389,7 +389,11 @@ export const useLocalPodcasts = () => {
     }
 
     // Update notes and comment
-    const updateNotes = async (podcast: LocalPodcast, notes: string, comment: string): Promise<void> => {
+    const updateNotes = async (
+        podcast: LocalPodcast,
+        notes: string,
+        comment: string
+    ): Promise<void> => {
         podcast.notes = notes
         podcast.comment = comment
         await savePodcastToDb(podcast)
@@ -406,7 +410,7 @@ export const useLocalPodcasts = () => {
                 .eq('user_id', user.value.id)
                 .eq('file_path', podcast.filePath)
 
-            const index = podcasts.value.findIndex(p => p.id === podcast.id)
+            const index = podcasts.value.findIndex((p) => p.id === podcast.id)
             if (index >= 0) {
                 podcasts.value.splice(index, 1)
             }
@@ -424,7 +428,10 @@ export const useLocalPodcasts = () => {
             audioElement.value.addEventListener('timeupdate', () => {
                 playbackState.value.currentTime = audioElement.value?.currentTime || 0
                 // Auto-save progress every 10 seconds
-                if (playbackState.value.currentPodcast && Math.floor(playbackState.value.currentTime) % 10 === 0) {
+                if (
+                    playbackState.value.currentPodcast &&
+                    Math.floor(playbackState.value.currentTime) % 10 === 0
+                ) {
                     saveProgress()
                 }
             })
@@ -588,15 +595,41 @@ export const useLocalPodcasts = () => {
     // Get podcast color (for UI)
     const getPodcastColor = (podcast: LocalPodcast): string => {
         const colors = [
-            'bg-orange-500', 'bg-amber-500', 'bg-yellow-500',
-            'bg-red-500', 'bg-pink-500', 'bg-rose-500'
+            'bg-orange-500',
+            'bg-amber-500',
+            'bg-yellow-500',
+            'bg-red-500',
+            'bg-pink-500',
+            'bg-rose-500',
         ]
         let hash = 0
         const str = podcast.album || podcast.title || podcast.fileName
         for (let i = 0; i < str.length; i++) {
-            hash = ((hash << 5) - hash) + str.charCodeAt(i)
+            hash = (hash << 5) - hash + str.charCodeAt(i)
         }
         return colors[Math.abs(hash) % colors.length]
+    }
+
+    // Clear local state (for refresh after data deletion)
+    const clearLocalState = () => {
+        cleanup()
+        folderHandle.value = null
+        podcasts.value = []
+        likedPodcasts.value = []
+        inProgressPodcasts.value = []
+        hasPermission.value = false
+        usesFallback.value = false
+        needsReauthorization.value = false
+        savedFolderName.value = null
+        playbackState.value = {
+            isPlaying: false,
+            currentPodcast: null,
+            currentTime: 0,
+            duration: 0,
+            volume: 1,
+            isMuted: false,
+            playbackSpeed: 1,
+        }
     }
 
     // Cleanup
@@ -606,7 +639,7 @@ export const useLocalPodcasts = () => {
             audioElement.value.src = ''
         }
         // Revoke object URLs
-        podcasts.value.forEach(p => {
+        podcasts.value.forEach((p) => {
             if (p.objectUrl) {
                 URL.revokeObjectURL(p.objectUrl)
             }
@@ -647,5 +680,6 @@ export const useLocalPodcasts = () => {
         formatFileSize,
         getPodcastColor,
         cleanup,
+        clearLocalState,
     }
 }

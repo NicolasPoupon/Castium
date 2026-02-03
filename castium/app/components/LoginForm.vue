@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { ref } from 'vue'
 
-const email = ref("")
-const password = ref("")
+const email = ref('')
+const password = ref('')
 
 const emit = defineEmits<{
     submit: [payload: { email: string; password: string }]
 }>()
 
 const handleSubmit = () => {
-    emit("submit", {
+    emit('submit', {
         email: email.value,
         password: password.value,
     })
@@ -30,9 +30,7 @@ const handleSubmit = () => {
         </div>
 
         <div class="flex flex-col gap-1">
-            <label for="password" class="text-sm font-medium">
-                Mot de passe
-            </label>
+            <label for="password" class="text-sm font-medium">Mot de passe</label>
             <input
                 id="password"
                 v-model="password"

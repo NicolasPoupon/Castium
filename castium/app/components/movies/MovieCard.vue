@@ -14,13 +14,11 @@ const props = defineProps<{
 }>()
 
 const { getImageUrl } = useTMDB()
-const imageUrl = computed(() => getImageUrl(props.movie.poster_path, "w500"))
-const title = computed(
-    () => props.movie.title || props.movie.name || "Sans titre",
-)
+const imageUrl = computed(() => getImageUrl(props.movie.poster_path, 'w500'))
+const title = computed(() => props.movie.title || props.movie.name || 'Sans titre')
 const releaseYear = computed(() => {
     const date = props.movie.release_date || props.movie.first_air_date
-    return date ? new Date(date).getFullYear() : ""
+    return date ? new Date(date).getFullYear() : ''
 })
 </script>
 
@@ -44,10 +42,7 @@ const releaseYear = computed(() => {
             <div class="flex items-center gap-3 text-sm text-gray-300 mb-2">
                 <span v-if="releaseYear">{{ releaseYear }}</span>
                 <div class="flex items-center gap-1">
-                    <UIcon
-                        name="i-heroicons-star-solid"
-                        class="w-4 h-4 text-yellow-400"
-                    />
+                    <UIcon name="i-heroicons-star-solid" class="w-4 h-4 text-yellow-400" />
                     <span>{{ movie.vote_average.toFixed(1) }}</span>
                 </div>
             </div>
@@ -59,10 +54,7 @@ const releaseYear = computed(() => {
         <div
             class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 flex items-center gap-1"
         >
-            <UIcon
-                name="i-heroicons-star-solid"
-                class="w-3 h-3 text-yellow-400"
-            />
+            <UIcon name="i-heroicons-star-solid" class="w-3 h-3 text-yellow-400" />
             <span class="text-white text-xs font-medium">
                 {{ movie.vote_average.toFixed(1) }}
             </span>

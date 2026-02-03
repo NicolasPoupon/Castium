@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useI18n } from "#imports"
+import { useI18n } from '#imports'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -13,68 +13,62 @@ const isLoading = ref(true)
 
 const tmdbLanguage = computed(() => {
     switch (locale.value) {
-        case "fr":
-            return "fr-FR"
-        case "pl":
-            return "pl-PL"
+        case 'fr':
+            return 'fr-FR'
+        case 'pl':
+            return 'pl-PL'
         default:
-            return "en-US"
+            return 'en-US'
     }
 })
 
-const backdropUrl = computed(() =>
-    getImageUrl(movie.value?.backdrop_path, "original"),
-)
-const posterUrl = computed(() => getImageUrl(movie.value?.poster_path, "w500"))
-const title = computed(
-    () => movie.value?.title || movie.value?.name || "Sans titre",
-)
+const backdropUrl = computed(() => getImageUrl(movie.value?.backdrop_path, 'original'))
+const posterUrl = computed(() => getImageUrl(movie.value?.poster_path, 'w500'))
+const title = computed(() => movie.value?.title || movie.value?.name || 'Sans titre')
 const releaseYear = computed(() => {
     const date = movie.value?.release_date || movie.value?.first_air_date
-    return date ? new Date(date).getFullYear() : ""
+    return date ? new Date(date).getFullYear() : ''
 })
 const runtime = computed(() => {
-    if (!movie.value?.runtime) return "N/A"
+    if (!movie.value?.runtime) return 'N/A'
     const hours = Math.floor(movie.value.runtime / 60)
     const minutes = movie.value.runtime % 60
     return `${hours}h ${minutes}m`
 })
 const director = computed(() => {
     if (!credits.value?.crew) return null
-    return credits.value.crew.find((c: any) => c.job === "Director")
+    return credits.value.crew.find((c: any) => c.job === 'Director')
 })
 const cast = computed(() => credits.value?.cast?.slice(0, 6) || [])
-const genreNames = computed(() =>
-    (movie.value?.genres || []).map((g: any) => g.name).join(", "),
-)
+const genreNames = computed(() => (movie.value?.genres || []).map((g: any) => g.name).join(', '))
 
 const loadMovieDetails = async () => {
     isLoading.value = true
     try {
         const lang = tmdbLanguage.value
         const [movieData, creditsData, similarData] = await Promise.all([
-            getDetails(movieId.value, "movie", lang),
-            getCredits(movieId.value, "movie", lang),
-            getSimilar(movieId.value, "movie", lang),
+            getDetails(movieId.value, 'movie', lang),
+            getCredits(movieId.value, 'movie', lang),
+            getSimilar(movieId.value, 'movie', lang),
         ])
 
         movie.value = movieData
         credits.value = creditsData
         similar.value = similarData.results || []
     } catch (error) {
-        console.error("Error loading movie details:", error)
+        console.error('Error loading movie details:', error)
     } finally {
         isLoading.value = false
     }
 }
 
 const items = computed(() => [
-    { label: t("movies.selector.overview"), value: "overview" },
-    { label: t("movies.selector.video"), value: "video" },
-    { label: t("movies.selector.trailer"), value: "trailer" },
+    { label: t('movies.selector.overview'), value: 'overview' },
+    { label: t('movies.selector.video'), value: 'video' },
+    { label: t('movies.selector.trailer'), value: 'trailer' },
 ])
 
-const activeTab = ref("overview")
+const activeTab = ref('overview')
 
 const goBack = () => router.back()
 
@@ -91,14 +85,8 @@ watch(tmdbLanguage, () => {
     <div class="min-h-screen bg-gray-900">
         <Navbar mode="app" />
 
-        <div
-            v-if="isLoading"
-            class="flex items-center justify-center min-h-screen"
-        >
-            <UIcon
-                name="i-heroicons-arrow-path"
-                class="w-12 h-12 text-red-800 animate-spin"
-            />
+        <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
+            <UIcon name="i-heroicons-arrow-path" class="w-12 h-12 text-red-800 animate-spin" />
         </div>
 
         <div v-else-if="movie" class="">
@@ -116,9 +104,7 @@ watch(tmdbLanguage, () => {
                 </div>
 
                 <div class="absolute inset-0 flex items-end">
-                    <div
-                        class="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8 pb-12"
-                    >
+                    <div class="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8 pb-12">
                         <div class="flex gap-8 items-end">
                             <div class="flex-shrink-0 hidden md:block">
                                 <img
@@ -141,9 +127,7 @@ watch(tmdbLanguage, () => {
                                     {{ title }}
                                 </h1>
 
-                                <div
-                                    class="flex flex-wrap items-center gap-4 text-white mb-4"
-                                >
+                                <div class="flex flex-wrap items-center gap-4 text-white mb-4">
                                     <span v-if="releaseYear">
                                         {{ releaseYear }}
                                     </span>
@@ -156,17 +140,12 @@ watch(tmdbLanguage, () => {
                                             class="w-5 h-5 text-yellow-400"
                                         />
                                         <span class="font-semibold">
-                                            {{
-                                                movie.vote_average?.toFixed(1)
-                                            }}/10
+                                            {{ movie.vote_average?.toFixed(1) }}/10
                                         </span>
                                     </div>
                                 </div>
 
-                                <div
-                                    v-if="genreNames"
-                                    class="flex flex-wrap gap-2 mb-6"
-                                >
+                                <div v-if="genreNames" class="flex flex-wrap gap-2 mb-6">
                                     <span
                                         v-for="genre in movie.genres"
                                         :key="genre.id"
@@ -176,9 +155,7 @@ watch(tmdbLanguage, () => {
                                     </span>
                                 </div>
 
-                                <p
-                                    class="text-gray-200 text-lg max-w-2xl leading-relaxed"
-                                >
+                                <p class="text-gray-200 text-lg max-w-2xl leading-relaxed">
                                     {{ movie.overview }}
                                 </p>
                             </div>
@@ -197,13 +174,11 @@ watch(tmdbLanguage, () => {
                     class="bg-gray-800/50 rounded-full"
                 />
             </div>
-            <div
-                class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12 space-y-12"
-            >
+            <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12 space-y-12">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="bg-gray-800/50 rounded-lg p-4">
                         <p class="text-gray-400 text-sm mb-2">
-                            {{ t("movies.detail.status") }}
+                            {{ t('movies.detail.status') }}
                         </p>
                         <p class="text-white font-semibold">
                             {{ movie.status }}
@@ -212,33 +187,27 @@ watch(tmdbLanguage, () => {
 
                     <div class="bg-gray-800/50 rounded-lg p-4">
                         <p class="text-gray-400 text-sm mb-2">
-                            {{ t("movies.detail.budget") }}
+                            {{ t('movies.detail.budget') }}
+                        </p>
+                        <p class="text-white font-semibold">
+                            {{ movie.budget ? `$${(movie.budget / 1000000).toFixed(1)}M` : 'N/A' }}
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800/50 rounded-lg p-4">
+                        <p class="text-gray-400 text-sm mb-2">
+                            {{ t('movies.detail.revenue') }}
                         </p>
                         <p class="text-white font-semibold">
                             {{
-                                movie.budget
-                                    ? `$${(movie.budget / 1000000).toFixed(1)}M`
-                                    : "N/A"
+                                movie.revenue ? `$${(movie.revenue / 1000000).toFixed(1)}M` : 'N/A'
                             }}
                         </p>
                     </div>
 
                     <div class="bg-gray-800/50 rounded-lg p-4">
                         <p class="text-gray-400 text-sm mb-2">
-                            {{ t("movies.detail.revenue") }}
-                        </p>
-                        <p class="text-white font-semibold">
-                            {{
-                                movie.revenue
-                                    ? `$${(movie.revenue / 1000000).toFixed(1)}M`
-                                    : "N/A"
-                            }}
-                        </p>
-                    </div>
-
-                    <div class="bg-gray-800/50 rounded-lg p-4">
-                        <p class="text-gray-400 text-sm mb-2">
-                            {{ t("movies.detail.language") }}
+                            {{ t('movies.detail.language') }}
                         </p>
                         <p class="text-white font-semibold uppercase">
                             {{ movie.original_language }}
@@ -248,12 +217,12 @@ watch(tmdbLanguage, () => {
 
                 <section v-if="director || cast.length > 0">
                     <h2 class="text-2xl font-bold text-white mb-6">
-                        {{ t("movies.detail.cast") }}
+                        {{ t('movies.detail.cast') }}
                     </h2>
 
                     <div v-if="director" class="mb-8">
                         <h3 class="text-lg font-semibold text-white mb-4">
-                            {{ t("movies.detail.director") }}
+                            {{ t('movies.detail.director') }}
                         </h3>
                         <div class="bg-gray-800/50 rounded-lg p-4">
                             <p class="text-white font-medium">
@@ -264,27 +233,18 @@ watch(tmdbLanguage, () => {
 
                     <div v-if="cast.length > 0">
                         <h3 class="text-lg font-semibold text-white mb-4">
-                            {{ t("movies.detail.mainActors") }}
+                            {{ t('movies.detail.mainActors') }}
                         </h3>
-                        <div
-                            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
-                        >
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                             <div
                                 v-for="actor in cast"
                                 :key="actor.id"
                                 class="bg-gray-800/50 rounded-lg overflow-hidden hover:bg-gray-800 transition-colors"
                             >
-                                <div
-                                    class="aspect-square bg-gray-700 overflow-hidden"
-                                >
+                                <div class="aspect-square bg-gray-700 overflow-hidden">
                                     <img
                                         v-if="actor.profile_path"
-                                        :src="
-                                            getImageUrl(
-                                                actor.profile_path,
-                                                'w185',
-                                            )
-                                        "
+                                        :src="getImageUrl(actor.profile_path, 'w185')"
                                         :alt="actor.name"
                                         class="w-full h-full object-cover"
                                     />
@@ -299,9 +259,7 @@ watch(tmdbLanguage, () => {
                                     </div>
                                 </div>
                                 <div class="p-3">
-                                    <p
-                                        class="text-white font-medium text-sm truncate"
-                                    >
+                                    <p class="text-white font-medium text-sm truncate">
                                         {{ actor.name }}
                                     </p>
                                     <p class="text-gray-400 text-xs truncate">
@@ -315,11 +273,9 @@ watch(tmdbLanguage, () => {
 
                 <section v-if="similar.length > 0">
                     <h2 class="text-2xl font-bold text-white mb-6">
-                        {{ t("movies.detail.similar") }}
+                        {{ t('movies.detail.similar') }}
                     </h2>
-                    <div
-                        class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
-                    >
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         <MoviesMovieCard
                             v-for="film in similar.slice(0, 12)"
                             :key="film.id"
