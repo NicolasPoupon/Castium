@@ -48,6 +48,11 @@ const items = computed(() => [
         to: "/app/tv",
     },
     {
+        label: t("navbar.selector.radio"),
+        value: "radio",
+        to: "/app/radio",
+    },
+    {
         label: t("navbar.selector.lectures"),
         value: "lectures",
         to: "/app/lectures",
@@ -59,12 +64,15 @@ const activeTab = computed({
         if (route.path.includes("/music")) return "music"
         if (route.path.includes("/podcasts")) return "podcasts"
         if (route.path.includes("/tv")) return "tv"
+        if (route.path.includes("/radio")) return "radio"
         if (route.path.includes("/lectures")) return "lectures"
         return "movies"
     },
     set(value: string) {
         const item = items.value.find((i) => i.value === value)
-        if (item?.to) router.push(item.to)
+        if (item?.to) {
+            router.push(item.to)
+        }
     },
 })
 
@@ -73,6 +81,7 @@ const modeClass = computed(() => {
     if (route.path.includes("/music")) return "fill-green-600"
     if (route.path.includes("/podcasts")) return "fill-orange-400"
     if (route.path.includes("/tv")) return "fill-amber-800"
+    if (route.path.includes("/radio")) return "fill-gray-400"
     if (route.path.includes("/lectures")) return "fill-purple-500"
 
     return "fill-gray-300"
@@ -99,11 +108,12 @@ const userInitials = computed(() => {
 
 const userAvatar = computed(() => {
     if (!user.value) return null
-    return (
-        user.value.user_metadata?.avatar_url ||
+    const avatar = user.value.user_metadata?.avatar_url ||
         user.value.user_metadata?.picture ||
         null
-    )
+    // Guard against string "null" or empty strings
+    if (!avatar || avatar === 'null' || avatar === '') return null
+    return avatar
 })
 
 const userMenuItems = computed(() => [
@@ -179,18 +189,30 @@ const userMenuItems = computed(() => [
                     :locales="[locales.en, locales.fr, locales.pl]"
                     class="w-36"
                 />
-                <!-- User Profile Dropdown (app mode only) -->
-                <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
-                    <UButton color="neutral" variant="ghost" class="rounded-full p-0">
-                        <UAvatar v-if="userAvatar" :src="userAvatar" :alt="userName" size="md" />
-                        <UAvatar
-                            v-else
-                            :text="userInitials || '?'"
-                            size="md"
-                            class="bg-castium-green text-white"
-                        />
-                    </UButton>
-                </UDropdownMenu>
+                <!-- User Profile Dropdown (app mode only) - Client-side only to avoid hydration mismatch -->
+                <ClientOnly>
+                    <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
+                        <UButton
+                            color="neutral"
+                            variant="ghost"
+                            class="rounded-full p-0"
+                        >
+                            <UAvatar
+                                v-if="userAvatar && userAvatar !== 'null'"
+                                :src="userAvatar"
+                                :alt="userName"
+                                size="md"
+                                @error="($event.target as HTMLImageElement).style.display = 'none'"
+                            />
+                            <UAvatar
+                                v-else
+                                :text="userInitials || '?'"
+                                size="md"
+                                class="bg-castium-green text-white"
+                            />
+                        </UButton>
+                    </UDropdownMenu>
+                </ClientOnly>
                 <UButton
                     v-if="mode === 'landing'"
                     class="[&_svg]:h-7 [&_svg]:w-7"
