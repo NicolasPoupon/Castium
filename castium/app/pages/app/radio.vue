@@ -39,12 +39,12 @@ const volume = ref(80)
 const isMuted = ref(false)
 const isBuffering = ref(false)
 
-// Audio visualization
-const audioContext = ref<AudioContext | null>(null)
-const analyser = ref<AnalyserNode | null>(null)
-const dataArray = ref<Uint8Array | null>(null)
-const animationId = ref<number | null>(null)
-const visualBars = ref<number[]>(new Array(32).fill(0))
+// Simple animation state (no WebAudio needed)
+const animationBars = computed(() => {
+    // Generate pseudo-random bars for visual effect when playing
+    if (!isPlaying.value) return new Array(16).fill(4)
+    return Array.from({ length: 16 }, (_, i) => 4 + Math.sin(Date.now() / 200 + i) * 12 + 8)
+})
 
 // Watch search input with debounce
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
@@ -72,11 +72,9 @@ onMounted(async () => {
 
 // Cleanup
 onUnmounted(() => {
-    if (animationId.value) {
-        cancelAnimationFrame(animationId.value)
-    }
-    if (audioContext.value) {
-        audioContext.value.close()
+    if (audioRef.value) {
+        audioRef.value.pause()
+        audioRef.value.src = ''
     }
 })
 
@@ -91,68 +89,51 @@ const handlePlayStation = async (station: any) => {
     if (!audioRef.value) return
 
     try {
-        audioRef.value.src = station.url
+        // Use local proxy to avoid CORS/mixed-content issues
+        const proxied = `/api/radio-proxy?url=${encodeURIComponent(station.url)}`
+
+        // Prevent race conditions: pause previous playback before changing source
+        try {
+            await audioRef.value.pause()
+        } catch (_e) {
+            // ignore
+        }
+
+        // Reset and set crossOrigin for analyser (won't harm same-origin)
+        audioRef.value.src = ''
+        audioRef.value.crossOrigin = 'anonymous'
+        audioRef.value.src = proxied
         audioRef.value.volume = volume.value / 100
         audioRef.value.muted = isMuted.value
+        audioRef.value.load()
 
         await audioRef.value.play()
-        isBuffering.value = false
+        // If user switched station while we loaded, don't continue
+        if (currentStation?.value && currentStation.value.id !== station.id) {
+            isBuffering.value = false
+            return
+        }
 
-        // Setup audio visualization
-        setupVisualization()
+        isBuffering.value = false
     } catch (e: any) {
+        // Ignore AbortError caused by rapid station switching
+        if (e.name === 'AbortError') {
+            isBuffering.value = false
+            return
+        }
         console.error('[Radio] Playback error:', e)
         playerError.value = t('radio.player.loadError')
         isBuffering.value = false
     }
 }
 
-// Setup audio visualization
-const setupVisualization = () => {
-    if (!audioRef.value || audioContext.value) return
-
-    try {
-        audioContext.value = new AudioContext()
-        analyser.value = audioContext.value.createAnalyser()
-        const source = audioContext.value.createMediaElementSource(audioRef.value)
-
-        source.connect(analyser.value)
-        analyser.value.connect(audioContext.value.destination)
-
-        analyser.value.fftSize = 64
-        const bufferLength = analyser.value.frequencyBinCount
-        dataArray.value = new Uint8Array(bufferLength)
-
-        updateVisualization()
-    } catch (e) {
-        console.error('[Radio] Visualization error:', e)
-    }
-}
-
-// Update visualization bars
-const updateVisualization = () => {
-    if (!analyser.value || !dataArray.value || !isPlaying.value) return
-
-    analyser.value.getByteFrequencyData(dataArray.value)
-
-    for (let i = 0; i < 32; i++) {
-        visualBars.value[i] = dataArray.value[i] / 255 * 100
-    }
-
-    animationId.value = requestAnimationFrame(updateVisualization)
-}
-
 // Close player
 const handleClosePlayer = () => {
-    if (animationId.value) {
-        cancelAnimationFrame(animationId.value)
-    }
     if (audioRef.value) {
         audioRef.value.pause()
         audioRef.value.src = ''
     }
     stopPlayback()
-    visualBars.value = new Array(32).fill(0)
 }
 
 // Volume change
@@ -306,7 +287,7 @@ const getStationGradient = (name: string): string => {
                     <!-- Stations list (modern radio style) -->
                     <div v-else class="grid gap-3">
                         <div
-                            v-for="station in filteredStations"
+                            v-for="station in filteredStations.slice(0, 100)"
                             :key="station.id"
                             class="group relative bg-gray-800/40 hover:bg-gray-800/70 rounded-2xl p-4 transition-all duration-300 cursor-pointer border border-gray-700/50 hover:border-gray-600"
                             @click="handlePlayStation(station)"
@@ -408,13 +389,13 @@ const getStationGradient = (name: string): string => {
                                 </div>
                             </div>
 
-                            <!-- Visualization bars -->
-                            <div class="hidden md:flex items-end gap-0.5 h-8">
+                            <!-- Animated equalizer bars (CSS only, no WebAudio) -->
+                            <div v-if="isPlaying.value !== false" class="hidden md:flex items-end gap-0.5 h-8">
                                 <div
-                                    v-for="(bar, i) in visualBars.slice(0, 16)"
+                                    v-for="i in 16"
                                     :key="i"
-                                    class="w-1 bg-gradient-to-t from-gray-500 to-gray-300 rounded-full transition-all duration-75"
-                                    :style="{ height: `${Math.max(4, bar * 0.32)}px` }"
+                                    class="w-1 bg-gradient-to-t from-gray-500 to-gray-300 rounded-full animate-pulse"
+                                    :style="{ height: `${8 + (i % 4) * 4}px`, animationDelay: `${i * 50}ms` }"
                                 ></div>
                             </div>
 
