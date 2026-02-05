@@ -6,6 +6,7 @@
 const DB_NAME = 'castium-videos-db'
 const MUSIC_DB_NAME = 'castium-music-db'
 const PODCAST_DB_NAME = 'castium-podcasts-db'
+const PHOTOS_DB_NAME = 'castium-photos-db'
 
 export function useUserDataManagement() {
     const supabase = useSupabase()
@@ -80,7 +81,7 @@ export function useUserDataManagement() {
 
     // Delete data for a specific category
     const deleteDataByCategory = async (
-        category: 'lectures' | 'music' | 'radio' | 'tv' | 'podcasts'
+        category: 'lectures' | 'music' | 'radio' | 'tv' | 'podcasts' | 'photos'
     ): Promise<boolean> => {
         if (!user.value) return false
 
@@ -136,6 +137,17 @@ export function useUserDataManagement() {
                     // Clear IndexedDB for podcast folder handles
                     await clearIndexedDB(PODCAST_DB_NAME)
                     break
+
+                case 'photos':
+                    // Delete cloud photos data
+                    await safeDelete('cloud_photo_folder_items')
+                    await safeDelete('cloud_photo_folders')
+                    await safeDelete('cloud_liked_photos')
+                    await safeDelete('local_liked_photos')
+                    await safeDelete('cloud_photos')
+                    // Clear IndexedDB for photos folder handles
+                    await clearIndexedDB(PHOTOS_DB_NAME)
+                    break
             }
 
             console.log(`[UserData] Deleted all ${category} data for user`)
@@ -163,6 +175,7 @@ export function useUserDataManagement() {
             await deleteDataByCategory('radio')
             await deleteDataByCategory('tv')
             await deleteDataByCategory('podcasts')
+            await deleteDataByCategory('photos')
 
             // Delete any remaining custom_streams
             await safeDelete('custom_streams')
@@ -171,6 +184,7 @@ export function useUserDataManagement() {
             await clearIndexedDB(DB_NAME)
             await clearIndexedDB(MUSIC_DB_NAME)
             await clearIndexedDB(PODCAST_DB_NAME)
+            await clearIndexedDB(PHOTOS_DB_NAME)
 
             // Clear all profile data related to local storage
             await clearProfileData({

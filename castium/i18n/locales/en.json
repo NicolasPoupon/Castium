@@ -138,7 +138,8 @@
             "podcasts": "Podcasts",
             "tv": "TV",
             "radio": "Radio",
-            "lectures": "Videos"
+            "lectures": "Videos",
+            "photos": "Photos"
         },
         "user": {
             "settings": "Settings",
@@ -205,7 +206,8 @@
             "podcasts": "Podcasts",
             "tv": "TV",
             "radio": "Radio",
-            "lectures": "Reading"
+            "lectures": "Reading",
+            "photos": "Photos"
         },
         "streams": {
             "radioTitle": "My custom radios",
@@ -235,7 +237,8 @@
                 "music": "Music",
                 "radio": "Radio",
                 "tv": "TV",
-                "podcasts": "Podcasts"
+                "podcasts": "Podcasts",
+                "photos": "Photos"
             },
             "deletedCategory": "{category} data deleted",
             "deleteError": "Error deleting data",
@@ -559,6 +562,54 @@
         "player": {
             "networkError": "Network error - Attempting to reconnect...",
             "loadError": "Error loading the stream"
+        }
+    },
+    "photos": {
+        "tabs": {
+            "local": "Local Photos",
+            "cloud": "Cloud"
+        },
+        "hero": {
+            "title": "Your local photos",
+            "description": "Select a folder containing your photos to browse them directly from Castium. Your files stay on your device.",
+            "selectFolder": "Select a folder",
+            "previousFolder": "Previously selected folder",
+            "reauthorize": "Reauthorize access"
+        },
+        "view": {
+            "all": "All",
+            "albums": "Albums",
+            "liked": "Favorites"
+        },
+        "search": "Search for a photo...",
+        "items": "photos",
+        "loading": "Loading photos...",
+        "noPhotos": "No photos found",
+        "noCloudPhotos": "No photos in cloud",
+        "upload": "Upload",
+        "uploadFirst": "Upload your first photo",
+        "uploading": "Uploading...",
+        "folders": "Folders",
+        "info": {
+            "title": "Information",
+            "name": "Name",
+            "dimensions": "Dimensions",
+            "size": "Size",
+            "takenAt": "Taken at",
+            "camera": "Camera",
+            "aperture": "Aperture"
+        },
+        "deleteConfirm": {
+            "title": "Delete photo?",
+            "message": "This action is irreversible. The photo will be permanently deleted."
+        },
+        "createFolder": {
+            "title": "Create folder",
+            "placeholder": "Folder name..."
+        },
+        "addToFolder": {
+            "title": "Add to folder",
+            "noFolders": "No folders created"
         }
     }
 }

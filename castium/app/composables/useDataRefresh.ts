@@ -3,7 +3,7 @@
  * Allows components to subscribe to refresh events for specific categories
  */
 
-type DataCategory = 'lectures' | 'music' | 'radio' | 'tv' | 'podcasts' | 'all'
+type DataCategory = 'lectures' | 'music' | 'radio' | 'tv' | 'podcasts' | 'photos' | 'all'
 type RefreshCallback = () => void | Promise<void>
 
 // Global state for refresh subscribers

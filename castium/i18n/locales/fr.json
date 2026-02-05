@@ -136,7 +136,8 @@
             "podcasts": "Podcasts",
             "tv": "TV",
             "radio": "Radio",
-            "lectures": "Lectures"
+            "lectures": "Lectures",
+            "photos": "Photos"
         },
         "user": {
             "settings": "Paramètres",
@@ -203,7 +204,8 @@
             "podcasts": "Podcasts",
             "tv": "TV",
             "radio": "Radio",
-            "lectures": "Lectures"
+            "lectures": "Lectures",
+            "photos": "Photos"
         },
         "streams": {
             "radioTitle": "Mes radios personnalisées",
@@ -233,7 +235,8 @@
                 "music": "Musique",
                 "radio": "Radio",
                 "tv": "TV",
-                "podcasts": "Podcasts"
+                "podcasts": "Podcasts",
+                "photos": "Photos"
             },
             "deletedCategory": "Données {category} supprimées",
             "deleteError": "Erreur lors de la suppression",
@@ -557,6 +560,54 @@
         "player": {
             "networkError": "Erreur réseau - Tentative de reconnexion...",
             "loadError": "Erreur lors du chargement du flux"
+        }
+    },
+    "photos": {
+        "tabs": {
+            "local": "Photos locales",
+            "cloud": "Cloud"
+        },
+        "hero": {
+            "title": "Vos photos locales",
+            "description": "Sélectionnez un dossier contenant vos photos pour les parcourir directement depuis Castium. Vos fichiers restent sur votre appareil.",
+            "selectFolder": "Sélectionner un dossier",
+            "previousFolder": "Dossier précédemment sélectionné",
+            "reauthorize": "Réautoriser l'accès"
+        },
+        "view": {
+            "all": "Toutes",
+            "albums": "Albums",
+            "liked": "Favoris"
+        },
+        "search": "Rechercher une photo...",
+        "items": "photos",
+        "loading": "Chargement des photos...",
+        "noPhotos": "Aucune photo trouvée",
+        "noCloudPhotos": "Aucune photo sur le cloud",
+        "upload": "Téléverser",
+        "uploadFirst": "Téléversez votre première photo",
+        "uploading": "Téléversement en cours...",
+        "folders": "Dossiers",
+        "info": {
+            "title": "Informations",
+            "name": "Nom",
+            "dimensions": "Dimensions",
+            "size": "Taille",
+            "takenAt": "Date de prise",
+            "camera": "Appareil photo",
+            "aperture": "Ouverture"
+        },
+        "deleteConfirm": {
+            "title": "Supprimer la photo ?",
+            "message": "Cette action est irréversible. La photo sera définitivement supprimée."
+        },
+        "createFolder": {
+            "title": "Créer un dossier",
+            "placeholder": "Nom du dossier..."
+        },
+        "addToFolder": {
+            "title": "Ajouter à un dossier",
+            "noFolders": "Aucun dossier créé"
         }
     }
 }

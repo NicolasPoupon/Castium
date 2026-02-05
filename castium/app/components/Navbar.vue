@@ -65,6 +65,12 @@ const items = computed(() => [
         to: '/app/lectures',
         icon: 'i-heroicons-book-open',
     },
+    {
+        label: t('navbar.selector.photos'),
+        value: 'photos',
+        to: '/app/photos',
+        icon: 'i-heroicons-photo',
+    },
 ])
 
 const activeTab = computed({
@@ -74,6 +80,7 @@ const activeTab = computed({
         if (route.path.includes('/tv')) return 'tv'
         if (route.path.includes('/radio')) return 'radio'
         if (route.path.includes('/lectures')) return 'lectures'
+        if (route.path.includes('/photos')) return 'photos'
         return 'movies'
     },
     set(value: string | null | undefined) {
