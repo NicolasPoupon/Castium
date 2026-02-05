@@ -998,6 +998,33 @@ const handleDeleteAccount = async () => {
                                 @click="handleDeleteCategoryData('podcasts')"
                             />
                         </div>
+
+                        <!-- Photos -->
+                        <div
+                            class="flex items-center justify-between p-3 bg-gray-800/30 rounded-lg"
+                        >
+                            <div class="flex items-center gap-2">
+                                <UIcon
+                                    name="i-heroicons-photo"
+                                    :class="[
+                                        'w-5 h-5',
+                                        colorClasses[colors.photos as ThemeColor]?.text ||
+                                            'text-blue-400',
+                                    ]"
+                                />
+                                <span class="text-white">
+                                    {{ t('settings.data.categories.photos') }}
+                                </span>
+                            </div>
+                            <UButton
+                                :loading="deletingCategory === 'photos'"
+                                color="error"
+                                variant="soft"
+                                size="sm"
+                                icon="i-heroicons-trash"
+                                @click="handleDeleteCategoryData('photos')"
+                            />
+                        </div>
                     </div>
                 </div>
 

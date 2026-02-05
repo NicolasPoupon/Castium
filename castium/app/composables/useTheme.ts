@@ -12,6 +12,7 @@ export interface CategoryColors {
     tv: string
     radio: string
     lectures: string
+    photos: string
 }
 
 // Default colors for each category
@@ -22,6 +23,7 @@ export const defaultColors: CategoryColors = {
     tv: 'orange',
     radio: 'yellow',
     lectures: 'purple',
+    photos: 'blue',
 }
 
 // Available color options
