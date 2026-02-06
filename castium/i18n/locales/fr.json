@@ -136,7 +136,8 @@
             "podcasts": "Podcasts",
             "tv": "TV",
             "radio": "Radio",
-            "lectures": "Lectures"
+            "lectures": "Lectures",
+            "photos": "Photos"
         },
         "user": {
             "settings": "Paramètres",
@@ -147,17 +148,110 @@
         "title": "Paramètres",
         "profile": {
             "title": "Profil",
-            "name": "Nom",
-            "email": "Email"
+            "name": "Pseudo",
+            "namePlaceholder": "Entrez votre pseudo",
+            "email": "Email",
+            "createdAt": "Compte créé le",
+            "lastSignIn": "Dernière connexion",
+            "usernameEmpty": "Le pseudo ne peut pas être vide",
+            "updateSuccess": "Profil mis à jour",
+            "updateError": "Erreur lors de la mise à jour"
+        },
+        "password": {
+            "title": "Mot de passe",
+            "description": "Modifiez votre mot de passe pour sécuriser votre compte.",
+            "changeButton": "Modifier",
+            "verifyCurrent": "Entrez votre mot de passe actuel pour continuer.",
+            "currentPlaceholder": "Mot de passe actuel",
+            "verify": "Vérifier",
+            "verified": "Mot de passe vérifié",
+            "wrongPassword": "Mot de passe incorrect",
+            "enterCurrent": "Veuillez entrer votre mot de passe actuel",
+            "new": "Nouveau mot de passe",
+            "newPlaceholder": "Entrez le nouveau mot de passe",
+            "confirm": "Confirmer le mot de passe",
+            "confirmPlaceholder": "Confirmez le nouveau mot de passe",
+            "save": "Enregistrer",
+            "fillAll": "Veuillez remplir tous les champs",
+            "noMatch": "Les mots de passe ne correspondent pas",
+            "tooShort": "Le mot de passe doit contenir au moins 8 caractères",
+            "changeSuccess": "Mot de passe modifié avec succès",
+            "changeError": "Erreur lors du changement de mot de passe",
+            "forgot": "Mot de passe oublié ?",
+            "resetSent": "Email de réinitialisation envoyé",
+            "resetError": "Erreur lors de l'envoi de l'email"
         },
         "session": {
             "title": "Session",
             "description": "Déconnectez-vous de votre compte sur cet appareil."
         },
+        "language": {
+            "title": "Langue",
+            "description": "Choisissez la langue de l'interface."
+        },
         "logout": {
             "button": "Se déconnecter",
             "success": "Déconnexion réussie",
             "error": "Erreur lors de la déconnexion"
+        },
+        "theme": {
+            "title": "Couleurs des catégories",
+            "description": "Personnalisez les couleurs de chaque catégorie de contenu.",
+            "resetAll": "Réinitialiser",
+            "resetSuccess": "Couleurs réinitialisées",
+            "movies": "Films & Séries",
+            "music": "Musique",
+            "podcasts": "Podcasts",
+            "tv": "TV",
+            "radio": "Radio",
+            "lectures": "Lectures",
+            "photos": "Photos"
+        },
+        "streams": {
+            "radioTitle": "Mes radios personnalisées",
+            "radioDescription": "Ajoutez des liens M3U8 pour écouter vos radios préférées",
+            "tvTitle": "Mes chaînes TV personnalisées",
+            "tvDescription": "Ajoutez des liens M3U8 pour regarder vos chaînes préférées",
+            "namePlaceholder": "Nom de la station",
+            "urlPlaceholder": "URL du flux M3U8",
+            "addButton": "Ajouter",
+            "noStreams": "Aucun flux personnalisé",
+            "deleteConfirm": "Supprimer ce flux ?",
+            "loading": "Chargement...",
+            "emptyRadio": "Aucune radio personnalisée",
+            "emptyTv": "Aucune chaîne personnalisée",
+            "addedRadio": "Radio ajoutée avec succès",
+            "addedTv": "Chaîne ajoutée avec succès",
+            "deleted": "Flux supprimé",
+            "errorEmpty": "Veuillez remplir tous les champs",
+            "errorAdd": "Erreur lors de l'ajout"
+        },
+        "data": {
+            "title": "Gestion des données",
+            "description": "Gérez vos données personnelles. Ces actions sont irréversibles.",
+            "byCategory": "Supprimer par catégorie",
+            "categories": {
+                "lectures": "Lectures (Vidéos)",
+                "music": "Musique",
+                "radio": "Radio",
+                "tv": "TV",
+                "podcasts": "Podcasts",
+                "photos": "Photos"
+            },
+            "deletedCategory": "Données {category} supprimées",
+            "deleteError": "Erreur lors de la suppression",
+            "deleteAllTitle": "Supprimer toutes les données",
+            "deleteAllDescription": "Supprime toutes vos données sauf votre profil et connexion.",
+            "deleteAllButton": "Tout supprimer",
+            "deletedAll": "Toutes les données ont été supprimées",
+            "deleteAccountTitle": "Supprimer le compte",
+            "deleteAccountDescription": "Supprime définitivement votre compte et toutes vos données.",
+            "deleteAccountButton": "Supprimer mon compte",
+            "deleteAccountWarning": "Cette action est irréversible !",
+            "deleteAccountConfirmText": "Tapez SUPPRIMER pour confirmer :",
+            "deleteAccountPlaceholder": "SUPPRIMER",
+            "confirmTextError": "Veuillez taper SUPPRIMER pour confirmer",
+            "accountDeleted": "Compte supprimé avec succès"
         }
     },
     "movies": {
@@ -339,8 +433,26 @@
         "sections": {
             "continueWatching": "Reprendre la lecture",
             "favorites": "Mes favoris",
-            "allVideos": "Toutes les vidéos"
+            "allVideos": "Toutes les vidéos",
+            "playlists": "Playlists (Dossiers)"
         },
+        "rating": {
+            "title": "Noter cette vidéo",
+            "score": "Note",
+            "comment": "Commentaire",
+            "commentPlaceholder": "Ajoutez un commentaire (optionnel)...",
+            "delete": "Supprimer la note",
+            "save": "Enregistrer"
+        },
+        "playlist": {
+            "title": "Gérer les playlists",
+            "createNew": "Créer une nouvelle playlist",
+            "namePlaceholder": "Nom de la playlist...",
+            "addTo": "Ajouter à une playlist",
+            "removeFromPlaylist": "Retirer de la playlist",
+            "videos": "{count} vidéo | {count} vidéos"
+        },
+        "videos": "vidéos",
         "youtube": {
             "title": "Connectez votre compte YouTube",
             "description": "Accédez à vos playlists, vidéos aimées et regardez vos contenus directement depuis Castium.",
@@ -413,6 +525,7 @@
         "subtitle": "Parcourez les chaînes par catégorie ou langue",
         "searchPlaceholder": "Rechercher une chaîne...",
         "favoritesTitle": "Mes chaînes favorites",
+        "myChannels": "Mes chaînes",
         "loading": "Chargement des chaînes...",
         "back": "Retour",
         "channelCount": "{count} chaînes sur {total}",
@@ -439,6 +552,7 @@
         "searchPlaceholder": "Rechercher une station...",
         "allCountries": "Tous les pays",
         "favorites": "Favoris",
+        "myRadios": "Mes radios",
         "loading": "Chargement des stations...",
         "retry": "Réessayer",
         "stationCount": "{count} stations sur {total}",
@@ -446,6 +560,54 @@
         "player": {
             "networkError": "Erreur réseau - Tentative de reconnexion...",
             "loadError": "Erreur lors du chargement du flux"
+        }
+    },
+    "photos": {
+        "tabs": {
+            "local": "Photos locales",
+            "cloud": "Cloud"
+        },
+        "hero": {
+            "title": "Vos photos locales",
+            "description": "Sélectionnez un dossier contenant vos photos pour les parcourir directement depuis Castium. Vos fichiers restent sur votre appareil.",
+            "selectFolder": "Sélectionner un dossier",
+            "previousFolder": "Dossier précédemment sélectionné",
+            "reauthorize": "Réautoriser l'accès"
+        },
+        "view": {
+            "all": "Toutes",
+            "albums": "Albums",
+            "liked": "Favoris"
+        },
+        "search": "Rechercher une photo...",
+        "items": "photos",
+        "loading": "Chargement des photos...",
+        "noPhotos": "Aucune photo trouvée",
+        "noCloudPhotos": "Aucune photo sur le cloud",
+        "upload": "Téléverser",
+        "uploadFirst": "Téléversez votre première photo",
+        "uploading": "Téléversement en cours...",
+        "folders": "Dossiers",
+        "info": {
+            "title": "Informations",
+            "name": "Nom",
+            "dimensions": "Dimensions",
+            "size": "Taille",
+            "takenAt": "Date de prise",
+            "camera": "Appareil photo",
+            "aperture": "Ouverture"
+        },
+        "deleteConfirm": {
+            "title": "Supprimer la photo ?",
+            "message": "Cette action est irréversible. La photo sera définitivement supprimée."
+        },
+        "createFolder": {
+            "title": "Créer un dossier",
+            "placeholder": "Nom du dossier..."
+        },
+        "addToFolder": {
+            "title": "Ajouter à un dossier",
+            "noFolders": "Aucun dossier créé"
         }
     }
 }

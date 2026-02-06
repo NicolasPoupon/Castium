@@ -3,8 +3,6 @@
  * Manages podcast uploads to Supabase Storage with progress tracking, notes, likes
  */
 
-import type { UploadProgress } from '~/types/upload'
-
 export interface CloudPodcast {
     id: string
     userId: string
@@ -45,12 +43,12 @@ export interface CloudPodcastPlaybackState {
     playbackSpeed: number
 }
 
-// export interface UploadProgress {
-//     fileName: string
-//     progress: number
-//     status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
-//     error?: string
-// }
+export interface PodcastUploadProgress {
+    fileName: string
+    progress: number
+    status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
+    error?: string
+}
 
 const PODCAST_BUCKET = 'podcasts'
 
@@ -60,7 +58,7 @@ const likedPodcasts = ref<CloudPodcast[]>([])
 const inProgressPodcasts = ref<CloudPodcast[]>([])
 const loading = ref(false)
 const uploading = ref(false)
-const uploadProgress = ref<UploadProgress[]>([])
+const uploadProgress = ref<PodcastUploadProgress[]>([])
 const error = ref<string | null>(null)
 
 // Audio element for playback
@@ -169,7 +167,7 @@ export const useCloudPodcasts = () => {
         const progressIndex = uploadProgress.value.findIndex((p) => p.fileName === file.name)
         const updateProgressFn = (
             progress: number,
-            status: UploadProgress['status'],
+            status: PodcastUploadProgress['status'],
             err?: string
         ) => {
             if (progressIndex >= 0) {
@@ -635,6 +633,27 @@ export const useCloudPodcasts = () => {
         }
     }
 
+    // Clear state (for refresh after data deletion)
+    const clearState = () => {
+        cleanup()
+        podcasts.value = []
+        likedPodcasts.value = []
+        inProgressPodcasts.value = []
+        loading.value = false
+        uploading.value = false
+        uploadProgress.value = []
+        error.value = null
+        playbackState.value = {
+            currentPodcast: null,
+            isPlaying: false,
+            currentTime: 0,
+            duration: 0,
+            volume: 1,
+            isMuted: false,
+            playbackSpeed: 1,
+        }
+    }
+
     return {
         // State
         podcasts,
@@ -664,5 +683,6 @@ export const useCloudPodcasts = () => {
         formatFileSize,
         getPodcastColor,
         cleanup,
+        clearState,
     }
 }

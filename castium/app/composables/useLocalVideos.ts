@@ -20,6 +20,8 @@ export interface VideoFile {
     type: string
     handle?: FileSystemFileHandle
     file?: File
+    folder?: string // Parent folder name for playlist grouping
+    thumbnail?: string // Thumbnail URL if extracted
 }
 
 export interface VideoProgress {
@@ -29,8 +31,21 @@ export interface VideoProgress {
     lastWatched: string
 }
 
+export interface VideoRating {
+    rating: number // 1-10
+    comment: string
+    createdAt: string
+}
+
+export interface VideoPlaylist {
+    name: string
+    folderPath: string
+    videos: VideoFile[]
+    thumbnail?: string
+}
+
 const DB_NAME = 'castium-videos-db'
-const DB_VERSION = 2 // Bumped version for user-specific storage
+const DB_VERSION = 3 // Bumped version for ratings and playlists
 const FOLDER_STORE = 'folder-handles'
 
 export const useLocalVideos = () => {
@@ -59,6 +74,35 @@ export const useLocalVideos = () => {
     const favorites = computed(() => profile.value?.video_favorites || [])
     const watchingProgress = computed(() => profile.value?.video_watching || {})
     const watchedHistory = computed(() => profile.value?.video_watched || [])
+    const videoRatings = computed(() => profile.value?.video_ratings || {} as Record<string, VideoRating>)
+
+    // Playlists computed from folder structure
+    const playlists = computed<VideoPlaylist[]>(() => {
+        const folderMap = new Map<string, VideoFile[]>()
+
+        for (const video of videos.value) {
+            const folder = video.folder || 'Root'
+            if (!folderMap.has(folder)) {
+                folderMap.set(folder, [])
+            }
+            folderMap.get(folder)!.push(video)
+        }
+
+        return Array.from(folderMap.entries())
+            .filter(([name]) => name !== 'Root') // Exclude root folder
+            .map(([name, vids]) => ({
+                name,
+                folderPath: name,
+                videos: vids.sort((a, b) => a.name.localeCompare(b.name)),
+                thumbnail: vids[0]?.thumbnail
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name))
+    })
+
+    // Videos without folder (root level)
+    const rootVideos = computed(() => {
+        return videos.value.filter(v => !v.folder || v.folder === 'Root')
+    })
 
     // IndexedDB helpers for storing folder handle (per user)
     const openDB = (): Promise<IDBDatabase> => {
@@ -338,7 +382,9 @@ export const useLocalVideos = () => {
         const videoExtensions = ['.mp4', '.webm', '.mkv', '.avi', '.mov', '.m4v', '.ogv']
         const foundVideos: VideoFile[] = []
 
-        const scanDirectory = async (dirHandle: FileSystemDirectoryHandle, path: string = '') => {
+        const scanDirectory = async (dirHandle: FileSystemDirectoryHandle, path: string = '', parentFolder: string = '') => {
+            const currentFolder = path.split('/').pop() || ''
+
             for await (const entry of dirHandle.values()) {
                 if (entry.kind === 'file') {
                     const fileName = entry.name.toLowerCase()
@@ -352,13 +398,14 @@ export const useLocalVideos = () => {
                                 lastModified: file.lastModified,
                                 type: file.type,
                                 handle: entry,
+                                folder: currentFolder || parentFolder || undefined,
                             })
                         } catch (e) {
                             console.warn(`Could not read file: ${entry.name}`, e)
                         }
                     }
                 } else if (entry.kind === 'directory') {
-                    await scanDirectory(entry, path ? `${path}/${entry.name}` : entry.name)
+                    await scanDirectory(entry, path ? `${path}/${entry.name}` : entry.name, currentFolder)
                 }
             }
         }
@@ -419,6 +466,13 @@ export const useLocalVideos = () => {
     const saveProgress = async (videoPath: string, currentTime: number): Promise<void> => {
         const progress = { ...watchingProgress.value }
         progress[videoPath] = currentTime
+        await updateProfile({ video_watching: progress })
+    }
+
+    // Remove from continue watching
+    const removeFromWatching = async (videoPath: string): Promise<void> => {
+        const progress = { ...watchingProgress.value }
+        delete progress[videoPath]
         await updateProfile({ video_watching: progress })
     }
 
@@ -502,6 +556,32 @@ export const useLocalVideos = () => {
         return `${m}:${s.toString().padStart(2, '0')}`
     }
 
+    // Rating functions
+    const getRating = (videoPath: string): VideoRating | null => {
+        return videoRatings.value[videoPath] || null
+    }
+
+    const setRating = async (videoPath: string, rating: number, comment: string = ''): Promise<void> => {
+        const ratings = { ...videoRatings.value }
+        ratings[videoPath] = {
+            rating: Math.max(1, Math.min(10, rating)),
+            comment,
+            createdAt: new Date().toISOString()
+        }
+        await updateProfile({ video_ratings: ratings })
+    }
+
+    const removeRating = async (videoPath: string): Promise<void> => {
+        const ratings = { ...videoRatings.value }
+        delete ratings[videoPath]
+        await updateProfile({ video_ratings: ratings })
+    }
+
+    // Get videos by playlist/folder
+    const getVideosByFolder = (folderName: string): VideoFile[] => {
+        return videos.value.filter(v => v.folder === folderName)
+    }
+
     return {
         folderHandle: readonly(folderHandle),
         videos: readonly(videos),
@@ -514,6 +594,9 @@ export const useLocalVideos = () => {
         favorites,
         watchingProgress,
         watchedHistory,
+        videoRatings,
+        playlists,
+        rootVideos,
         continueWatching,
         favoriteVideos,
         selectFolder,
@@ -523,12 +606,17 @@ export const useLocalVideos = () => {
         playVideo,
         stopVideo,
         saveProgress,
+        removeFromWatching,
         getProgress,
         addToHistory,
         toggleFavorite,
         isFavorite,
         formatSize,
         formatDuration,
+        getRating,
+        setRating,
+        removeRating,
+        getVideosByFolder,
         needsReauthorization: readonly(needsReauthorization),
         savedFolderName: readonly(savedFolderName),
         reauthorizeAccess,

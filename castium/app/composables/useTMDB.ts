@@ -19,8 +19,8 @@ export type TmdbVideosResponse = {
 export const useTMDB = () => {
     const config = useRuntimeConfig()
     const apiKey = config.public.tmdbApiKey
-    const baseUrl = "https://api.themoviedb.org/3"
-    const imageBaseUrl = "https://image.tmdb.org/t/p"
+    const baseUrl = 'https://api.themoviedb.org/3'
+    const imageBaseUrl = 'https://image.tmdb.org/t/p'
 
     const fetchFromTMDB = async <T>(
         endpoint: string,

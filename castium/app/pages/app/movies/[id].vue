@@ -41,14 +41,8 @@ const goBack = () => router.back()
     <div class="min-h-screen bg-gray-900">
         <Navbar mode="app" />
 
-        <div
-            v-if="isLoading"
-            class="flex items-center justify-center min-h-screen"
-        >
-            <UIcon
-                name="i-heroicons-arrow-path"
-                class="w-12 h-12 text-red-800 animate-spin"
-            />
+        <div v-if="isLoading" class="flex items-center justify-center min-h-screen">
+            <UIcon name="i-heroicons-arrow-path" class="w-12 h-12 text-red-800 animate-spin" />
         </div>
 
         <div v-else-if="movie" class="">
@@ -66,9 +60,7 @@ const goBack = () => router.back()
                 </div>
 
                 <div class="absolute inset-0 flex items-end">
-                    <div
-                        class="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8 pb-12"
-                    >
+                    <div class="max-w-7xl mx-auto w-full px-4 md:px-6 lg:px-8 pb-12">
                         <div class="flex gap-8 items-end">
                             <div class="flex-shrink-0 hidden md:block">
                                 <img
@@ -91,9 +83,7 @@ const goBack = () => router.back()
                                     {{ title }}
                                 </h1>
 
-                                <div
-                                    class="flex flex-wrap items-center gap-4 text-white mb-4"
-                                >
+                                <div class="flex flex-wrap items-center gap-4 text-white mb-4">
                                     <span v-if="releaseYear">
                                         {{ releaseYear }}
                                     </span>
@@ -106,9 +96,7 @@ const goBack = () => router.back()
                                             class="w-5 h-5 text-yellow-400"
                                         />
                                         <span class="font-semibold">
-                                            {{
-                                                movie.vote_average?.toFixed(1)
-                                            }}/10
+                                            {{ movie.vote_average?.toFixed(1) }}/10
                                         </span>
                                     </div>
                                 </div>
@@ -123,9 +111,7 @@ const goBack = () => router.back()
                                     </span>
                                 </div>
 
-                                <p
-                                    class="text-gray-200 text-lg max-w-2xl leading-relaxed"
-                                >
+                                <p class="text-gray-200 text-lg max-w-2xl leading-relaxed">
                                     {{ movie.overview }}
                                 </p>
                             </div>
@@ -148,7 +134,7 @@ const goBack = () => router.back()
                 <div v-if="activeTab === 'overview'" class="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div class="bg-gray-800/50 rounded-lg p-4">
                         <p class="text-gray-400 text-sm mb-2">
-                            {{ t("movies.detail.status") }}
+                            {{ t('movies.detail.status') }}
                         </p>
                         <p class="text-white font-semibold">
                             {{ movie.status }}
@@ -157,33 +143,27 @@ const goBack = () => router.back()
 
                     <div class="bg-gray-800/50 rounded-lg p-4">
                         <p class="text-gray-400 text-sm mb-2">
-                            {{ t("movies.detail.budget") }}
+                            {{ t('movies.detail.budget') }}
+                        </p>
+                        <p class="text-white font-semibold">
+                            {{ movie.budget ? `$${(movie.budget / 1000000).toFixed(1)}M` : 'N/A' }}
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800/50 rounded-lg p-4">
+                        <p class="text-gray-400 text-sm mb-2">
+                            {{ t('movies.detail.revenue') }}
                         </p>
                         <p class="text-white font-semibold">
                             {{
-                                movie.budget
-                                    ? `$${(movie.budget / 1000000).toFixed(1)}M`
-                                    : "N/A"
+                                movie.revenue ? `$${(movie.revenue / 1000000).toFixed(1)}M` : 'N/A'
                             }}
                         </p>
                     </div>
 
                     <div class="bg-gray-800/50 rounded-lg p-4">
                         <p class="text-gray-400 text-sm mb-2">
-                            {{ t("movies.detail.revenue") }}
-                        </p>
-                        <p class="text-white font-semibold">
-                            {{
-                                movie.revenue
-                                    ? `$${(movie.revenue / 1000000).toFixed(1)}M`
-                                    : "N/A"
-                            }}
-                        </p>
-                    </div>
-
-                    <div class="bg-gray-800/50 rounded-lg p-4">
-                        <p class="text-gray-400 text-sm mb-2">
-                            {{ t("movies.detail.language") }}
+                            {{ t('movies.detail.language') }}
                         </p>
                         <p class="text-white font-semibold uppercase">
                             {{ movie.original_language }}
@@ -259,11 +239,9 @@ const goBack = () => router.back()
 
                 <section v-if="similar.length > 0">
                     <h2 class="text-2xl font-bold text-white mb-6">
-                        {{ t("movies.detail.similar") }}
+                        {{ t('movies.detail.similar') }}
                     </h2>
-                    <div
-                        class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4"
-                    >
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                         <MoviesMovieCard
                             v-for="film in similar.slice(0, 12)"
                             :key="film.id"

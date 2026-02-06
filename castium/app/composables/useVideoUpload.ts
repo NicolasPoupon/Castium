@@ -3,8 +3,6 @@
  * Manages video uploads to Supabase Storage with metadata extraction
  */
 
-import type { UploadProgress } from '~/types/upload'
-
 export interface VideoMetadata {
     title?: string
     artist?: string
@@ -46,27 +44,71 @@ export interface UploadedVideo {
     createdAt: string
     updatedAt: string
     publicUrl?: string
+    rating?: number // 1-10
+    ratingComment?: string
+    playlist?: string // Playlist name for grouping
 }
 
-// export interface UploadProgress {
-//     fileName: string
-//     progress: number
-//     status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
-//     error?: string
-// }
+export interface VideoUploadProgress {
+    fileName: string
+    progress: number
+    status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
+    error?: string
+}
+
+export interface CloudVideoPlaylist {
+    name: string
+    videos: UploadedVideo[]
+    thumbnail?: string
+}
 
 const VIDEOS_BUCKET = 'videos'
 
 export const useVideoUpload = () => {
     const supabase = useSupabase()
-    const { user } = useAuth()
+    const { user, profile, updateProfile } = useAuth()
 
     // State
     const uploadedVideos = ref<UploadedVideo[]>([])
     const loading = ref(false)
     const uploading = ref(false)
-    const uploadProgress = ref<UploadProgress[]>([])
+    const uploadProgress = ref<VideoUploadProgress[]>([])
     const error = ref<string | null>(null)
+
+    // Clear state (for refresh after data deletion)
+    const clearState = () => {
+        uploadedVideos.value = []
+        loading.value = false
+        uploading.value = false
+        uploadProgress.value = []
+        error.value = null
+    }
+
+    // Cloud video ratings from profile
+    const cloudVideoRatings = computed(() => profile.value?.cloud_video_ratings || {} as Record<string, { rating: number; comment: string }>)
+
+    // Cloud video playlists from profile
+    const cloudPlaylists = computed(() => profile.value?.cloud_video_playlists || [] as string[])
+
+    // Cloud video watching progress from profile
+    const cloudWatchingProgress = computed(() => profile.value?.cloud_video_watching || {} as Record<string, number>)
+
+    // Cloud video favorites from profile
+    const cloudFavorites = computed(() => profile.value?.cloud_video_favorites || [] as string[])
+
+    // Continue watching videos (with progress)
+    const continueWatchingVideos = computed(() => {
+        const progress = cloudWatchingProgress.value
+        return uploadedVideos.value
+            .filter(v => progress[v.id] && progress[v.id] > 0)
+            .sort((a, b) => (progress[b.id] || 0) - (progress[a.id] || 0))
+    })
+
+    // Favorite videos
+    const favoriteVideos = computed(() => {
+        const favs = cloudFavorites.value
+        return uploadedVideos.value.filter(v => favs.includes(v.id))
+    })
 
     // Sort options
     const sortBy = ref<'name' | 'date' | 'size'>('date')
@@ -194,7 +236,7 @@ export const useVideoUpload = () => {
         const progressIndex = uploadProgress.value.findIndex((p) => p.fileName === file.name)
         const updateProgress = (
             progress: number,
-            status: UploadProgress['status'],
+            status: VideoUploadProgress['status'],
             err?: string
         ) => {
             if (progressIndex >= 0) {
@@ -551,6 +593,111 @@ export const useVideoUpload = () => {
         return `${m}:${s.toString().padStart(2, '0')}`
     }
 
+    // Watching progress functions
+    const getCloudProgress = (videoId: string): number => {
+        return cloudWatchingProgress.value[videoId] || 0
+    }
+
+    const saveCloudProgress = async (videoId: string, currentTime: number): Promise<void> => {
+        const progress = { ...cloudWatchingProgress.value }
+        if (currentTime > 0) {
+            progress[videoId] = currentTime
+        } else {
+            delete progress[videoId]
+        }
+        await updateProfile({ cloud_video_watching: progress })
+    }
+
+    const removeFromContinueWatching = async (videoId: string): Promise<void> => {
+        const progress = { ...cloudWatchingProgress.value }
+        delete progress[videoId]
+        await updateProfile({ cloud_video_watching: progress })
+    }
+
+    // Favorite functions
+    const isCloudFavorite = (videoId: string): boolean => {
+        return cloudFavorites.value.includes(videoId)
+    }
+
+    const toggleCloudFavorite = async (videoId: string): Promise<void> => {
+        const favs = [...cloudFavorites.value]
+        const index = favs.indexOf(videoId)
+        if (index >= 0) {
+            favs.splice(index, 1)
+        } else {
+            favs.push(videoId)
+        }
+        await updateProfile({ cloud_video_favorites: favs })
+    }
+
+    // Rating functions
+    const getCloudRating = (videoId: string): { rating: number; comment: string } | null => {
+        return cloudVideoRatings.value[videoId] || null
+    }
+
+    const setCloudRating = async (videoId: string, rating: number, comment: string = ''): Promise<void> => {
+        const ratings = { ...cloudVideoRatings.value }
+        ratings[videoId] = {
+            rating: Math.max(1, Math.min(10, rating)),
+            comment
+        }
+        await updateProfile({ cloud_video_ratings: ratings })
+    }
+
+    const removeCloudRating = async (videoId: string): Promise<void> => {
+        const ratings = { ...cloudVideoRatings.value }
+        delete ratings[videoId]
+        await updateProfile({ cloud_video_ratings: ratings })
+    }
+
+    // Playlist functions
+    const createCloudPlaylist = async (name: string): Promise<void> => {
+        const playlists = [...cloudPlaylists.value]
+        if (!playlists.includes(name)) {
+            playlists.push(name)
+            await updateProfile({ cloud_video_playlists: playlists })
+        }
+    }
+
+    const deleteCloudPlaylist = async (name: string): Promise<void> => {
+        const playlists = cloudPlaylists.value.filter((p: string) => p !== name)
+        await updateProfile({ cloud_video_playlists: playlists })
+
+        // Remove playlist assignment from videos
+        for (const video of uploadedVideos.value) {
+            if (video.playlist === name) {
+                await updateVideoMetadata(video.id, { playlist: undefined } as any)
+            }
+        }
+    }
+
+    const assignToPlaylist = async (videoId: string, playlistName: string | null): Promise<void> => {
+        // Auto-create playlist if it doesn't exist
+        if (playlistName && !cloudPlaylists.value.includes(playlistName)) {
+            await createCloudPlaylist(playlistName)
+        }
+        await updateVideoMetadata(videoId, { playlist: playlistName } as any)
+    }
+
+    // Get videos by playlist
+    const getVideosByPlaylist = (playlistName: string): UploadedVideo[] => {
+        return uploadedVideos.value.filter(v => v.playlist === playlistName)
+    }
+
+    // Get videos without playlist
+    const unassignedVideos = computed(() => {
+        return uploadedVideos.value.filter(v => !v.playlist)
+    })
+
+    // Get playlists with videos
+    const playlistsWithVideos = computed<CloudVideoPlaylist[]>(() => {
+        return cloudPlaylists.value.map((name: string) => ({
+            name,
+            videos: uploadedVideos.value.filter(v => v.playlist === name),
+            thumbnail: uploadedVideos.value.find(v => v.playlist === name)?.thumbnailPath
+        }))
+    })
+
     return {
         // State
         uploadedVideos,
@@ -561,6 +708,14 @@ export const useVideoUpload = () => {
         error,
         sortBy,
         sortOrder,
+        cloudVideoRatings,
+        cloudPlaylists,
+        cloudWatchingProgress,
+        cloudFavorites,
+        continueWatchingVideos,
+        favoriteVideos,
+        unassignedVideos,
+        playlistsWithVideos,
 
         // Methods
         fetchVideos,
@@ -571,5 +726,18 @@ export const useVideoUpload = () => {
         getThumbnailUrl,
         formatFileSize,
         formatDuration,
+        getCloudRating,
+        setCloudRating,
+        removeCloudRating,
+        getCloudProgress,
+        saveCloudProgress,
+        removeFromContinueWatching,
+        isCloudFavorite,
+        toggleCloudFavorite,
+        createCloudPlaylist,
+        deleteCloudPlaylist,
+        assignToPlaylist,
+        getVideosByPlaylist,
+        clearState,
     }
 }

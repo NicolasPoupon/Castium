@@ -2,8 +2,18 @@
 import { useI18n } from '#imports'
 import type { LocalTrack, LocalPlaylist } from '~/composables/useLocalMusic'
 import type { CloudTrack, CloudPlaylist } from '~/composables/useCloudMusic'
+import type { ThemeColor } from '~/composables/useTheme'
+import type { MediaTrack } from '~/composables/useGlobalPlayer'
 
 const { t } = useI18n()
+const { colors, colorClasses } = useTheme()
+
+// Global player
+const { playTrack: globalPlayTrack, playbackState: globalPlaybackState } = useGlobalPlayer()
+
+// Get theme classes for music
+const themeColor = computed(() => colors.value.music as ThemeColor)
+const theme = computed(() => colorClasses[themeColor.value] || colorClasses.green)
 
 definePageMeta({
     title: 'Music',
@@ -58,6 +68,7 @@ const {
     formatFileSize,
     loadLikedTracksFromDb,
     removeLikedTrack,
+    clearLocalState: clearLocalMusic,
 } = useLocalMusic()
 
 // Cloud Music
@@ -96,6 +107,7 @@ const {
     getTrackColor: getCloudTrackColor,
     formatFileSize: formatCloudFileSize,
     formatDuration: formatCloudDuration,
+    clearState: clearCloudMusic,
 } = useCloudMusic()
 
 // Client-only flag for hydration
@@ -182,42 +194,6 @@ const handlePlaySpotifyPlaylist = async (playlistId: string) => {
     }
 }
 
-const handlePlayClick = async () => {
-    if (isPlaying.value) {
-        await pause()
-    } else {
-        await play()
-    }
-    isPlaying.value = !isPlaying.value
-}
-
-const handleNextClick = async () => {
-    await next()
-    setTimeout(() => pollPlaybackState(), 500)
-}
-
-const handlePreviousClick = async () => {
-    await previous()
-    setTimeout(() => pollPlaybackState(), 500)
-}
-
-const handleSeek = async (positionMs: number) => {
-    try {
-        await seek(positionMs)
-        progress.value = positionMs
-    } catch (error) {
-        console.error('Error seeking:', error)
-    }
-}
-
-const handleVolumeChange = async (volume: number) => {
-    try {
-        await setVolume(volume)
-    } catch (error) {
-        console.error('Error setting volume:', error)
-    }
-}
-
 const connectSpotify = () => {
     window.location.href = getAuthUrl()
 }
@@ -264,6 +240,33 @@ const handleViewAll = () => {
     viewMode.value = 'all'
 }
 
+// Convert LocalTrack to MediaTrack for global player
+const localTrackToMediaTrack = (track: LocalTrack): MediaTrack => ({
+    id: track.id,
+    title: track.title || track.fileName,
+    artist: track.artist,
+    album: track.album,
+    coverArt: track.coverArt,
+    duration: track.duration,
+    file: track.file,
+    handle: track.handle,
+    type: 'music',
+    isCloud: false,
+})
+
+// Convert CloudTrack to MediaTrack for global player
+const cloudTrackToMediaTrack = (track: CloudTrack): MediaTrack => ({
+    id: track.id,
+    title: track.title || track.fileName,
+    artist: track.artist,
+    album: track.album,
+    coverArt: track.coverArt || undefined,
+    duration: track.duration || undefined,
+    url: track.publicUrl,
+    type: 'music',
+    isCloud: true,
+})
+
 const handlePlayTrack = (track: LocalTrack, index: number) => {
     // Only play if track is available
     if (!track.isAvailable) return
@@ -271,7 +274,9 @@ const handlePlayTrack = (track: LocalTrack, index: number) => {
     const availableTracks = filteredTracks.value.filter((t) => t.isAvailable !== false)
     const newIndex = availableTracks.findIndex((t) => t.filePath === track.filePath)
     if (newIndex >= 0) {
-        playQueue(availableTracks, newIndex)
+        // Convert to MediaTracks and play via global player
+        const mediaQueue = availableTracks.map(localTrackToMediaTrack)
+        globalPlayTrack(mediaQueue[newIndex], mediaQueue, newIndex)
     }
 }
 
@@ -326,27 +331,28 @@ const progressPercent = computed(() => {
     return (playbackState.value.currentTime / playbackState.value.duration) * 100
 })
 
-// const handleSeek = (e: MouseEvent) => {
-//     const target = e.currentTarget as HTMLElement
-//     const rect = target.getBoundingClientRect()
-//     const percent = (e.clientX - rect.left) / rect.width
-//     const time = percent * playbackState.value.duration
-//     seek(time)
-// }
+const handleSeek = (e: MouseEvent) => {
+    const target = e.currentTarget as HTMLElement
+    const rect = target.getBoundingClientRect()
+    const percent = (e.clientX - rect.left) / rect.width
+    const time = percent * playbackState.value.duration
+    seek(time)
+}
 
-// Get thumbnail color based on track
+// Get thumbnail color based on track - use theme colors
 const getTrackColor = (track: LocalTrack) => {
+    const themeColorValue = theme.value.bg.replace('bg-', '')
     const colors = [
+        `var(--color-${themeColorValue.replace('-500', '-600')})`,
+        `var(--color-${themeColorValue.replace('-500', '-700')})`,
         '#dc2626',
         '#ea580c',
         '#d97706',
-        '#65a30d',
         '#16a34a',
         '#0891b2',
         '#2563eb',
         '#7c3aed',
         '#c026d3',
-        '#e11d48',
     ]
     const index = (track.title?.length || track.fileName.length) % colors.length
     return colors[index]
@@ -436,7 +442,9 @@ const handleCloudViewAll = () => {
 // Cloud track actions
 const handleCloudPlayTrack = (track: CloudTrack, index: number) => {
     const trackList = filteredCloudTracks.value
-    playCloudQueue(trackList, index)
+    // Convert to MediaTracks and play via global player
+    const mediaQueue = trackList.map(cloudTrackToMediaTrack)
+    globalPlayTrack(mediaQueue[index], mediaQueue, index)
 }
 
 const handleCloudToggleLike = async (track: CloudTrack) => {
@@ -510,6 +518,28 @@ onMounted(async () => {
     await fetchCloudLikedTracks()
 })
 
+// Subscribe to data refresh events (for when user deletes data from settings)
+const { onRefresh } = useDataRefresh()
+const refreshAllMusicData = async () => {
+    console.log('[Music] Refreshing all data...')
+    // Clear local music state first
+    clearLocalMusic()
+    // Clear cloud music state
+    clearCloudMusic()
+    // Try to restore folder access
+    await restoreFolderAccess()
+    await loadPlaylists()
+    await loadLikedTracksFromDb()
+    // Refresh cloud music
+    await fetchCloudTracks()
+    await fetchCloudPlaylists()
+    await fetchCloudLikedTracks()
+}
+onMounted(() => {
+    const unsubscribe = onRefresh('music', refreshAllMusicData)
+    onUnmounted(() => unsubscribe())
+})
+
 watch(spotifyAuthenticated, (isAuth) => {
     if (isAuth) {
         loadSpotifyPlaylists()
@@ -524,14 +554,10 @@ watch(activeTab, async (tab) => {
         await fetchCloudLikedTracks()
     }
 })
-
-// onBeforeUnmount(() => {
-//     stopPolling()
-// })
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-900 flex flex-col">
+    <div class="min-h-screen bg-gray-900 flex flex-col theme-transition">
         <Navbar mode="app" />
 
         <div class="pt-24 pb-32">
@@ -540,38 +566,38 @@ watch(activeTab, async (tab) => {
                 <div class="flex items-center gap-4 mb-8">
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'local'
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                         ]"
                         @click="activeTab = 'local'"
                     >
-                        <UIcon name="i-heroicons-folder" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-folder" class="w-5 h-5 icon-bounce" />
                         {{ t('music.tabs.local') }}
                     </button>
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'upload'
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                         ]"
                         @click="activeTab = 'upload'"
                     >
-                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5 icon-bounce" />
                         {{ t('music.tabs.upload') || 'Cloud' }}
                     </button>
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2',
+                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
                             activeTab === 'spotify'
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700',
+                                ? 'bg-green-600 text-white shadow-lg shadow-green-500/25'
+                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
                         ]"
                         @click="activeTab = 'spotify'"
                     >
-                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5" />
+                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5 icon-bounce" />
                         Spotify
                     </button>
                 </div>
@@ -587,7 +613,7 @@ watch(activeTab, async (tab) => {
                             <div class="mb-8">
                                 <UIcon
                                     name="i-heroicons-musical-note"
-                                    class="w-24 h-24 text-purple-500 mx-auto mb-6"
+                                    :class="['w-24 h-24 mx-auto mb-6 icon-bounce', theme.text]"
                                 />
                                 <h1 class="text-4xl font-bold text-white mb-4">
                                     {{ t('music.local.title') }}
@@ -601,7 +627,7 @@ watch(activeTab, async (tab) => {
                             <div v-if="needsReauthorization && savedFolderName" class="mb-6">
                                 <p class="text-gray-300 mb-4">
                                     {{ t('music.local.previousFolder') }}:
-                                    <span class="text-purple-400 font-medium">
+                                    <span :class="['font-medium', theme.textLight]">
                                         {{ savedFolderName }}
                                     </span>
                                 </p>
@@ -610,7 +636,11 @@ watch(activeTab, async (tab) => {
                                     size="xl"
                                     :label="t('music.local.reauthorize')"
                                     :loading="localLoading"
-                                    class="bg-purple-600 hover:bg-purple-700 text-white font-semibold"
+                                    :class="[
+                                        theme.bg,
+                                        `hover:${theme.bgLight}`,
+                                        'text-white font-semibold btn-press',
+                                    ]"
                                     @click="handleReauthorize"
                                 />
                                 <p class="text-gray-500 text-sm mt-4">
@@ -626,8 +656,8 @@ watch(activeTab, async (tab) => {
                                 :variant="needsReauthorization ? 'outline' : 'solid'"
                                 :class="
                                     needsReauthorization
-                                        ? 'border-purple-600 text-purple-400 hover:bg-purple-600/20'
-                                        : 'bg-purple-600 hover:bg-purple-700 text-white font-semibold'
+                                        ? `${theme.border} ${theme.textLight} hover:bg-${themeColor}-600/20`
+                                        : `${theme.bg} hover:${theme.bgLight} text-white font-semibold btn-press`
                                 "
                                 @click="handleSelectFolder"
                             />
@@ -642,19 +672,27 @@ watch(activeTab, async (tab) => {
                     <div v-else class="flex gap-6">
                         <!-- Sidebar: Playlists -->
                         <aside class="w-64 flex-shrink-0">
-                            <div class="bg-gray-800/50 rounded-xl p-4 sticky top-24">
+                            <div
+                                class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30"
+                            >
                                 <!-- Navigation -->
                                 <nav class="space-y-1 mb-6">
                                     <button
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left btn-press',
                                             viewMode === 'all'
-                                                ? 'bg-purple-600/20 text-purple-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                         @click="handleViewAll"
                                     >
-                                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5" />
+                                        <UIcon
+                                            name="i-heroicons-musical-note"
+                                            :class="[
+                                                'w-5 h-5',
+                                                viewMode === 'all' ? theme.text : '',
+                                            ]"
+                                        />
                                         <span>{{ t('music.local.allTracks') }}</span>
                                         <span class="ml-auto text-sm text-gray-500">
                                             {{ tracks.length }}
@@ -662,9 +700,9 @@ watch(activeTab, async (tab) => {
                                     </button>
                                     <button
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left btn-press',
                                             viewMode === 'liked'
-                                                ? 'bg-purple-600/20 text-purple-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                         @click="handleViewLiked"
@@ -701,9 +739,9 @@ watch(activeTab, async (tab) => {
                                         v-for="playlist in playlists"
                                         :key="playlist.id"
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left group',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left group btn-press',
                                             selectedPlaylist?.id === playlist.id
-                                                ? 'bg-purple-600/20 text-purple-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                     >
@@ -712,8 +750,10 @@ watch(activeTab, async (tab) => {
                                             @click="handleSelectPlaylist(playlist)"
                                         >
                                             <div
-                                                class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
-                                                :style="{ backgroundColor: playlist.coverColor }"
+                                                :class="[
+                                                    'w-8 h-8 rounded flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110',
+                                                    theme.bg,
+                                                ]"
                                             >
                                                 <UIcon
                                                     name="i-heroicons-musical-note"
@@ -737,13 +777,16 @@ watch(activeTab, async (tab) => {
                                 <!-- Create playlist modal -->
                                 <div
                                     v-if="showCreatePlaylist"
-                                    class="mt-4 p-3 bg-gray-700/50 rounded-lg"
+                                    class="mt-4 p-3 bg-gray-700/40 backdrop-blur-sm rounded-lg border border-gray-600/30"
                                 >
                                     <input
                                         v-model="newPlaylistName"
                                         type="text"
                                         :placeholder="t('music.local.playlistName')"
-                                        class="w-full bg-gray-800 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        :class="[
+                                            'w-full bg-gray-800/80 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2',
+                                            `focus:${theme.ring}`,
+                                        ]"
                                         @keyup.enter="handleCreatePlaylist"
                                     />
                                     <div class="flex gap-2 mt-2">
@@ -756,7 +799,11 @@ watch(activeTab, async (tab) => {
                                         </UButton>
                                         <UButton
                                             size="xs"
-                                            class="bg-purple-600 hover:bg-purple-700"
+                                            :class="[
+                                                theme.bg,
+                                                `hover:${theme.bgLight}`,
+                                                'btn-press',
+                                            ]"
                                             :disabled="!newPlaylistName.trim()"
                                             @click="handleCreatePlaylist"
                                         >
@@ -839,14 +886,14 @@ watch(activeTab, async (tab) => {
                             <div v-if="localLoading" class="flex items-center justify-center py-20">
                                 <UIcon
                                     name="i-heroicons-arrow-path"
-                                    class="w-12 h-12 text-purple-500 animate-spin"
+                                    :class="['w-12 h-12 animate-spin', theme.text]"
                                 />
                             </div>
 
                             <!-- Track list -->
                             <div
                                 v-else-if="filteredTracks.length > 0"
-                                class="bg-gray-800/30 rounded-xl overflow-hidden"
+                                class="bg-gray-800/20 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/30"
                             >
                                 <!-- Header row -->
                                 <div
@@ -868,12 +915,12 @@ watch(activeTab, async (tab) => {
                                     v-for="(track, index) in filteredTracks"
                                     :key="track.filePath"
                                     :class="[
-                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-colors',
+                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-all',
                                         track.isAvailable === false
                                             ? 'opacity-50 cursor-not-allowed'
                                             : 'cursor-pointer',
                                         playbackState.currentTrack?.filePath === track.filePath
-                                            ? 'bg-purple-600/20'
+                                            ? `bg-${themeColor}-600/20`
                                             : track.isAvailable !== false
                                               ? 'hover:bg-gray-700/30'
                                               : '',
@@ -894,7 +941,7 @@ watch(activeTab, async (tab) => {
                                                     playbackState.currentTrack?.filePath ===
                                                         track.filePath && playbackState.isPlaying
                                                 "
-                                                class="text-purple-400"
+                                                :class="theme.textLight"
                                             >
                                                 <UIcon
                                                     name="i-heroicons-speaker-wave"
@@ -920,10 +967,10 @@ watch(activeTab, async (tab) => {
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div
                                             :class="[
-                                                'w-10 h-10 rounded flex items-center justify-center flex-shrink-0',
+                                                'w-10 h-10 rounded flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105',
                                                 track.isAvailable === false ? 'grayscale' : '',
+                                                theme.bg,
                                             ]"
-                                            :style="{ backgroundColor: getTrackColor(track) }"
                                         >
                                             <UIcon
                                                 name="i-heroicons-musical-note"
@@ -938,7 +985,7 @@ watch(activeTab, async (tab) => {
                                                         ? 'text-gray-500'
                                                         : playbackState.currentTrack?.filePath ===
                                                             track.filePath
-                                                          ? 'text-purple-400'
+                                                          ? theme.textLight
                                                           : 'text-white',
                                                 ]"
                                             >
@@ -1171,19 +1218,27 @@ watch(activeTab, async (tab) => {
                     <div class="flex gap-6">
                         <!-- Sidebar: Playlists -->
                         <aside class="w-64 flex-shrink-0">
-                            <div class="bg-gray-800/50 rounded-xl p-4 sticky top-24">
+                            <div
+                                class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30"
+                            >
                                 <!-- Navigation -->
                                 <nav class="space-y-1 mb-6">
                                     <button
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left btn-press',
                                             cloudViewMode === 'all'
-                                                ? 'bg-blue-600/20 text-blue-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                         @click="handleCloudViewAll"
                                     >
-                                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5" />
+                                        <UIcon
+                                            name="i-heroicons-musical-note"
+                                            :class="[
+                                                'w-5 h-5',
+                                                cloudViewMode === 'all' ? theme.text : '',
+                                            ]"
+                                        />
                                         <span>
                                             {{ t('music.cloud.allTracks') || 'All Tracks' }}
                                         </span>
@@ -1193,9 +1248,9 @@ watch(activeTab, async (tab) => {
                                     </button>
                                     <button
                                         :class="[
-                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left',
+                                            'w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-left btn-press',
                                             cloudViewMode === 'liked'
-                                                ? 'bg-blue-600/20 text-blue-400'
+                                                ? `bg-${themeColor}-600/20 ${theme.textLight} ring-1 ring-${themeColor}-500/30`
                                                 : 'text-gray-400 hover:text-white hover:bg-gray-700/50',
                                         ]"
                                         @click="handleCloudViewLiked"
@@ -1605,172 +1660,6 @@ watch(activeTab, async (tab) => {
             </div>
         </div>
 
-        <!-- Fixed Player Bar for Local Music -->
-        <div
-            v-if="playbackState.currentTrack"
-            class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-4 py-3 z-50"
-        >
-            <div class="max-w-7xl mx-auto flex items-center gap-4">
-                <!-- Track info -->
-                <div class="flex items-center gap-3 w-64 min-w-0">
-                    <div
-                        class="w-12 h-12 rounded flex items-center justify-center flex-shrink-0"
-                        :style="{ backgroundColor: getTrackColor(playbackState.currentTrack) }"
-                    >
-                        <UIcon name="i-heroicons-musical-note" class="w-6 h-6 text-white" />
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-white font-medium truncate text-sm">
-                            {{
-                                playbackState.currentTrack.title ||
-                                playbackState.currentTrack.fileName
-                            }}
-                        </p>
-                        <p class="text-gray-400 text-xs truncate">
-                            {{
-                                playbackState.currentTrack.artist || t('music.local.unknownArtist')
-                            }}
-                        </p>
-                    </div>
-                    <button
-                        class="ml-2 p-1 rounded-full hover:bg-gray-800 transition-colors flex-shrink-0"
-                        @click="handleToggleLike(playbackState.currentTrack)"
-                    >
-                        <UIcon
-                            :name="
-                                playbackState.currentTrack.isLiked
-                                    ? 'i-heroicons-heart-solid'
-                                    : 'i-heroicons-heart'
-                            "
-                            :class="[
-                                'w-4 h-4',
-                                playbackState.currentTrack.isLiked
-                                    ? 'text-red-500'
-                                    : 'text-gray-400',
-                            ]"
-                        />
-                    </button>
-                </div>
-
-                <!-- Controls -->
-                <div class="flex-1 flex flex-col items-center gap-2">
-                    <div class="flex items-center gap-4">
-                        <button
-                            :class="[
-                                'p-2 rounded-full transition-colors',
-                                playbackState.isShuffled
-                                    ? 'text-purple-400'
-                                    : 'text-gray-400 hover:text-white',
-                            ]"
-                            @click="toggleShuffle"
-                        >
-                            <UIcon name="i-heroicons-arrows-right-left" class="w-4 h-4" />
-                        </button>
-                        <button
-                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                            @click="previousTrack"
-                        >
-                            <UIcon name="i-heroicons-backward" class="w-5 h-5" />
-                        </button>
-                        <button
-                            class="p-2 w-10 h-10 rounded-full bg-white text-gray-900 hover:scale-105 transition-transform flex items-center justify-center"
-                            @click="togglePlay"
-                        >
-                            <UIcon
-                                :name="
-                                    playbackState.isPlaying
-                                        ? 'i-heroicons-pause-solid'
-                                        : 'i-heroicons-play-solid'
-                                "
-                                class="w-5 h-5"
-                            />
-                        </button>
-                        <button
-                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                            @click="nextTrack"
-                        >
-                            <UIcon name="i-heroicons-forward" class="w-5 h-5" />
-                        </button>
-                        <button
-                            :class="[
-                                'p-2 rounded-full transition-colors',
-                                playbackState.repeatMode !== 'off'
-                                    ? 'text-purple-400'
-                                    : 'text-gray-400 hover:text-white',
-                            ]"
-                            @click="toggleRepeat"
-                        >
-                            <UIcon
-                                :name="
-                                    playbackState.repeatMode === 'one'
-                                        ? 'i-heroicons-arrow-path'
-                                        : 'i-heroicons-arrow-path'
-                                "
-                                class="w-4 h-4"
-                            />
-                            <span
-                                v-if="playbackState.repeatMode === 'one'"
-                                class="absolute text-[8px] font-bold"
-                            >
-                                1
-                            </span>
-                        </button>
-                    </div>
-
-                    <!-- Progress bar -->
-                    <div class="flex items-center gap-2 w-full max-w-xl">
-                        <span class="text-xs text-gray-400 w-10 text-right">
-                            {{ formatDuration(playbackState.currentTime) }}
-                        </span>
-                        <div
-                            class="flex-1 h-1 bg-gray-700 rounded-full cursor-pointer group"
-                            @click="handleSeek"
-                        >
-                            <div
-                                class="h-full bg-white group-hover:bg-purple-500 rounded-full relative transition-colors"
-                                :style="{ width: `${progressPercent}%` }"
-                            >
-                                <div
-                                    class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                />
-                            </div>
-                        </div>
-                        <span class="text-xs text-gray-400 w-10">
-                            {{ formatDuration(playbackState.duration) }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Volume -->
-                <div class="flex items-center gap-2 w-32">
-                    <button
-                        class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                        @click="toggleMute"
-                    >
-                        <UIcon
-                            :name="
-                                playbackState.isMuted || playbackState.volume === 0
-                                    ? 'i-heroicons-speaker-x-mark'
-                                    : playbackState.volume < 0.5
-                                      ? 'i-heroicons-speaker-wave'
-                                      : 'i-heroicons-speaker-wave'
-                            "
-                            class="w-5 h-5"
-                        />
-                    </button>
-                    <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        :value="playbackState.volume"
-                        class="w-full h-1 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-                        @input="(e) => setVolume(parseFloat((e.target as HTMLInputElement).value))"
-                    />
-                </div>
-            </div>
-        </div>
-
         <!-- Track Info Modal -->
         <div
             v-if="showTrackInfo && selectedTrack"
@@ -1896,163 +1785,6 @@ watch(activeTab, async (tab) => {
                             </p>
                         </div>
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cloud Player Bar -->
-        <div
-            v-if="cloudPlaybackState.currentTrack && !playbackState.currentTrack"
-            class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-4 py-3 z-50"
-        >
-            <div class="max-w-7xl mx-auto flex items-center gap-4">
-                <!-- Track info -->
-                <div class="flex items-center gap-3 w-64 min-w-0">
-                    <div
-                        class="w-12 h-12 rounded flex items-center justify-center flex-shrink-0"
-                        :style="{
-                            backgroundColor: getCloudTrackColor(cloudPlaybackState.currentTrack),
-                        }"
-                    >
-                        <UIcon name="i-heroicons-musical-note" class="w-6 h-6 text-white" />
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-white font-medium truncate text-sm">
-                            {{
-                                cloudPlaybackState.currentTrack.title ||
-                                cloudPlaybackState.currentTrack.fileName
-                            }}
-                        </p>
-                        <p class="text-gray-400 text-xs truncate">
-                            {{
-                                cloudPlaybackState.currentTrack.artist ||
-                                t('music.local.unknownArtist') ||
-                                'Unknown Artist'
-                            }}
-                        </p>
-                    </div>
-                    <button
-                        class="ml-2 p-1 rounded-full hover:bg-gray-800 transition-colors flex-shrink-0"
-                        @click="handleCloudToggleLike(cloudPlaybackState.currentTrack)"
-                    >
-                        <UIcon
-                            :name="
-                                cloudPlaybackState.currentTrack.isLiked
-                                    ? 'i-heroicons-heart-solid'
-                                    : 'i-heroicons-heart'
-                            "
-                            :class="[
-                                'w-4 h-4',
-                                cloudPlaybackState.currentTrack.isLiked
-                                    ? 'text-red-500'
-                                    : 'text-gray-400',
-                            ]"
-                        />
-                    </button>
-                </div>
-
-                <!-- Controls -->
-                <div class="flex-1 flex flex-col items-center gap-2">
-                    <div class="flex items-center gap-4">
-                        <button
-                            :class="[
-                                'p-2 rounded-full transition-colors',
-                                cloudPlaybackState.isShuffled
-                                    ? 'text-blue-400'
-                                    : 'text-gray-400 hover:text-white',
-                            ]"
-                            @click="toggleCloudShuffle"
-                        >
-                            <UIcon name="i-heroicons-arrows-right-left" class="w-4 h-4" />
-                        </button>
-                        <button
-                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                            @click="previousCloudTrack"
-                        >
-                            <UIcon name="i-heroicons-backward" class="w-5 h-5" />
-                        </button>
-                        <button
-                            class="p-2 w-10 h-10 rounded-full bg-white text-gray-900 hover:scale-105 transition-transform flex items-center justify-center"
-                            @click="toggleCloudPlay"
-                        >
-                            <UIcon
-                                :name="
-                                    cloudPlaybackState.isPlaying
-                                        ? 'i-heroicons-pause-solid'
-                                        : 'i-heroicons-play-solid'
-                                "
-                                class="w-5 h-5"
-                            />
-                        </button>
-                        <button
-                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                            @click="nextCloudTrack"
-                        >
-                            <UIcon name="i-heroicons-forward" class="w-5 h-5" />
-                        </button>
-                        <button
-                            :class="[
-                                'p-2 rounded-full transition-colors',
-                                cloudPlaybackState.repeatMode !== 'off'
-                                    ? 'text-blue-400'
-                                    : 'text-gray-400 hover:text-white',
-                            ]"
-                            @click="toggleCloudRepeat"
-                        >
-                            <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    <!-- Progress bar -->
-                    <div class="flex items-center gap-2 w-full max-w-xl">
-                        <span class="text-xs text-gray-400 w-10 text-right">
-                            {{ formatCloudDuration(cloudPlaybackState.currentTime) }}
-                        </span>
-                        <div
-                            class="flex-1 h-1 bg-gray-700 rounded-full cursor-pointer group"
-                            @click="handleCloudSeek"
-                        >
-                            <div
-                                class="h-full bg-white group-hover:bg-blue-500 rounded-full relative transition-colors"
-                                :style="{ width: `${cloudProgressPercent}%` }"
-                            >
-                                <div
-                                    class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                />
-                            </div>
-                        </div>
-                        <span class="text-xs text-gray-400 w-10">
-                            {{ formatCloudDuration(cloudPlaybackState.duration) }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Volume -->
-                <div class="flex items-center gap-2 w-32">
-                    <button
-                        class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                        @click="toggleCloudMute"
-                    >
-                        <UIcon
-                            :name="
-                                cloudPlaybackState.isMuted || cloudPlaybackState.volume === 0
-                                    ? 'i-heroicons-speaker-x-mark'
-                                    : 'i-heroicons-speaker-wave'
-                            "
-                            class="w-5 h-5"
-                        />
-                    </button>
-                    <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        :value="cloudPlaybackState.volume"
-                        class="w-full h-1 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-                        @input="
-                            (e) => setCloudVolume(parseFloat((e.target as HTMLInputElement).value))
-                        "
-                    />
                 </div>
             </div>
         </div>
@@ -2258,20 +1990,5 @@ watch(activeTab, async (tab) => {
                 </div>
             </div>
         </div>
-
-        <MusicPlayer
-            :current-track="currentTrack"
-            :is-playing="isPlaying"
-            :progress="progress"
-            :duration="duration"
-            @play="handlePlayClick"
-            @pause="handlePlayClick"
-            @next="handleNextClick"
-            @previous="handlePreviousClick"
-            @seek="handleSeek"
-            @volume-change="handleVolumeChange"
-        />
-
-        <Footer mode="app" />
     </div>
 </template>

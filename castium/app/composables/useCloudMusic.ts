@@ -3,8 +3,6 @@
  * Manages music uploads to Supabase Storage with metadata extraction
  */
 
-import type { UploadProgress } from '~/types/upload'
-
 export interface CloudTrackMetadata {
     title?: string
     artist?: string
@@ -51,12 +49,12 @@ export interface CloudPlaylist {
     updatedAt: string
 }
 
-// export interface UploadProgress {
-//     fileName: string
-//     progress: number
-//     status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
-//     error?: string
-// }
+export interface MusicUploadProgress {
+    fileName: string
+    progress: number
+    status: 'pending' | 'uploading' | 'processing' | 'complete' | 'error'
+    error?: string
+}
 
 export interface CloudPlaybackState {
     currentTrack: CloudTrack | null
@@ -83,8 +81,20 @@ export const useCloudMusic = () => {
     const likedTracks = ref<CloudTrack[]>([])
     const loading = ref(false)
     const uploading = ref(false)
-    const uploadProgress = ref<UploadProgress[]>([])
+    const uploadProgress = ref<MusicUploadProgress[]>([])
     const error = ref<string | null>(null)
+
+    // Clear state (for refresh after data deletion)
+    const clearState = () => {
+        tracks.value = []
+        playlists.value = []
+        likedTracks.value = []
+        loading.value = false
+        uploading.value = false
+        uploadProgress.value = []
+        error.value = null
+        stopPlayback()
+    }
 
     // Sort options
     const sortBy = ref<'name' | 'date' | 'artist' | 'album'>('date')
@@ -217,7 +227,7 @@ export const useCloudMusic = () => {
         const progressIndex = uploadProgress.value.findIndex((p) => p.fileName === file.name)
         const updateProgress = (
             progress: number,
-            status: UploadProgress['status'],
+            status: MusicUploadProgress['status'],
             err?: string
         ) => {
             if (progressIndex >= 0) {
@@ -1068,5 +1078,6 @@ export const useCloudMusic = () => {
         getTrackColor,
         formatFileSize,
         formatDuration,
+        clearState,
     }
 }

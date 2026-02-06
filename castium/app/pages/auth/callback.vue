@@ -13,36 +13,36 @@ onMounted(async () => {
 
         if (data.session) {
             toast.add({
-                title: t("auth.callback.success"),
-                color: "success",
+                title: t('auth.callback.success'),
+                color: 'success',
             })
-            await router.push("/app/movies")
+            await router.push('/app/movies')
         } else {
             // Session is missing, likely due to clock skew or invalid token
-            console.warn("No session found in callback. Possible clock skew.")
+            console.warn('No session found in callback. Possible clock skew.')
             toast.add({
-                title: t("auth.callback.error"),
+                title: t('auth.callback.error'),
                 description:
                     "Impossible de valider la session. Vérifiez que votre horloge système est à l'heure.",
-                color: "error",
+                color: 'error',
                 timeout: 0, // Keep it visible
             })
             // Delay redirect to let user read the message
             setTimeout(() => {
-                router.push("/auth/login")
+                router.push('/auth/login')
             }, 5000)
         }
     } catch (error: any) {
-        console.error("Auth callback error:", error)
+        console.error('Auth callback error:', error)
         toast.add({
-            title: t("auth.callback.error"),
+            title: t('auth.callback.error'),
             description: error.message,
-            color: "error",
+            color: 'error',
             timeout: 0,
         })
         // Delay redirect to let user read the message
         setTimeout(() => {
-            router.push("/auth/login")
+            router.push('/auth/login')
         }, 5000)
     }
 })
@@ -58,7 +58,7 @@ onMounted(async () => {
                 name="i-heroicons-arrow-path"
                 class="w-12 h-12 text-castium-green animate-spin"
             />
-            <p class="mt-4 text-white">{{ t("auth.callback.loading") }}</p>
+            <p class="mt-4 text-white">{{ t('auth.callback.loading') }}</p>
         </div>
     </div>
 </template>

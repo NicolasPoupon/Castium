@@ -1,38 +1,38 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from "@nuxt/ui"
-import { useI18n } from "#imports"
+import type { NavigationMenuItem } from '@nuxt/ui'
+import { useI18n } from '#imports'
 const { t } = useI18n()
 const props = defineProps({
     mode: {
         type: String,
-        default: "landing", // landing | login | music | podcast
+        default: 'landing', // landing | login | music | podcast
     },
 })
 const items: NavigationMenuItem[] = [
     {
-        label: t("footer.links.releases"),
-        to: "https://github.com/NicolasPoupon/Castium/releases",
-        target: "_blank",
+        label: t('footer.links.releases'),
+        to: 'https://github.com/NicolasPoupon/Castium/releases',
+        target: '_blank',
     },
     {
-        label: t("footer.links.support"),
-        to: "https://github.com/NicolasPoupon/Castium/releases",
-        target: "_blank",
+        label: t('footer.links.support'),
+        to: 'https://github.com/NicolasPoupon/Castium/releases',
+        target: '_blank',
     },
     {
-        label: t("footer.links.documentation"),
-        to: "https://github.com/NicolasPoupon/Castium/releases",
-        target: "_blank",
+        label: t('footer.links.documentation'),
+        to: 'https://github.com/NicolasPoupon/Castium/releases',
+        target: '_blank',
     },
     {
-        label: t("footer.links.legal"),
-        to: "https://github.com/NicolasPoupon/Castium/releases",
-        target: "_blank",
+        label: t('footer.links.legal'),
+        to: 'https://github.com/NicolasPoupon/Castium/releases',
+        target: '_blank',
     },
     {
-        label: t("footer.links.contact"),
-        to: "https://github.com/NicolasPoupon/Castium/releases",
-        target: "_blank",
+        label: t('footer.links.contact'),
+        to: 'https://github.com/NicolasPoupon/Castium/releases',
+        target: '_blank',
     },
 ]
 </script>
@@ -41,7 +41,7 @@ const items: NavigationMenuItem[] = [
     <UFooter class="mt-auto w-full border-t border-gray-800">
         <template #left>
             <p class="text-muted text-sm">
-                © {{ new Date().getFullYear() }} {{ t("footer.rights") }}
+                © {{ new Date().getFullYear() }} {{ t('footer.rights') }}
             </p>
         </template>
 

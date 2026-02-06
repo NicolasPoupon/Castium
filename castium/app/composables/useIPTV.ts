@@ -82,55 +82,211 @@ const IPTV_BASE_URL = 'https://iptv-org.github.io/iptv'
 
 // Categories with icons
 const CATEGORIES: IPTVCategory[] = [
-    { id: 'general', name: 'General', code: 'general', count: 2467, icon: '📺' },
-    { id: 'entertainment', name: 'Entertainment', code: 'entertainment', count: 653, icon: '🎭' },
-    { id: 'news', name: 'News', code: 'news', count: 932, icon: '📰' },
-    { id: 'religious', name: 'Religious', code: 'religious', count: 740, icon: '🕊️' },
-    { id: 'music', name: 'Music', code: 'music', count: 643, icon: '🎵' },
-    { id: 'movies', name: 'Movies', code: 'movies', count: 412, icon: '🎬' },
-    { id: 'sports', name: 'Sports', code: 'sports', count: 317, icon: '⚽' },
-    { id: 'kids', name: 'Kids', code: 'kids', count: 257, icon: '🧸' },
-    { id: 'series', name: 'Series', code: 'series', count: 221, icon: '📽️' },
-    { id: 'education', name: 'Education', code: 'education', count: 185, icon: '📚' },
-    { id: 'documentary', name: 'Documentary', code: 'documentary', count: 122, icon: '🎥' },
-    { id: 'culture', name: 'Culture', code: 'culture', count: 170, icon: '🏛️' },
-    { id: 'lifestyle', name: 'Lifestyle', code: 'lifestyle', count: 100, icon: '🌿' },
-    { id: 'comedy', name: 'Comedy', code: 'comedy', count: 81, icon: '😂' },
-    { id: 'business', name: 'Business', code: 'business', count: 75, icon: '💼' },
-    { id: 'animation', name: 'Animation', code: 'animation', count: 62, icon: '🎨' },
-    { id: 'family', name: 'Family', code: 'family', count: 54, icon: '👨‍👩‍👧‍👦' },
-    { id: 'classic', name: 'Classic', code: 'classic', count: 51, icon: '📼' },
-    { id: 'outdoor', name: 'Outdoor', code: 'outdoor', count: 46, icon: '🏕️' },
-    { id: 'travel', name: 'Travel', code: 'travel', count: 43, icon: '✈️' },
-    { id: 'cooking', name: 'Cooking', code: 'cooking', count: 32, icon: '🍳' },
-    { id: 'science', name: 'Science', code: 'science', count: 24, icon: '🔬' },
-    { id: 'auto', name: 'Auto', code: 'auto', count: 19, icon: '🚗' },
-    { id: 'weather', name: 'Weather', code: 'weather', count: 16, icon: '🌤️' },
-    { id: 'shop', name: 'Shop', code: 'shop', count: 84, icon: '🛒' },
-    { id: 'relax', name: 'Relax', code: 'relax', count: 4, icon: '🧘' },
+    {
+        id: 'general',
+        name: 'General',
+        code: 'general',
+        count: 2467,
+        icon: 'i-heroicons-tv',
+    },
+    {
+        id: 'entertainment',
+        name: 'Entertainment',
+        code: 'entertainment',
+        count: 653,
+        icon: 'i-heroicons-sparkles',
+    },
+    {
+        id: 'news',
+        name: 'News',
+        code: 'news',
+        count: 932,
+        icon: 'i-heroicons-newspaper',
+    },
+    {
+        id: 'religious',
+        name: 'Religious',
+        code: 'religious',
+        count: 740,
+        icon: 'i-heroicons-heart',
+    },
+    {
+        id: 'music',
+        name: 'Music',
+        code: 'music',
+        count: 643,
+        icon: 'i-heroicons-musical-note',
+    },
+    {
+        id: 'movies',
+        name: 'Movies',
+        code: 'movies',
+        count: 412,
+        icon: 'i-heroicons-film',
+    },
+    {
+        id: 'sports',
+        name: 'Sports',
+        code: 'sports',
+        count: 317,
+        icon: 'i-heroicons-trophy',
+    },
+    {
+        id: 'kids',
+        name: 'Kids',
+        code: 'kids',
+        count: 257,
+        icon: 'i-heroicons-puzzle-piece',
+    },
+    {
+        id: 'series',
+        name: 'Series',
+        code: 'series',
+        count: 221,
+        icon: 'i-heroicons-play-circle',
+    },
+    {
+        id: 'education',
+        name: 'Education',
+        code: 'education',
+        count: 185,
+        icon: 'i-heroicons-academic-cap',
+    },
+    {
+        id: 'documentary',
+        name: 'Documentary',
+        code: 'documentary',
+        count: 122,
+        icon: 'i-heroicons-video-camera',
+    },
+    {
+        id: 'culture',
+        name: 'Culture',
+        code: 'culture',
+        count: 170,
+        icon: 'i-heroicons-building-library',
+    },
+    {
+        id: 'lifestyle',
+        name: 'Lifestyle',
+        code: 'lifestyle',
+        count: 100,
+        icon: 'i-heroicons-sun',
+    },
+    {
+        id: 'comedy',
+        name: 'Comedy',
+        code: 'comedy',
+        count: 81,
+        icon: 'i-heroicons-face-smile',
+    },
+    {
+        id: 'business',
+        name: 'Business',
+        code: 'business',
+        count: 75,
+        icon: 'i-heroicons-briefcase',
+    },
+    {
+        id: 'animation',
+        name: 'Animation',
+        code: 'animation',
+        count: 62,
+        icon: 'i-heroicons-paint-brush',
+    },
+    {
+        id: 'family',
+        name: 'Family',
+        code: 'family',
+        count: 54,
+        icon: 'i-heroicons-users',
+    },
+    {
+        id: 'classic',
+        name: 'Classic',
+        code: 'classic',
+        count: 51,
+        icon: 'i-heroicons-clock',
+    },
+    {
+        id: 'outdoor',
+        name: 'Outdoor',
+        code: 'outdoor',
+        count: 46,
+        icon: 'i-heroicons-map',
+    },
+    {
+        id: 'travel',
+        name: 'Travel',
+        code: 'travel',
+        count: 43,
+        icon: 'i-heroicons-paper-airplane',
+    },
+    {
+        id: 'cooking',
+        name: 'Cooking',
+        code: 'cooking',
+        count: 32,
+        icon: 'i-heroicons-fire',
+    },
+    {
+        id: 'science',
+        name: 'Science',
+        code: 'science',
+        count: 24,
+        icon: 'i-heroicons-beaker',
+    },
+    {
+        id: 'auto',
+        name: 'Auto',
+        code: 'auto',
+        count: 19,
+        icon: 'i-heroicons-truck',
+    },
+    {
+        id: 'weather',
+        name: 'Weather',
+        code: 'weather',
+        count: 16,
+        icon: 'i-heroicons-cloud',
+    },
+    {
+        id: 'shop',
+        name: 'Shop',
+        code: 'shop',
+        count: 84,
+        icon: 'i-heroicons-shopping-cart',
+    },
+    {
+        id: 'relax',
+        name: 'Relax',
+        code: 'relax',
+        count: 4,
+        icon: 'i-heroicons-heart',
+    },
 ]
 
-// Languages with flags
+// Languages (minimal: no emoji flags)
 const LANGUAGES: IPTVLanguage[] = [
-    { id: 'eng', name: 'English', code: 'eng', count: 2379, flag: '🇬🇧' },
-    { id: 'spa', name: 'Spanish', code: 'spa', count: 1756, flag: '🇪🇸' },
-    { id: 'fra', name: 'French', code: 'fra', count: 509, flag: '🇫🇷' },
-    { id: 'rus', name: 'Russian', code: 'rus', count: 359, flag: '🇷🇺' },
-    { id: 'ara', name: 'Arabic', code: 'ara', count: 351, flag: '🇸🇦' },
-    { id: 'ita', name: 'Italian', code: 'ita', count: 343, flag: '🇮🇹' },
-    { id: 'deu', name: 'German', code: 'deu', count: 326, flag: '🇩🇪' },
-    { id: 'hin', name: 'Hindi', code: 'hin', count: 268, flag: '🇮🇳' },
-    { id: 'por', name: 'Portuguese', code: 'por', count: 257, flag: '🇵🇹' },
-    { id: 'tur', name: 'Turkish', code: 'tur', count: 235, flag: '🇹🇷' },
-    { id: 'zho', name: 'Chinese', code: 'zho', count: 227, flag: '🇨🇳' },
-    { id: 'fas', name: 'Persian', code: 'fas', count: 224, flag: '🇮🇷' },
-    { id: 'nld', name: 'Dutch', code: 'nld', count: 183, flag: '🇳🇱' },
-    { id: 'ind', name: 'Indonesian', code: 'ind', count: 168, flag: '🇮🇩' },
-    { id: 'ell', name: 'Greek', code: 'ell', count: 115, flag: '🇬🇷' },
-    { id: 'hun', name: 'Hungarian', code: 'hun', count: 104, flag: '🇭🇺' },
-    { id: 'ron', name: 'Romanian', code: 'ron', count: 107, flag: '🇷🇴' },
-    { id: 'kor', name: 'Korean', code: 'kor', count: 90, flag: '🇰🇷' },
-    { id: 'pol', name: 'Polish', code: 'pol', count: 89, flag: '🇵🇱' },
+    { id: 'eng', name: 'English', code: 'eng', count: 2379 },
+    { id: 'spa', name: 'Spanish', code: 'spa', count: 1756 },
+    { id: 'fra', name: 'French', code: 'fra', count: 509 },
+    { id: 'rus', name: 'Russian', code: 'rus', count: 359 },
+    { id: 'ara', name: 'Arabic', code: 'ara', count: 351 },
+    { id: 'ita', name: 'Italian', code: 'ita', count: 343 },
+    { id: 'deu', name: 'German', code: 'deu', count: 326 },
+    { id: 'hin', name: 'Hindi', code: 'hin', count: 268 },
+    { id: 'por', name: 'Portuguese', code: 'por', count: 257 },
+    { id: 'tur', name: 'Turkish', code: 'tur', count: 235 },
+    { id: 'zho', name: 'Chinese', code: 'zho', count: 227 },
+    { id: 'fas', name: 'Persian', code: 'fas', count: 224 },
+    { id: 'nld', name: 'Dutch', code: 'nld', count: 183 },
+    { id: 'ind', name: 'Indonesian', code: 'ind', count: 168 },
+    { id: 'ell', name: 'Greek', code: 'ell', count: 115 },
+    { id: 'hun', name: 'Hungarian', code: 'hun', count: 104 },
+    { id: 'ron', name: 'Romanian', code: 'ron', count: 107 },
+    { id: 'kor', name: 'Korean', code: 'kor', count: 90 },
+    { id: 'pol', name: 'Polish', code: 'pol', count: 89 },
 ]
 
 // Singleton state
@@ -145,7 +301,7 @@ const state = ref<IPTVState>({
     searchQuery: '',
     selectedCategory: null,
     selectedLanguage: null,
-    viewMode: 'browse'
+    viewMode: 'browse',
 })
 
 // Parse M3U playlist
@@ -179,7 +335,7 @@ function parseM3U(content: string, favoriteIds: Set<string>): IPTVChannel[] {
                 logo: logoMatch?.[1] || '',
                 group: groupMatch?.[1] || 'Uncategorized',
                 tvgId: tvgIdMatch?.[1],
-                isFavorite: favoriteIds.has(id)
+                isFavorite: favoriteIds.has(id),
             }
         } else if (line && !line.startsWith('#') && currentInfo.name) {
             currentInfo.url = line
@@ -206,7 +362,7 @@ export function useIPTV(): UseIPTVReturn {
         try {
             const { data, error } = await supabase
                 .from('iptv_favorites')
-                .select('channel_id, channel_name, channel_logo, channel_group')
+                .select('channel_id, channel_name, channel_logo, channel_group, channel_url')
                 .eq('user_id', user.value.id)
 
             if (error) throw error
@@ -217,8 +373,8 @@ export function useIPTV(): UseIPTVReturn {
                 name: f.channel_name,
                 logo: f.channel_logo || '',
                 group: f.channel_group || '',
-                url: '', // Will be loaded when category is selected
-                isFavorite: true
+                url: f.channel_url || '', // Now loaded from DB
+                isFavorite: true,
             }))
 
             state.value.favoritesLoaded = true
@@ -245,11 +401,13 @@ export function useIPTV(): UseIPTVReturn {
             }
 
             const content = await response.text()
-            const favoriteIds = new Set(state.value.favorites.map(f => f.id))
+            const favoriteIds = new Set(state.value.favorites.map((f) => f.id))
             state.value.channels = parseM3U(content, favoriteIds)
             state.value.viewMode = 'channels'
 
-            console.log(`[IPTV] Loaded ${state.value.channels.length} channels from category: ${categoryCode}`)
+            console.log(
+                `[IPTV] Loaded ${state.value.channels.length} channels from category: ${categoryCode}`
+            )
         } catch (e: any) {
             console.error('[IPTV] Failed to load channels:', e)
             state.value.error = e.message || 'Failed to load channels'
@@ -275,11 +433,13 @@ export function useIPTV(): UseIPTVReturn {
             }
 
             const content = await response.text()
-            const favoriteIds = new Set(state.value.favorites.map(f => f.id))
+            const favoriteIds = new Set(state.value.favorites.map((f) => f.id))
             state.value.channels = parseM3U(content, favoriteIds)
             state.value.viewMode = 'channels'
 
-            console.log(`[IPTV] Loaded ${state.value.channels.length} channels from language: ${languageCode}`)
+            console.log(
+                `[IPTV] Loaded ${state.value.channels.length} channels from language: ${languageCode}`
+            )
         } catch (e: any) {
             console.error('[IPTV] Failed to load channels:', e)
             state.value.error = e.message || 'Failed to load channels'
@@ -292,7 +452,7 @@ export function useIPTV(): UseIPTVReturn {
     const toggleFavorite = async (channel: IPTVChannel): Promise<void> => {
         if (!user.value) return
 
-        const isCurrentlyFavorite = state.value.favorites.some(f => f.id === channel.id)
+        const isCurrentlyFavorite = state.value.favorites.some((f) => f.id === channel.id)
 
         try {
             if (isCurrentlyFavorite) {
@@ -303,28 +463,27 @@ export function useIPTV(): UseIPTVReturn {
                     .eq('user_id', user.value.id)
                     .eq('channel_id', channel.id)
 
-                state.value.favorites = state.value.favorites.filter(f => f.id !== channel.id)
+                state.value.favorites = state.value.favorites.filter((f) => f.id !== channel.id)
             } else {
-                // Add to favorites
-                await supabase
-                    .from('iptv_favorites')
-                    .insert({
-                        user_id: user.value.id,
-                        channel_id: channel.id,
-                        channel_name: channel.name,
-                        channel_logo: channel.logo,
-                        channel_group: channel.group
-                    })
+                // Add to favorites - include URL for direct playback
+                await supabase.from('iptv_favorites').insert({
+                    user_id: user.value.id,
+                    channel_id: channel.id,
+                    channel_name: channel.name,
+                    channel_logo: channel.logo,
+                    channel_group: channel.group,
+                    channel_url: channel.url,
+                })
 
                 state.value.favorites.push({ ...channel, isFavorite: true })
             }
 
             // Update channel in list
-            const idx = state.value.channels.findIndex(c => c.id === channel.id)
+            const idx = state.value.channels.findIndex((c) => c.id === channel.id)
             if (idx !== -1) {
                 state.value.channels[idx] = {
                     ...state.value.channels[idx],
-                    isFavorite: !isCurrentlyFavorite
+                    isFavorite: !isCurrentlyFavorite,
                 }
             }
 
@@ -332,7 +491,7 @@ export function useIPTV(): UseIPTVReturn {
             if (state.value.currentChannel?.id === channel.id) {
                 state.value.currentChannel = {
                     ...state.value.currentChannel,
-                    isFavorite: !isCurrentlyFavorite
+                    isFavorite: !isCurrentlyFavorite,
                 }
             }
         } catch (e) {
@@ -373,9 +532,8 @@ export function useIPTV(): UseIPTVReturn {
         // Filter by search
         if (state.value.searchQuery) {
             const query = state.value.searchQuery.toLowerCase()
-            result = result.filter(c =>
-                c.name.toLowerCase().includes(query) ||
-                c.group.toLowerCase().includes(query)
+            result = result.filter(
+                (c) => c.name.toLowerCase().includes(query) || c.group.toLowerCase().includes(query)
             )
         }
 
@@ -410,6 +568,6 @@ export function useIPTV(): UseIPTVReturn {
         stopPlayback,
         toggleFavorite,
         setSearchQuery,
-        goBackToBrowse
+        goBackToBrowse,
     }
 }
