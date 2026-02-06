@@ -158,6 +158,7 @@ const currentTime = ref(0)
 const volume = ref(1)
 const isMuted = ref(false)
 const isFullscreen = ref(false)
+const isPiP = ref(false)
 const showControls = ref(true)
 const controlsTimeout = ref<NodeJS.Timeout | null>(null)
 const searchQuery = ref('')
@@ -241,6 +242,28 @@ const handleSelectFolder = async () => {
 
 // Handle video click
 const handleVideoClick = async (video: any) => {
+    // Exit PiP mode if active and pause the PiP video first
+    if (document.pictureInPictureElement) {
+        const pipVideo = document.pictureInPictureElement as HTMLVideoElement
+        pipVideo.pause()
+        await document.exitPictureInPicture()
+    }
+    isPiP.value = false
+
+    // Stop any playing video (local or cloud)
+    if (videoRef.value) {
+        videoRef.value.pause()
+    }
+    if (cloudVideoRef.value) {
+        cloudVideoRef.value.pause()
+    }
+
+    // Close cloud player if open
+    if (showCloudPlayer.value) {
+        showCloudPlayer.value = false
+        currentCloudVideo.value = null
+    }
+
     const url = await playVideo(video)
     if (url) {
         videoUrl.value = url
@@ -373,6 +396,23 @@ const toggleFullscreen = async () => {
     }
 }
 
+// Toggle Picture-in-Picture mode
+const togglePiP = async () => {
+    if (!videoRef.value) return
+
+    try {
+        if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture()
+            isPiP.value = false
+        } else if (document.pictureInPictureEnabled) {
+            await videoRef.value.requestPictureInPicture()
+            isPiP.value = true
+        }
+    } catch (error) {
+        console.error('[Lectures] PiP error:', error)
+    }
+}
+
 // Skip forward/backward
 const skip = (seconds: number) => {
     if (videoRef.value) {
@@ -396,6 +436,10 @@ const handleKeydown = (e: KeyboardEvent) => {
         case 'f':
             e.preventDefault()
             toggleFullscreen()
+            break
+        case 'p':
+            e.preventDefault()
+            togglePiP()
             break
         case 'm':
             e.preventDefault()
@@ -532,6 +576,32 @@ const handleUpdateMetadata = async (videoId: string, metadata: any) => {
 
 // Cloud video player functions
 const playCloudVideo = async (video: any) => {
+    // Exit PiP mode if active and pause the PiP video first
+    if (document.pictureInPictureElement) {
+        const pipVideo = document.pictureInPictureElement as HTMLVideoElement
+        pipVideo.pause()
+        await document.exitPictureInPicture()
+    }
+    isPiP.value = false
+
+    // Stop any playing video (local or cloud)
+    if (videoRef.value) {
+        videoRef.value.pause()
+    }
+    if (cloudVideoRef.value) {
+        cloudVideoRef.value.pause()
+    }
+
+    // Close local player if open
+    if (showPlayer.value) {
+        if (videoUrl.value) {
+            URL.revokeObjectURL(videoUrl.value)
+        }
+        videoUrl.value = null
+        showPlayer.value = false
+        stopVideo()
+    }
+
     if (!video.publicUrl) {
         console.error('[Lectures] No public URL for video:', video)
         return
@@ -561,6 +631,21 @@ const closeCloudPlayer = async () => {
     currentCloudVideo.value = null
     if (cloudVideoRef.value) {
         cloudVideoRef.value.pause()
+    }
+}
+
+// Toggle Picture-in-Picture for cloud video
+const toggleCloudPiP = async () => {
+    if (!cloudVideoRef.value) return
+
+    try {
+        if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture()
+        } else if (document.pictureInPictureEnabled) {
+            await cloudVideoRef.value.requestPictureInPicture()
+        }
+    } catch (error) {
+        console.error('[Lectures] Cloud PiP error:', error)
     }
 }
 
@@ -2046,6 +2131,8 @@ watch(activeTab, async (tab) => {
                         @timeupdate="onTimeUpdate"
                         @ended="onEnded"
                         @click.stop="togglePlay"
+                        @enterpictureinpicture="isPiP = true"
+                        @leavepictureinpicture="isPiP = false"
                     />
 
                     <!-- Controls overlay -->
@@ -2186,6 +2273,17 @@ watch(activeTab, async (tab) => {
                                                 @click.stop
                                             />
                                         </div>
+
+                                        <!-- Picture-in-Picture button -->
+                                        <UButton
+                                            icon="i-heroicons-window"
+                                            color="neutral"
+                                            variant="ghost"
+                                            size="lg"
+                                            :class="isPiP ? 'text-green-400' : ''"
+                                            title="Picture-in-Picture"
+                                            @click.stop="togglePiP"
+                                        />
 
                                         <UButton
                                             :icon="
@@ -2526,6 +2624,15 @@ watch(activeTab, async (tab) => {
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
+                            <!-- Picture-in-Picture for cloud video -->
+                            <UButton
+                                icon="i-heroicons-window"
+                                color="neutral"
+                                variant="ghost"
+                                size="lg"
+                                title="Picture-in-Picture"
+                                @click="toggleCloudPiP"
+                            />
                             <UButton
                                 icon="i-heroicons-information-circle"
                                 color="neutral"
