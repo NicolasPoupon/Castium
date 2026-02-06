@@ -218,8 +218,6 @@ export function useUserDataManagement() {
     const deleteAccount = async (): Promise<boolean> => {
         if (!user.value) return false
 
-        const userId = user.value.id
-
         try {
             // FIRST: Get the session token before any deletions
             const { data: sessionData } = await supabase.auth.getSession()
@@ -230,46 +228,8 @@ export function useUserDataManagement() {
                 return false
             }
 
-            // Delete all user data from all tables
-            // Custom streams
-            await safeDelete('custom_streams')
-
-            // IPTV and Radio favorites
-            await safeDelete('iptv_favorites')
-            await safeDelete('radio_favorites')
-
-            // Local music (order matters for foreign keys)
-            await safeDelete('local_liked_tracks')
-            await safeDelete('local_recently_played')
-            await safeDelete('local_playlists') // CASCADE deletes playlist_tracks
-            await safeDelete('local_tracks')
-
-            // Cloud music
-            await safeDelete('cloud_liked_tracks')
-            await safeDelete('cloud_playlists') // CASCADE deletes playlist_tracks
-            await safeDelete('cloud_tracks')
-
-            // Podcasts
-            await safeDelete('local_podcasts')
-            await safeDelete('cloud_podcasts')
-
-            // Videos
-            await safeDelete('videos')
-
-            // Delete profile
-            await supabase.from('profiles').delete().eq('id', userId)
-
-            // Clear all IndexedDB databases
-            await clearIndexedDB(DB_NAME)
-            await clearIndexedDB(MUSIC_DB_NAME)
-            await clearIndexedDB(PODCAST_DB_NAME)
-
-            // Clear localStorage
-            if (typeof localStorage !== 'undefined') {
-                localStorage.clear()
-            }
-
-            // Call server API to delete auth user (requires service role key)
+            // Call server API to delete all data and auth user (uses admin client)
+            // This must be done FIRST while the token is still valid
             console.log('[UserData] Calling delete-account API with token...')
             try {
                 const response = await $fetch('/api/delete-account', {
@@ -278,13 +238,28 @@ export function useUserDataManagement() {
                         Authorization: `Bearer ${token}`,
                     },
                 })
-                console.log('[UserData] Auth user deleted:', response)
-            } catch (e) {
-                console.error('[UserData] Failed to delete auth user:', e)
+                console.log('[UserData] Account deleted via API:', response)
+            } catch (e: any) {
+                console.error('[UserData] Failed to delete account via API:', e)
+                // If API fails, don't proceed
+                return false
             }
 
-            // Sign out the user
-            await signOut()
+            // Clear all IndexedDB databases (local cleanup)
+            await clearIndexedDB(DB_NAME)
+            await clearIndexedDB(MUSIC_DB_NAME)
+            await clearIndexedDB(PODCAST_DB_NAME)
+            await clearIndexedDB(PHOTOS_DB_NAME)
+
+            // Clear localStorage
+            if (typeof localStorage !== 'undefined') {
+                localStorage.clear()
+            }
+
+            // Sign out the user (session is already invalid but clean up local state)
+            try {
+                await signOut()
+            } catch {}
 
             console.log('[UserData] Account deleted successfully')
 
@@ -296,10 +271,6 @@ export function useUserDataManagement() {
             return true
         } catch (e: any) {
             console.error('[UserData] Failed to delete account:', e)
-            // Even if there's an error, try to sign out
-            try {
-                await signOut()
-            } catch {}
             return false
         }
     }

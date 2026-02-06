@@ -21,6 +21,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
         return
     }
 
+    // Handle OAuth callback tokens in hash (redirect to callback page)
+    // This happens when Supabase redirects to root with tokens in hash
+    if (to.path === '/' && to.hash && to.hash.includes('access_token=')) {
+        // Redirect to callback page with the hash preserved
+        return navigateTo('/auth/callback' + to.hash)
+    }
+
     try {
         const { isAuthenticated, initialized, initAuth } = useAuth()
 
