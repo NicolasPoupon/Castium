@@ -3,5 +3,6 @@
 <template>
     <div class="antialiased min-w-screen min-h-screen bg-gray-800 dark:bg-base-dark">
         <slot />
+        <GlobalPlayer />
     </div>
 </template>

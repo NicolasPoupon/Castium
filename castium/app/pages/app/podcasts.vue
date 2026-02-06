@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from '#imports'
 import type { ThemeColor } from '~/composables/useTheme'
+import type { MediaTrack } from '~/composables/useGlobalPlayer'
 
 definePageMeta({
     ssr: false,
@@ -8,6 +9,9 @@ definePageMeta({
 
 const { t } = useI18n()
 const { colors, colorClasses } = useTheme()
+
+// Global player
+const { playTrack: globalPlayTrack, stop: globalStop } = useGlobalPlayer()
 
 // Get theme classes for podcasts
 const themeColor = computed(() => colors.value.podcasts as ThemeColor)
@@ -22,20 +26,12 @@ const {
     hasPermission: localHasPermission,
     needsReauthorization: localNeedsReauthorization,
     savedFolderName: localSavedFolderName,
-    playbackState: localPlaybackState,
     initialize: initializeLocal,
     selectFolder,
     reauthorizeFolder,
     toggleLike: toggleLocalLike,
     updateNotes: updateLocalNotes,
     deletePodcast: deleteLocalPodcast,
-    playPodcast: playLocalPodcast,
-    togglePlay: toggleLocalPlay,
-    seek: seekLocal,
-    skip: skipLocal,
-    setVolume: setLocalVolume,
-    toggleMute: toggleLocalMute,
-    setPlaybackSpeed: setLocalPlaybackSpeed,
     formatDuration: formatLocalDuration,
     formatFileSize: formatLocalFileSize,
     getPodcastColor: getLocalPodcastColor,
@@ -51,19 +47,11 @@ const {
     loading: cloudLoading,
     uploading: cloudUploading,
     uploadProgress: cloudUploadProgress,
-    playbackState: cloudPlaybackState,
     fetchPodcasts: fetchCloudPodcasts,
     uploadPodcasts: uploadCloudPodcasts,
     deletePodcast: deleteCloudPodcast,
     toggleLike: toggleCloudLike,
     updateNotes: updateCloudNotes,
-    playPodcast: playCloudPodcast,
-    togglePlay: toggleCloudPlay,
-    seek: seekCloud,
-    skip: skipCloud,
-    setVolume: setCloudVolume,
-    toggleMute: toggleCloudMute,
-    setPlaybackSpeed: setCloudPlaybackSpeed,
     formatDuration: formatCloudDuration,
     formatFileSize: formatCloudFileSize,
     getPodcastColor: getCloudPodcastColor,
@@ -220,12 +208,50 @@ const cancelDelete = () => {
     podcastToDelete.value = null
 }
 
-// Play handlers
-const handlePlay = (podcast: any, isLocal: boolean) => {
+// Convert local podcast to MediaTrack for global player
+const localPodcastToMediaTrack = (podcast: any): MediaTrack => {
+    return {
+        id: podcast.id,
+        title: podcast.title || podcast.fileName,
+        artist: podcast.artist,
+        album: podcast.album,
+        coverArt: podcast.coverArt,
+        duration: podcast.duration,
+        file: podcast.file,
+        handle: podcast.handle,
+        url: podcast.objectUrl, // Use existing objectUrl if available
+        type: 'podcast',
+        showName: podcast.album,
+        isCloud: false,
+    }
+}
+
+// Convert cloud podcast to MediaTrack for global player
+const cloudPodcastToMediaTrack = (podcast: any): MediaTrack => {
+    return {
+        id: podcast.id,
+        title: podcast.title || podcast.fileName,
+        artist: podcast.artist,
+        album: podcast.album,
+        coverArt: podcast.coverPath,
+        duration: podcast.duration,
+        url: podcast.publicUrl,
+        type: 'podcast',
+        showName: podcast.album,
+        isCloud: true,
+    }
+}
+
+// Play handlers - use global player
+const handlePlay = async (podcast: any, isLocal: boolean) => {
     if (isLocal) {
-        playLocalPodcast(podcast)
+        // For local podcasts, we need to get the file handle
+        // The global player will create its own objectUrl
+        const mediaTrack = localPodcastToMediaTrack(podcast)
+        await globalPlayTrack(mediaTrack, [], 0)
     } else {
-        playCloudPodcast(podcast)
+        const mediaTrack = cloudPodcastToMediaTrack(podcast)
+        await globalPlayTrack(mediaTrack, [], 0)
     }
 }
 
@@ -237,11 +263,6 @@ const handleToggleLike = async (podcast: any, isLocal: boolean) => {
         await toggleCloudLike(podcast)
     }
 }
-
-// Current playback helpers
-const currentPlaybackState = computed(() => {
-    return activeTab.value === 'local' ? localPlaybackState.value : cloudPlaybackState.value
-})
 
 const formatDuration = (seconds?: number) => {
     return activeTab.value === 'local' ? formatLocalDuration(seconds) : formatCloudDuration(seconds)
@@ -866,175 +887,6 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <!-- Player bar -->
-        <Transition name="slide-up">
-            <div
-                v-if="currentPlaybackState.currentPodcast"
-                :class="[
-                    `fixed bottom-0 left-0 right-0 backdrop-blur-lg border-t border-gray-800 z-40 bg-gradient-to-r from-gray-900 via-${themeColor}-900/30 to-gray-900`,
-                ]"
-            >
-                <div class="max-w-7xl mx-auto px-4 py-3">
-                    <div class="flex items-center gap-4">
-                        <!-- Podcast info -->
-                        <div class="flex items-center gap-3 flex-1 min-w-0">
-                            <div
-                                :class="[
-                                    'w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0',
-                                    theme.bg,
-                                ]"
-                            >
-                                <UIcon name="i-heroicons-microphone" class="w-6 h-6 text-white" />
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-white font-medium truncate">
-                                    {{
-                                        currentPlaybackState.currentPodcast.title ||
-                                        currentPlaybackState.currentPodcast.fileName
-                                    }}
-                                </p>
-                                <p class="text-gray-400 text-sm truncate">
-                                    {{
-                                        currentPlaybackState.currentPodcast.album ||
-                                        t('podcasts.unknownShow')
-                                    }}
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Controls -->
-                        <div class="flex items-center gap-3">
-                            <!-- Skip back -->
-                            <button
-                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white btn-press"
-                                @click="activeTab === 'local' ? skipLocal(-15) : skipCloud(-15)"
-                            >
-                                <UIcon name="i-heroicons-backward" class="w-5 h-5" />
-                            </button>
-
-                            <!-- Play/Pause -->
-                            <button
-                                :class="[`p-3 rounded-full transition-colors btn-press`, theme.bg]"
-                                @click="activeTab === 'local' ? toggleLocalPlay() : toggleCloudPlay()"
-                            >
-                                <UIcon
-                                    :name="
-                                        currentPlaybackState.isPlaying
-                                            ? 'i-heroicons-pause-solid'
-                                            : 'i-heroicons-play-solid'
-                                    "
-                                    class="w-6 h-6 text-white"
-                                />
-                            </button>
-
-                            <!-- Skip forward -->
-                            <button
-                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white btn-press"
-                                @click="activeTab === 'local' ? skipLocal(30) : skipCloud(30)"
-                            >
-                                <UIcon name="i-heroicons-forward" class="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <!-- Progress -->
-                        <div class="hidden sm:flex items-center gap-2 flex-1">
-                            <span class="text-gray-500 text-xs w-12 text-right">
-                                {{ formatDuration(currentPlaybackState.currentTime) }}
-                            </span>
-                            <input
-                                type="range"
-                                min="0"
-                                :max="currentPlaybackState.duration || 100"
-                                :value="currentPlaybackState.currentTime"
-                                :class="[
-                                    `flex-1 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-${themeColor}-500`,
-                                ]"
-                                @input="
-                                    (e) =>
-                                        activeTab === 'local'
-                                            ? seekLocal(
-                                                  Number((e.target as HTMLInputElement).value)
-                                              )
-                                            : seekCloud(
-                                                  Number((e.target as HTMLInputElement).value)
-                                              )
-                                "
-                            />
-                            <span class="text-gray-500 text-xs w-12">
-                                {{ formatDuration(currentPlaybackState.duration) }}
-                            </span>
-                        </div>
-
-                        <!-- Speed control -->
-                        <div class="hidden md:flex items-center gap-2">
-                            <select
-                                :value="currentPlaybackState.playbackSpeed"
-                                :class="[
-                                    `bg-gray-800 text-gray-300 text-sm rounded-lg px-2 py-1 border-none focus:ring-1 focus:ring-${themeColor}-500`,
-                                ]"
-                                @change="
-                                    (e) =>
-                                        activeTab === 'local'
-                                            ? setLocalPlaybackSpeed(
-                                                  Number((e.target as HTMLSelectElement).value)
-                                              )
-                                            : setCloudPlaybackSpeed(
-                                                  Number((e.target as HTMLSelectElement).value)
-                                              )
-                                "
-                            >
-                                <option :value="0.5">0.5x</option>
-                                <option :value="0.75">0.75x</option>
-                                <option :value="1">1x</option>
-                                <option :value="1.25">1.25x</option>
-                                <option :value="1.5">1.5x</option>
-                                <option :value="2">2x</option>
-                            </select>
-                        </div>
-
-                        <!-- Volume -->
-                        <div class="hidden lg:flex items-center gap-2">
-                            <button
-                                class="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white btn-press"
-                                @click="activeTab === 'local' ? toggleLocalMute() : toggleCloudMute()"
-                            >
-                                <UIcon
-                                    :name="
-                                        currentPlaybackState.isMuted
-                                            ? 'i-heroicons-speaker-x-mark'
-                                            : 'i-heroicons-speaker-wave'
-                                    "
-                                    class="w-5 h-5"
-                                />
-                            </button>
-                            <input
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.1"
-                                :value="
-                                    currentPlaybackState.isMuted ? 0 : currentPlaybackState.volume
-                                "
-                                :class="[
-                                    `w-20 h-1 bg-gray-700 rounded-full appearance-none cursor-pointer accent-${themeColor}-500`,
-                                ]"
-                                @input="
-                                    (e) =>
-                                        activeTab === 'local'
-                                            ? setLocalVolume(
-                                                  Number((e.target as HTMLInputElement).value)
-                                              )
-                                            : setCloudVolume(
-                                                  Number((e.target as HTMLInputElement).value)
-                                              )
-                                "
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Transition>
-
         <!-- Podcast Info Modal -->
         <Transition name="modal">
             <div
@@ -1321,7 +1173,6 @@ onUnmounted(() => {
             </div>
         </Transition>
 
-        <Footer mode="app" />
     </div>
 </template>
 
