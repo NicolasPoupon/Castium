@@ -5,6 +5,7 @@
  */
 import { useI18n } from '#imports'
 import type { ThemeColor } from '~/composables/useTheme'
+import type { MediaTrack } from '~/composables/useGlobalPlayer'
 
 definePageMeta({
     ssr: false,
@@ -12,6 +13,13 @@ definePageMeta({
 
 const { t } = useI18n()
 const { colors, colorClasses } = useTheme()
+
+// Global player
+const {
+    playTrack: globalPlayTrack,
+    stop: globalStop,
+    playbackState: globalPlaybackState,
+} = useGlobalPlayer()
 
 // Get theme classes for radio
 const themeColor = computed(() => colors.value.radio as ThemeColor)
@@ -43,16 +51,18 @@ const showMyRadios = ref(false)
 const searchInput = ref('')
 const selectedCountry = ref('')
 const showFavoritesOnly = ref(false)
-const audioRef = ref<HTMLAudioElement | null>(null)
 const playerError = ref<string | null>(null)
-const volume = ref(80)
-const isMuted = ref(false)
 const isBuffering = ref(false)
+
+// Use global player state for isPlaying
+const isRadioPlaying = computed(
+    () => globalPlaybackState.value.isPlaying && globalPlaybackState.value.mediaType === 'radio'
+)
 
 // Simple animation state (no WebAudio needed)
 const animationBars = computed(() => {
     // Generate pseudo-random bars for visual effect when playing
-    if (!isPlaying.value) return new Array(16).fill(4)
+    if (!isRadioPlaying.value) return new Array(16).fill(4)
     return Array.from({ length: 16 }, (_, i) => 4 + Math.sin(Date.now() / 200 + i) * 12 + 8)
 })
 
@@ -92,12 +102,25 @@ onMounted(() => {
     onUnmounted(() => unsubscribe())
 })
 
-// Cleanup
+// Cleanup - no need to handle audioRef, global player handles it
 onUnmounted(() => {
-    if (audioRef.value) {
-        audioRef.value.pause()
-        audioRef.value.src = ''
-    }
+    // Radio cleanup is handled by GlobalPlayer
+})
+
+// Convert station to MediaTrack for global player
+const stationToMediaTrack = (station: {
+    id: string
+    name: string
+    logo?: string
+    url: string
+    country?: string
+}): MediaTrack => ({
+    id: station.id,
+    title: station.name,
+    stationName: station.name,
+    coverArt: station.logo || undefined,
+    url: `/api/radio-proxy?url=${encodeURIComponent(station.url)}`,
+    type: 'radio',
 })
 
 // Play custom stream (convert to station format)
@@ -111,45 +134,18 @@ const playCustomRadio = (stream: { id: string; name: string; url: string; logo?:
         url: stream.url,
         isFavorite: false,
     }
-    playStation(station)
+    handlePlayStation(station)
 }
 
-// Play station
+// Play station - using global player
 const handlePlayStation = async (station: any) => {
     playerError.value = null
     isBuffering.value = true
-    playStation(station)
-
-    await nextTick()
-
-    if (!audioRef.value) return
+    playStation(station) // Update local state for UI
 
     try {
-        // Use local proxy to avoid CORS/mixed-content issues
-        const proxied = `/api/radio-proxy?url=${encodeURIComponent(station.url)}`
-
-        // Prevent race conditions: pause previous playback before changing source
-        try {
-            await audioRef.value.pause()
-        } catch (_e) {
-            // ignore
-        }
-
-        // Reset and set crossOrigin for analyser (won't harm same-origin)
-        audioRef.value.src = ''
-        audioRef.value.crossOrigin = 'anonymous'
-        audioRef.value.src = proxied
-        audioRef.value.volume = volume.value / 100
-        audioRef.value.muted = isMuted.value
-        audioRef.value.load()
-
-        await audioRef.value.play()
-        // If user switched station while we loaded, don't continue
-        if (currentStation?.value && currentStation.value.id !== station.id) {
-            isBuffering.value = false
-            return
-        }
-
+        const mediaTrack = stationToMediaTrack(station)
+        await globalPlayTrack(mediaTrack, [], 0)
         isBuffering.value = false
     } catch (e: any) {
         // Ignore AbortError caused by rapid station switching
@@ -160,35 +156,6 @@ const handlePlayStation = async (station: any) => {
         console.error('[Radio] Playback error:', e)
         playerError.value = t('radio.player.loadError')
         isBuffering.value = false
-    }
-}
-
-// Close player
-const handleClosePlayer = () => {
-    if (audioRef.value) {
-        audioRef.value.pause()
-        audioRef.value.src = ''
-    }
-    stopPlayback()
-}
-
-// Volume change
-const handleVolumeChange = (e: Event) => {
-    const target = e.target as HTMLInputElement
-    volume.value = parseInt(target.value)
-    if (audioRef.value) {
-        audioRef.value.volume = volume.value / 100
-    }
-    if (volume.value > 0) {
-        isMuted.value = false
-    }
-}
-
-// Toggle mute
-const toggleMute = () => {
-    isMuted.value = !isMuted.value
-    if (audioRef.value) {
-        audioRef.value.muted = isMuted.value
     }
 }
 
@@ -546,165 +513,10 @@ const getStationGradient = (name: string): string => {
                 </div>
             </div>
         </div>
-
-        <!-- Audio element (hidden) -->
-        <audio ref="audioRef" class="hidden" />
-
-        <!-- Now Playing Bar -->
-        <Teleport to="body">
-            <Transition name="slide-up">
-                <div
-                    v-if="isPlaying && currentStation"
-                    :class="[
-                        'fixed bottom-0 left-0 right-0 z-50 border-t shadow-2xl theme-transition',
-                        `bg-gradient-to-r from-gray-900 via-${themeColor}-900/30 to-gray-900 border-${themeColor}-800/50`,
-                    ]"
-                >
-                    <div class="max-w-7xl mx-auto px-4 py-3">
-                        <div class="flex items-center gap-4">
-                            <!-- Station info -->
-                            <div class="flex items-center gap-3 flex-1 min-w-0">
-                                <div
-                                    v-if="currentStation.logo"
-                                    class="w-12 h-12 rounded-lg bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0"
-                                >
-                                    <img
-                                        :src="currentStation.logo"
-                                        :alt="currentStation.name"
-                                        class="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <div
-                                    v-else
-                                    :class="[
-                                        'w-12 h-12 rounded-lg bg-gradient-to-br flex items-center justify-center text-white font-bold flex-shrink-0',
-                                        getStationGradient(currentStation.name),
-                                    ]"
-                                >
-                                    {{ getStationInitials(currentStation.name) }}
-                                </div>
-                                <div class="min-w-0">
-                                    <h3 class="text-white font-medium truncate">
-                                        {{ currentStation.name }}
-                                    </h3>
-                                    <p class="text-gray-400 text-sm truncate">
-                                        {{ currentStation.country }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Animated equalizer bars (CSS only, no WebAudio) -->
-                            <div v-if="isPlaying" class="hidden md:flex items-end gap-0.5 h-8">
-                                <div
-                                    v-for="i in 16"
-                                    :key="i"
-                                    :class="[
-                                        'w-1 rounded-full animate-pulse',
-                                        `bg-gradient-to-t ${theme.gradient}`,
-                                    ]"
-                                    :style="{
-                                        height: `${8 + (i % 4) * 4}px`,
-                                        animationDelay: `${i * 50}ms`,
-                                    }"
-                                ></div>
-                            </div>
-
-                            <!-- Buffering indicator -->
-                            <div v-if="isBuffering" class="flex items-center gap-2 text-gray-400">
-                                <div
-                                    :class="[
-                                        'w-4 h-4 border-2 border-gray-500 rounded-full animate-spin',
-                                        `border-t-${themeColor}-400`,
-                                    ]"
-                                ></div>
-                                <span class="text-sm">Buffering...</span>
-                            </div>
-
-                            <!-- Volume control -->
-                            <div class="hidden sm:flex items-center gap-2">
-                                <button
-                                    class="p-2 rounded-full hover:bg-gray-700 transition-colors btn-press"
-                                    @click="toggleMute"
-                                >
-                                    <UIcon
-                                        v-if="isMuted || volume === 0"
-                                        name="i-heroicons-speaker-x-mark"
-                                        class="w-5 h-5 text-gray-400"
-                                    />
-                                    <UIcon
-                                        v-else
-                                        name="i-heroicons-speaker-wave"
-                                        class="w-5 h-5 text-gray-400"
-                                    />
-                                </button>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="100"
-                                    :value="volume"
-                                    :class="[
-                                        'w-24 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer',
-                                        `accent-${themeColor}-400`,
-                                    ]"
-                                    @input="handleVolumeChange"
-                                />
-                            </div>
-
-                            <!-- Favorite button -->
-                            <button
-                                class="p-2 rounded-full hover:bg-gray-700 transition-colors btn-press"
-                                @click="toggleFavorite(currentStation)"
-                            >
-                                <UIcon
-                                    :name="
-                                        currentStation.isFavorite
-                                            ? 'i-heroicons-heart-solid'
-                                            : 'i-heroicons-heart'
-                                    "
-                                    :class="[
-                                        'w-5 h-5',
-                                        currentStation.isFavorite
-                                            ? 'text-red-400'
-                                            : 'text-gray-400',
-                                    ]"
-                                />
-                            </button>
-
-                            <!-- Close button -->
-                            <button
-                                class="p-2 rounded-full hover:bg-gray-700 transition-colors btn-press"
-                                @click="handleClosePlayer"
-                            >
-                                <UIcon name="i-heroicons-x-mark" class="w-5 h-5 text-gray-400" />
-                            </button>
-                        </div>
-
-                        <!-- Error message -->
-                        <div v-if="playerError" class="mt-2 text-red-400 text-sm text-center">
-                            {{ playerError }}
-                        </div>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
     </div>
 </template>
 
 <style scoped>
-/* Slide up animation */
-.slide-up-enter-active,
-.slide-up-leave-active {
-    transition:
-        transform 0.3s ease,
-        opacity 0.3s ease;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-    transform: translateY(100%);
-    opacity: 0;
-}
-
 /* Range slider styling */
 input[type='range']::-webkit-slider-thumb {
     -webkit-appearance: none;

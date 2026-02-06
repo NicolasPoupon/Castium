@@ -3,9 +3,13 @@ import { useI18n } from '#imports'
 import type { LocalTrack, LocalPlaylist } from '~/composables/useLocalMusic'
 import type { CloudTrack, CloudPlaylist } from '~/composables/useCloudMusic'
 import type { ThemeColor } from '~/composables/useTheme'
+import type { MediaTrack } from '~/composables/useGlobalPlayer'
 
 const { t } = useI18n()
 const { colors, colorClasses } = useTheme()
+
+// Global player
+const { playTrack: globalPlayTrack, playbackState: globalPlaybackState } = useGlobalPlayer()
 
 // Get theme classes for music
 const themeColor = computed(() => colors.value.music as ThemeColor)
@@ -236,6 +240,33 @@ const handleViewAll = () => {
     viewMode.value = 'all'
 }
 
+// Convert LocalTrack to MediaTrack for global player
+const localTrackToMediaTrack = (track: LocalTrack): MediaTrack => ({
+    id: track.id,
+    title: track.title || track.fileName,
+    artist: track.artist,
+    album: track.album,
+    coverArt: track.coverArt,
+    duration: track.duration,
+    file: track.file,
+    handle: track.handle,
+    type: 'music',
+    isCloud: false,
+})
+
+// Convert CloudTrack to MediaTrack for global player
+const cloudTrackToMediaTrack = (track: CloudTrack): MediaTrack => ({
+    id: track.id,
+    title: track.title || track.fileName,
+    artist: track.artist,
+    album: track.album,
+    coverArt: track.coverArt || undefined,
+    duration: track.duration || undefined,
+    url: track.publicUrl,
+    type: 'music',
+    isCloud: true,
+})
+
 const handlePlayTrack = (track: LocalTrack, index: number) => {
     // Only play if track is available
     if (!track.isAvailable) return
@@ -243,7 +274,9 @@ const handlePlayTrack = (track: LocalTrack, index: number) => {
     const availableTracks = filteredTracks.value.filter((t) => t.isAvailable !== false)
     const newIndex = availableTracks.findIndex((t) => t.filePath === track.filePath)
     if (newIndex >= 0) {
-        playQueue(availableTracks, newIndex)
+        // Convert to MediaTracks and play via global player
+        const mediaQueue = availableTracks.map(localTrackToMediaTrack)
+        globalPlayTrack(mediaQueue[newIndex], mediaQueue, newIndex)
     }
 }
 
@@ -409,7 +442,9 @@ const handleCloudViewAll = () => {
 // Cloud track actions
 const handleCloudPlayTrack = (track: CloudTrack, index: number) => {
     const trackList = filteredCloudTracks.value
-    playCloudQueue(trackList, index)
+    // Convert to MediaTracks and play via global player
+    const mediaQueue = trackList.map(cloudTrackToMediaTrack)
+    globalPlayTrack(mediaQueue[index], mediaQueue, index)
 }
 
 const handleCloudToggleLike = async (track: CloudTrack) => {
@@ -1625,172 +1660,6 @@ watch(activeTab, async (tab) => {
             </div>
         </div>
 
-        <!-- Fixed Player Bar for Local Music -->
-        <div
-            v-if="playbackState.currentTrack"
-            class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-4 py-3 z-50"
-        >
-            <div class="max-w-7xl mx-auto flex items-center gap-4">
-                <!-- Track info -->
-                <div class="flex items-center gap-3 w-64 min-w-0">
-                    <div
-                        class="w-12 h-12 rounded flex items-center justify-center flex-shrink-0"
-                        :style="{ backgroundColor: getTrackColor(playbackState.currentTrack) }"
-                    >
-                        <UIcon name="i-heroicons-musical-note" class="w-6 h-6 text-white" />
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-white font-medium truncate text-sm">
-                            {{
-                                playbackState.currentTrack.title ||
-                                playbackState.currentTrack.fileName
-                            }}
-                        </p>
-                        <p class="text-gray-400 text-xs truncate">
-                            {{
-                                playbackState.currentTrack.artist || t('music.local.unknownArtist')
-                            }}
-                        </p>
-                    </div>
-                    <button
-                        class="ml-2 p-1 rounded-full hover:bg-gray-800 transition-colors flex-shrink-0"
-                        @click="handleToggleLike(playbackState.currentTrack)"
-                    >
-                        <UIcon
-                            :name="
-                                playbackState.currentTrack.isLiked
-                                    ? 'i-heroicons-heart-solid'
-                                    : 'i-heroicons-heart'
-                            "
-                            :class="[
-                                'w-4 h-4',
-                                playbackState.currentTrack.isLiked
-                                    ? 'text-red-500'
-                                    : 'text-gray-400',
-                            ]"
-                        />
-                    </button>
-                </div>
-
-                <!-- Controls -->
-                <div class="flex-1 flex flex-col items-center gap-2">
-                    <div class="flex items-center gap-4">
-                        <button
-                            :class="[
-                                'p-2 rounded-full transition-colors',
-                                playbackState.isShuffled
-                                    ? 'text-purple-400'
-                                    : 'text-gray-400 hover:text-white',
-                            ]"
-                            @click="toggleShuffle"
-                        >
-                            <UIcon name="i-heroicons-arrows-right-left" class="w-4 h-4" />
-                        </button>
-                        <button
-                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                            @click="previousTrack"
-                        >
-                            <UIcon name="i-heroicons-backward" class="w-5 h-5" />
-                        </button>
-                        <button
-                            class="p-2 w-10 h-10 rounded-full bg-white text-gray-900 hover:scale-105 transition-transform flex items-center justify-center"
-                            @click="togglePlay"
-                        >
-                            <UIcon
-                                :name="
-                                    playbackState.isPlaying
-                                        ? 'i-heroicons-pause-solid'
-                                        : 'i-heroicons-play-solid'
-                                "
-                                class="w-5 h-5"
-                            />
-                        </button>
-                        <button
-                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                            @click="nextTrack"
-                        >
-                            <UIcon name="i-heroicons-forward" class="w-5 h-5" />
-                        </button>
-                        <button
-                            :class="[
-                                'p-2 rounded-full transition-colors',
-                                playbackState.repeatMode !== 'off'
-                                    ? 'text-purple-400'
-                                    : 'text-gray-400 hover:text-white',
-                            ]"
-                            @click="toggleRepeat"
-                        >
-                            <UIcon
-                                :name="
-                                    playbackState.repeatMode === 'one'
-                                        ? 'i-heroicons-arrow-path'
-                                        : 'i-heroicons-arrow-path'
-                                "
-                                class="w-4 h-4"
-                            />
-                            <span
-                                v-if="playbackState.repeatMode === 'one'"
-                                class="absolute text-[8px] font-bold"
-                            >
-                                1
-                            </span>
-                        </button>
-                    </div>
-
-                    <!-- Progress bar -->
-                    <div class="flex items-center gap-2 w-full max-w-xl">
-                        <span class="text-xs text-gray-400 w-10 text-right">
-                            {{ formatDuration(playbackState.currentTime) }}
-                        </span>
-                        <div
-                            class="flex-1 h-1 bg-gray-700 rounded-full cursor-pointer group"
-                            @click="handleSeek"
-                        >
-                            <div
-                                class="h-full bg-white group-hover:bg-purple-500 rounded-full relative transition-colors"
-                                :style="{ width: `${progressPercent}%` }"
-                            >
-                                <div
-                                    class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                />
-                            </div>
-                        </div>
-                        <span class="text-xs text-gray-400 w-10">
-                            {{ formatDuration(playbackState.duration) }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Volume -->
-                <div class="flex items-center gap-2 w-32">
-                    <button
-                        class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                        @click="toggleMute"
-                    >
-                        <UIcon
-                            :name="
-                                playbackState.isMuted || playbackState.volume === 0
-                                    ? 'i-heroicons-speaker-x-mark'
-                                    : playbackState.volume < 0.5
-                                      ? 'i-heroicons-speaker-wave'
-                                      : 'i-heroicons-speaker-wave'
-                            "
-                            class="w-5 h-5"
-                        />
-                    </button>
-                    <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        :value="playbackState.volume"
-                        class="w-full h-1 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-                        @input="(e) => setVolume(parseFloat((e.target as HTMLInputElement).value))"
-                    />
-                </div>
-            </div>
-        </div>
-
         <!-- Track Info Modal -->
         <div
             v-if="showTrackInfo && selectedTrack"
@@ -1916,163 +1785,6 @@ watch(activeTab, async (tab) => {
                             </p>
                         </div>
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cloud Player Bar -->
-        <div
-            v-if="cloudPlaybackState.currentTrack && !playbackState.currentTrack"
-            class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 px-4 py-3 z-50"
-        >
-            <div class="max-w-7xl mx-auto flex items-center gap-4">
-                <!-- Track info -->
-                <div class="flex items-center gap-3 w-64 min-w-0">
-                    <div
-                        class="w-12 h-12 rounded flex items-center justify-center flex-shrink-0"
-                        :style="{
-                            backgroundColor: getCloudTrackColor(cloudPlaybackState.currentTrack),
-                        }"
-                    >
-                        <UIcon name="i-heroicons-musical-note" class="w-6 h-6 text-white" />
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-white font-medium truncate text-sm">
-                            {{
-                                cloudPlaybackState.currentTrack.title ||
-                                cloudPlaybackState.currentTrack.fileName
-                            }}
-                        </p>
-                        <p class="text-gray-400 text-xs truncate">
-                            {{
-                                cloudPlaybackState.currentTrack.artist ||
-                                t('music.local.unknownArtist') ||
-                                'Unknown Artist'
-                            }}
-                        </p>
-                    </div>
-                    <button
-                        class="ml-2 p-1 rounded-full hover:bg-gray-800 transition-colors flex-shrink-0"
-                        @click="handleCloudToggleLike(cloudPlaybackState.currentTrack)"
-                    >
-                        <UIcon
-                            :name="
-                                cloudPlaybackState.currentTrack.isLiked
-                                    ? 'i-heroicons-heart-solid'
-                                    : 'i-heroicons-heart'
-                            "
-                            :class="[
-                                'w-4 h-4',
-                                cloudPlaybackState.currentTrack.isLiked
-                                    ? 'text-red-500'
-                                    : 'text-gray-400',
-                            ]"
-                        />
-                    </button>
-                </div>
-
-                <!-- Controls -->
-                <div class="flex-1 flex flex-col items-center gap-2">
-                    <div class="flex items-center gap-4">
-                        <button
-                            :class="[
-                                'p-2 rounded-full transition-colors',
-                                cloudPlaybackState.isShuffled
-                                    ? 'text-blue-400'
-                                    : 'text-gray-400 hover:text-white',
-                            ]"
-                            @click="toggleCloudShuffle"
-                        >
-                            <UIcon name="i-heroicons-arrows-right-left" class="w-4 h-4" />
-                        </button>
-                        <button
-                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                            @click="previousCloudTrack"
-                        >
-                            <UIcon name="i-heroicons-backward" class="w-5 h-5" />
-                        </button>
-                        <button
-                            class="p-2 w-10 h-10 rounded-full bg-white text-gray-900 hover:scale-105 transition-transform flex items-center justify-center"
-                            @click="toggleCloudPlay"
-                        >
-                            <UIcon
-                                :name="
-                                    cloudPlaybackState.isPlaying
-                                        ? 'i-heroicons-pause-solid'
-                                        : 'i-heroicons-play-solid'
-                                "
-                                class="w-5 h-5"
-                            />
-                        </button>
-                        <button
-                            class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                            @click="nextCloudTrack"
-                        >
-                            <UIcon name="i-heroicons-forward" class="w-5 h-5" />
-                        </button>
-                        <button
-                            :class="[
-                                'p-2 rounded-full transition-colors',
-                                cloudPlaybackState.repeatMode !== 'off'
-                                    ? 'text-blue-400'
-                                    : 'text-gray-400 hover:text-white',
-                            ]"
-                            @click="toggleCloudRepeat"
-                        >
-                            <UIcon name="i-heroicons-arrow-path" class="w-4 h-4" />
-                        </button>
-                    </div>
-
-                    <!-- Progress bar -->
-                    <div class="flex items-center gap-2 w-full max-w-xl">
-                        <span class="text-xs text-gray-400 w-10 text-right">
-                            {{ formatCloudDuration(cloudPlaybackState.currentTime) }}
-                        </span>
-                        <div
-                            class="flex-1 h-1 bg-gray-700 rounded-full cursor-pointer group"
-                            @click="handleCloudSeek"
-                        >
-                            <div
-                                class="h-full bg-white group-hover:bg-blue-500 rounded-full relative transition-colors"
-                                :style="{ width: `${cloudProgressPercent}%` }"
-                            >
-                                <div
-                                    class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                />
-                            </div>
-                        </div>
-                        <span class="text-xs text-gray-400 w-10">
-                            {{ formatCloudDuration(cloudPlaybackState.duration) }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Volume -->
-                <div class="flex items-center gap-2 w-32">
-                    <button
-                        class="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
-                        @click="toggleCloudMute"
-                    >
-                        <UIcon
-                            :name="
-                                cloudPlaybackState.isMuted || cloudPlaybackState.volume === 0
-                                    ? 'i-heroicons-speaker-x-mark'
-                                    : 'i-heroicons-speaker-wave'
-                            "
-                            class="w-5 h-5"
-                        />
-                    </button>
-                    <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        :value="cloudPlaybackState.volume"
-                        class="w-full h-1 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
-                        @input="
-                            (e) => setCloudVolume(parseFloat((e.target as HTMLInputElement).value))
-                        "
-                    />
                 </div>
             </div>
         </div>
@@ -2278,7 +1990,5 @@ watch(activeTab, async (tab) => {
                 </div>
             </div>
         </div>
-
-        <Footer mode="app" />
     </div>
 </template>
