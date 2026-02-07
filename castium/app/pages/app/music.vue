@@ -6,10 +6,16 @@ import type { ThemeColor } from '~/composables/useTheme'
 import type { MediaTrack } from '~/composables/useGlobalPlayer'
 
 const { t } = useI18n()
+const route = useRoute()
+const toast = useToast()
 const { colors, colorClasses } = useTheme()
 
 // Global player
-const { playTrack: globalPlayTrack, playbackState: globalPlaybackState } = useGlobalPlayer()
+const {
+    playTrack: globalPlayTrack,
+    addToQueue: globalAddToQueue,
+    playbackState: globalPlaybackState,
+} = useGlobalPlayer()
 
 // Get theme classes for music
 const themeColor = computed(() => colors.value.music as ThemeColor)
@@ -24,9 +30,12 @@ definePageMeta({
 const {
     getAuthUrl,
     isAuthenticated: spotifyAuthenticated,
+    clearAuth: disconnectSpotifyAuth,
+    getCurrentUser,
     getUserPlaylists,
+    getPlaylistTracks: getSpotifyPlaylistTracks,
     getFeaturedPlaylists,
-    play: spotifyPlay,
+    search: spotifySearch,
 } = useSpotify()
 
 // Local Music
@@ -119,8 +128,63 @@ const activeTab = ref<'local' | 'spotify' | 'upload'>('local')
 // Spotify state
 const spotifyUserPlaylists = ref<any[]>([])
 const spotifyFeaturedPlaylists = ref<any[]>([])
+const spotifyProfile = ref<any | null>(null)
+const spotifyApiError = ref('')
 const spotifyLoading = ref(false)
+const spotifyPlaylistLoading = ref(false)
 const spotifySearchQuery = ref('')
+const spotifySearchLoading = ref(false)
+const spotifySearchError = ref('')
+const spotifySearchResults = ref<any[]>([])
+let spotifySearchDebounceTimer: ReturnType<typeof setTimeout> | null = null
+const spotifySelectedPlaylistName = ref('')
+const spotifyPlaylistTracks = ref<any[]>([])
+const getSpotifyErrorMessage = (errorCode: string) => {
+    switch (errorCode) {
+        case 'access_denied':
+            return 'Connexion Spotify annulée. Autorisez l’accès pour continuer.'
+        case 'missing_code':
+            return 'Code OAuth Spotify manquant.'
+        case 'invalid_client':
+            return 'Configuration Spotify invalide (client_id/client_secret).'
+        case 'invalid_grant':
+            return 'Redirect URI Spotify invalide ou code expiré.'
+        default:
+            return 'La connexion Spotify a échoué. Vérifiez la configuration OAuth.'
+    }
+}
+
+const getSpotifyApiErrorMessage = (error: any) => {
+    if (error?.status === 403) {
+        return "Spotify a refusé l'accès (403). Vérifie que ton compte Spotify est ajouté dans le Dashboard (Users and Access) et que les scopes sont autorisés."
+    }
+    if (error?.statusMessage) return String(error.statusMessage)
+    if (error?.message) return String(error.message)
+    return 'Erreur Spotify inconnue.'
+}
+
+const filteredSpotifyPlaylistTracks = computed(() => {
+    return spotifyPlaylistTracks.value
+})
+
+const spotifyTrackToMediaTrack = (track: any): MediaTrack | null => {
+    if (!track?.id || !track?.preview_url) return null
+
+    return {
+        id: `spotify-${track.id}`,
+        title: track.name || 'Unknown title',
+        artist: (track.artists || []).map((a: any) => a.name).join(', '),
+        album: track.album?.name,
+        coverArt: track.album?.images?.[0]?.url,
+        duration: track.duration_ms ? track.duration_ms / 1000 : undefined,
+        url: track.preview_url,
+        type: 'music',
+    }
+}
+
+const spotifyPlaylistItemToMediaTrack = (item: any): MediaTrack | null => {
+    return spotifyTrackToMediaTrack(item?.track)
+}
 
 // Local music state
 const localSearchQuery = ref('')
@@ -174,13 +238,28 @@ const loadSpotifyPlaylists = async () => {
     if (!spotifyAuthenticated.value) return
 
     spotifyLoading.value = true
+    spotifyApiError.value = ''
     try {
-        const [user, featured] = await Promise.all([getUserPlaylists(20), getFeaturedPlaylists()])
+        const [profile, user] = await Promise.all([getCurrentUser(), getUserPlaylists(20)])
 
+        spotifyProfile.value = profile || null
         spotifyUserPlaylists.value = user.items || []
-        spotifyFeaturedPlaylists.value = featured.playlists?.items || []
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error loading Spotify playlists:', error)
+        spotifyApiError.value = getSpotifyApiErrorMessage(error)
+        spotifyProfile.value = null
+        spotifyUserPlaylists.value = []
+        spotifyFeaturedPlaylists.value = []
+        return
+    }
+
+    // Featured playlists are non-critical and can fail depending on Spotify API availability.
+    try {
+        const featured = await getFeaturedPlaylists(20)
+        spotifyFeaturedPlaylists.value = featured.playlists?.items || []
+    } catch (error: any) {
+        spotifyFeaturedPlaylists.value = []
+        console.warn('Spotify featured playlists unavailable:', error)
     } finally {
         spotifyLoading.value = false
     }
@@ -188,14 +267,146 @@ const loadSpotifyPlaylists = async () => {
 
 const handlePlaySpotifyPlaylist = async (playlistId: string) => {
     try {
-        await spotifyPlay(`spotify:playlist:${playlistId}`)
-    } catch (error) {
+        spotifyPlaylistLoading.value = true
+        spotifyApiError.value = ''
+
+        const playlist =
+            spotifyUserPlaylists.value.find((p) => p.id === playlistId) ||
+            spotifyFeaturedPlaylists.value.find((p) => p.id === playlistId)
+        spotifySelectedPlaylistName.value = playlist?.name || 'Playlist Spotify'
+
+        const items = await getSpotifyPlaylistTracks(playlistId, 100)
+        spotifyPlaylistTracks.value = items || []
+
+        const queue = spotifyPlaylistTracks.value
+            .map(spotifyPlaylistItemToMediaTrack)
+            .filter((track): track is MediaTrack => !!track)
+
+        if (queue.length === 0) {
+            toast.add({
+                title: 'Lecture impossible',
+                description:
+                    "Cette playlist n'a pas d'extraits audio lisibles par le lecteur Castium.",
+                color: 'warning',
+            })
+            return
+        }
+
+        globalPlayTrack(queue[0], queue, 0)
+    } catch (error: any) {
         console.error('Error playing Spotify playlist:', error)
+        spotifyApiError.value = getSpotifyApiErrorMessage(error)
+    } finally {
+        spotifyPlaylistLoading.value = false
     }
 }
 
+const handlePlaySpotifyTrack = (trackId: string) => {
+    const queue = spotifyPlaylistTracks.value
+        .map(spotifyPlaylistItemToMediaTrack)
+        .filter((track): track is MediaTrack => !!track)
+
+    const index = queue.findIndex((track) => track.id === `spotify-${trackId}`)
+    if (index < 0) {
+        toast.add({
+            title: 'Extrait indisponible',
+            description: "Ce titre n'a pas d'aperçu audio Spotify.",
+            color: 'warning',
+        })
+        return
+    }
+
+    globalPlayTrack(queue[index], queue, index)
+}
+
+const runSpotifySearch = async (query: string) => {
+    const term = query.trim()
+    if (term.length < 2) {
+        spotifySearchResults.value = []
+        spotifySearchError.value = ''
+        return
+    }
+
+    spotifySearchLoading.value = true
+    spotifySearchError.value = ''
+    try {
+        const result = await spotifySearch(term, 'track')
+        spotifySearchResults.value = result?.tracks?.items || []
+    } catch (error: any) {
+        console.error('Spotify search error:', error)
+        spotifySearchResults.value = []
+        spotifySearchError.value = getSpotifyApiErrorMessage(error)
+    } finally {
+        spotifySearchLoading.value = false
+    }
+}
+
+const handlePlaySpotifySearchTrack = (trackId: string) => {
+    const queue = spotifySearchResults.value
+        .map(spotifyTrackToMediaTrack)
+        .filter((track): track is MediaTrack => !!track)
+    const index = queue.findIndex((track) => track.id === `spotify-${trackId}`)
+
+    if (index < 0) {
+        toast.add({
+            title: 'Extrait indisponible',
+            description: "Ce titre n'a pas d'aperçu audio Spotify.",
+            color: 'warning',
+        })
+        return
+    }
+
+    globalPlayTrack(queue[index], queue, index)
+}
+
+const handleQueueSpotifySearchTrack = async (track: any) => {
+    const mediaTrack = spotifyTrackToMediaTrack(track)
+    if (!mediaTrack) {
+        toast.add({
+            title: 'Extrait indisponible',
+            description: "Ce titre n'a pas d'aperçu audio Spotify.",
+            color: 'warning',
+        })
+        return
+    }
+
+    await globalAddToQueue(mediaTrack, { playNext: false })
+    toast.add({
+        title: 'Ajouté à la file',
+        description: mediaTrack.title,
+        color: 'success',
+    })
+}
+
 const connectSpotify = () => {
-    window.location.href = getAuthUrl()
+    try {
+        window.location.href = getAuthUrl()
+    } catch (error) {
+        console.error('Spotify OAuth configuration error:', error)
+        toast.add({
+            title: 'Configuration Spotify invalide',
+            description: 'Vérifiez les variables OAuth Spotify (client id / redirect URI).',
+            color: 'error',
+        })
+    }
+}
+
+const disconnectSpotify = () => {
+    disconnectSpotifyAuth()
+    spotifyProfile.value = null
+    spotifyUserPlaylists.value = []
+    spotifyFeaturedPlaylists.value = []
+    spotifyPlaylistTracks.value = []
+    spotifySelectedPlaylistName.value = ''
+    spotifyApiError.value = ''
+    spotifySearchQuery.value = ''
+    spotifySearchResults.value = []
+    spotifySearchError.value = ''
+    spotifySearchLoading.value = false
+    toast.add({
+        title: 'Compte Spotify déconnecté',
+        color: 'success',
+    })
 }
 
 // Local music functions
@@ -499,6 +710,20 @@ const cancelCloudDelete = () => {
 // Lifecycle
 onMounted(async () => {
     isClient.value = true
+    const requestedTab = route.query.tab
+    if (requestedTab === 'local' || requestedTab === 'spotify' || requestedTab === 'upload') {
+        activeTab.value = requestedTab
+    }
+
+    const spotifyError = typeof route.query.error === 'string' ? route.query.error : null
+    if (spotifyError) {
+        activeTab.value = 'spotify'
+        toast.add({
+            title: 'Erreur de connexion Spotify',
+            description: getSpotifyErrorMessage(spotifyError),
+            color: 'error',
+        })
+    }
 
     // Always load playlists and liked tracks from DB first
     await loadPlaylists()
@@ -546,12 +771,38 @@ watch(spotifyAuthenticated, (isAuth) => {
     }
 })
 
+watch(spotifySearchQuery, (query) => {
+    if (spotifySearchDebounceTimer) {
+        clearTimeout(spotifySearchDebounceTimer)
+        spotifySearchDebounceTimer = null
+    }
+
+    const term = query.trim()
+    if (!term) {
+        spotifySearchResults.value = []
+        spotifySearchError.value = ''
+        spotifySearchLoading.value = false
+        return
+    }
+
+    spotifySearchDebounceTimer = setTimeout(() => {
+        runSpotifySearch(term)
+    }, 350)
+})
+
 // Load cloud data when tab changes
 watch(activeTab, async (tab) => {
     if (tab === 'upload') {
         await fetchCloudTracks()
         await fetchCloudPlaylists()
         await fetchCloudLikedTracks()
+    }
+})
+
+onUnmounted(() => {
+    if (spotifySearchDebounceTimer) {
+        clearTimeout(spotifySearchDebounceTimer)
+        spotifySearchDebounceTimer = null
     }
 })
 </script>
@@ -1152,16 +1403,46 @@ watch(activeTab, async (tab) => {
 
                     <div v-else>
                         <div class="mb-8">
-                            <h1 class="text-4xl font-bold text-white mb-6">
+                            <div
+                                class="mb-4 rounded-lg border border-green-500/30 bg-green-600/10 px-4 py-3"
+                            >
+                                <div class="flex items-center justify-between gap-3">
+                                    <p class="text-sm text-green-200">
+                                        Bonjour
+                                        <span class="font-semibold text-white">
+                                            {{ spotifyProfile?.display_name || spotifyProfile?.id || 'Spotify user' }}
+                                        </span>
+                                        , ton compte Spotify est connecté.
+                                    </p>
+                                    <UButton
+                                        size="xs"
+                                        color="neutral"
+                                        variant="outline"
+                                        label="Déconnecter"
+                                        @click="disconnectSpotify"
+                                    />
+                                </div>
+                            </div>
+
+                            <div
+                                v-if="spotifyApiError"
+                                class="mb-4 rounded-lg border border-red-500/30 bg-red-600/10 px-4 py-3"
+                            >
+                                <p class="text-sm text-red-200">{{ spotifyApiError }}</p>
+                            </div>
+
+                            <h1 class="text-4xl font-bold text-white mb-6 text-center">
                                 {{ t('music.hero.yourMusic') }}
                             </h1>
-                            <UInput
-                                v-model="spotifySearchQuery"
-                                icon="i-heroicons-magnifying-glass"
-                                size="lg"
-                                :placeholder="t('music.local.searchPlaceholder')"
-                                class="max-w-2xl"
-                            />
+                            <div class="flex justify-center">
+                                <UInput
+                                    v-model="spotifySearchQuery"
+                                    icon="i-heroicons-magnifying-glass"
+                                    size="lg"
+                                    placeholder="Rechercher un titre Spotify..."
+                                    class="w-full max-w-3xl"
+                                />
+                            </div>
                         </div>
 
                         <div v-if="spotifyLoading" class="flex items-center justify-center py-20">
@@ -1172,6 +1453,90 @@ watch(activeTab, async (tab) => {
                         </div>
 
                         <div v-else class="space-y-12">
+                            <section v-if="spotifySearchQuery.trim().length > 0" class="space-y-4">
+                                <h2 class="text-2xl font-bold text-white text-center">
+                                    Résultats Spotify
+                                </h2>
+
+                                <div
+                                    v-if="spotifySearchLoading"
+                                    class="flex items-center justify-center py-8"
+                                >
+                                    <UIcon
+                                        name="i-heroicons-arrow-path"
+                                        class="w-8 h-8 text-castium-green animate-spin"
+                                    />
+                                </div>
+
+                                <div
+                                    v-else-if="spotifySearchError"
+                                    class="rounded-lg border border-red-500/30 bg-red-600/10 px-4 py-3"
+                                >
+                                    <p class="text-sm text-red-200">{{ spotifySearchError }}</p>
+                                </div>
+
+                                <div
+                                    v-else-if="spotifySearchResults.length > 0"
+                                    class="space-y-2 rounded-lg border border-gray-700 bg-gray-800/30 p-3"
+                                >
+                                    <div
+                                        v-for="track in spotifySearchResults"
+                                        :key="track.id"
+                                        class="flex items-center gap-3 rounded-md p-2 hover:bg-gray-700/40 transition-colors"
+                                    >
+                                        <button
+                                            class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                                            :disabled="!track.preview_url || !track.id"
+                                            @click="track.id && handlePlaySpotifySearchTrack(track.id)"
+                                        >
+                                            <UIcon name="i-heroicons-play-solid" class="w-4 h-4 ml-0.5" />
+                                        </button>
+
+                                        <img
+                                            v-if="track.album?.images?.[2]?.url || track.album?.images?.[0]?.url"
+                                            :src="track.album?.images?.[2]?.url || track.album?.images?.[0]?.url"
+                                            :alt="track.name"
+                                            class="w-10 h-10 rounded object-cover"
+                                        />
+
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-white text-sm truncate">
+                                                {{ track.name || 'Titre inconnu' }}
+                                            </p>
+                                            <p class="text-gray-400 text-xs truncate">
+                                                {{
+                                                    (track.artists || [])
+                                                        .map((a) => a.name)
+                                                        .join(', ') || 'Artiste inconnu'
+                                                }}
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            class="px-2 py-1 rounded border border-gray-600 text-xs text-gray-200 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                            :disabled="!track.preview_url"
+                                            @click="handleQueueSpotifySearchTrack(track)"
+                                        >
+                                            Ajouter file
+                                        </button>
+
+                                        <span
+                                            v-if="!track.preview_url"
+                                            class="text-[11px] text-amber-300 bg-amber-500/15 border border-amber-400/30 rounded px-2 py-0.5"
+                                        >
+                                            Pas d'aperçu
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div
+                                    v-else
+                                    class="rounded-lg border border-gray-700 bg-gray-800/30 px-4 py-6 text-center"
+                                >
+                                    <p class="text-gray-300 text-sm">Aucun titre trouvé.</p>
+                                </div>
+                            </section>
+
                             <section v-if="spotifyUserPlaylists.length > 0">
                                 <h2 class="text-2xl font-bold text-white mb-6">
                                     {{ t('music.hero.playlists') }}
@@ -1198,6 +1563,90 @@ watch(activeTab, async (tab) => {
                                         @play="handlePlaySpotifyPlaylist"
                                     />
                                 </div>
+                            </section>
+
+                            <section v-if="spotifySelectedPlaylistName" class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h2 class="text-2xl font-bold text-white">
+                                        {{ spotifySelectedPlaylistName }}
+                                    </h2>
+                                    <span class="text-sm text-gray-400">
+                                        {{ filteredSpotifyPlaylistTracks.length }} titres
+                                    </span>
+                                </div>
+
+                                <div
+                                    v-if="spotifyPlaylistLoading"
+                                    class="flex items-center justify-center py-8"
+                                >
+                                    <UIcon
+                                        name="i-heroicons-arrow-path"
+                                        class="w-8 h-8 text-castium-green animate-spin"
+                                    />
+                                </div>
+
+                                <div
+                                    v-else-if="filteredSpotifyPlaylistTracks.length > 0"
+                                    class="space-y-2 rounded-lg border border-gray-700 bg-gray-800/30 p-3"
+                                >
+                                    <div
+                                        v-for="(item, index) in filteredSpotifyPlaylistTracks"
+                                        :key="item?.track?.id || index"
+                                        class="flex items-center gap-3 rounded-md p-2 hover:bg-gray-700/40 transition-colors"
+                                    >
+                                        <button
+                                            class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                                            :disabled="!item?.track?.preview_url || !item?.track?.id"
+                                            @click="item?.track?.id && handlePlaySpotifyTrack(item.track.id)"
+                                        >
+                                            <UIcon name="i-heroicons-play-solid" class="w-4 h-4 ml-0.5" />
+                                        </button>
+
+                                        <img
+                                            v-if="item?.track?.album?.images?.[2]?.url || item?.track?.album?.images?.[0]?.url"
+                                            :src="
+                                                item?.track?.album?.images?.[2]?.url ||
+                                                item?.track?.album?.images?.[0]?.url
+                                            "
+                                            :alt="item?.track?.name"
+                                            class="w-10 h-10 rounded object-cover"
+                                        />
+
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-white text-sm truncate">
+                                                {{ item?.track?.name || 'Titre inconnu' }}
+                                            </p>
+                                            <p class="text-gray-400 text-xs truncate">
+                                                {{
+                                                    (item?.track?.artists || [])
+                                                        .map((a) => a.name)
+                                                        .join(', ') || 'Artiste inconnu'
+                                                }}
+                                            </p>
+                                        </div>
+
+                                        <span
+                                            v-if="!item?.track?.preview_url"
+                                            class="text-[11px] text-amber-300 bg-amber-500/15 border border-amber-400/30 rounded px-2 py-0.5"
+                                        >
+                                            Pas d'aperçu
+                                        </span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section
+                                v-if="
+                                    !spotifyApiError &&
+                                    !spotifySelectedPlaylistName &&
+                                    spotifyUserPlaylists.length === 0 &&
+                                    spotifyFeaturedPlaylists.length === 0
+                                "
+                                class="rounded-lg border border-gray-700 bg-gray-800/30 px-4 py-6 text-center"
+                            >
+                                <p class="text-gray-300 text-sm">
+                                    Connecté, mais aucune playlist à afficher pour le moment.
+                                </p>
                             </section>
                         </div>
                     </div>

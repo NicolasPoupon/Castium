@@ -4,15 +4,25 @@ const router = useRouter()
 const { exchangeCodeForToken } = useSpotify()
 
 onMounted(async () => {
-    const code = route.query.code as string
-    if (code) {
-        try {
-            await exchangeCodeForToken(code)
-            await router.push('/app/music')
-        } catch (error) {
-            console.error('Error during Spotify authentication:', error)
-            await router.push('/app/music?error=auth_failed')
-        }
+    const code = typeof route.query.code === 'string' ? route.query.code : null
+    const callbackError = typeof route.query.error === 'string' ? route.query.error : null
+
+    if (callbackError) {
+        await router.push(`/app/music?tab=spotify&error=${encodeURIComponent(callbackError)}`)
+        return
+    }
+
+    if (!code) {
+        await router.push('/app/music?tab=spotify&error=missing_code')
+        return
+    }
+
+    try {
+        await exchangeCodeForToken(code)
+        await router.push('/app/music?tab=spotify')
+    } catch (error) {
+        console.error('Error during Spotify authentication:', error)
+        await router.push('/app/music?tab=spotify&error=auth_failed')
     }
 })
 </script>
