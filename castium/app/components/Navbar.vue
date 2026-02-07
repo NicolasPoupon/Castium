@@ -7,13 +7,6 @@ const route = useRoute()
 const router = useRouter()
 const { user, signOut } = useAuth()
 const toast = useToast()
-
-const selectedLocale = computed({
-    get: () => locale.value,
-    set: async (value: string) => {
-        await setLocale(value) // charge les messages si lazy
-    },
-})
 const { colors, colorClasses } = useTheme()
 
 const handleLogout = async () => {
@@ -236,11 +229,6 @@ const userMenuItems = computed(() => [
             </div>
 
             <div class="flex items-center gap-6">
-                <ULocaleSelect
-                    v-model="selectedLocale"
-                    :locales="[locales.en, locales.fr, locales.pl]"
-                    class="w-36"
-                />
                 <!-- User Profile Dropdown (app mode only) - Client-side only to avoid hydration mismatch -->
                 <ClientOnly>
                     <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">

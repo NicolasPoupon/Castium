@@ -8,10 +8,13 @@ definePageMeta({
 
 const { t, locale, setLocale } = useI18n()
 
-const onLocaleChange = async (value: 'en' | 'fr' | 'pl') => {
-    await setLocale(value as any)
-    if (process.client) window.location.reload()
-}
+const selectedLocale = computed({
+  get: () => locale.value as 'en' | 'fr' | 'pl',
+  set: async (val) => {
+    await setLocale(val)
+  },
+})
+
 const {
     user,
     signOut,
@@ -613,10 +616,9 @@ const handleDeleteAccount = async () => {
                         {{ t('settings.language.description') }}
                     </p>
                     <ULocaleSelect
-                        v-model="locale"
-                        :locales="[locales.en, locales.fr, locales.pl]"
-                        class="w-44"
-                        @update:model-value="onLocaleChange"
+                      v-model="selectedLocale"
+                      :locales="[locales.en, locales.fr, locales.pl]"
+                      class="w-44"
                     />
                 </div>
             </UCard>
