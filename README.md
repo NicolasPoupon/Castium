@@ -109,6 +109,7 @@ pnpm preview          # Preview production
 pnpm lint             # Lint
 pnpm test             # Tous les tests
 ```
+![Landing](documentation/screenshots/landing.png)
 
 ```md
 ![Landing](documentation/screenshots/landing.png)
