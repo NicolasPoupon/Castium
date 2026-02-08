@@ -1,11 +1,51 @@
-# Castium
+<p align="center">
+  <img src="documentation/branding/Logo.svg" alt="Castium" width="220" />
+</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Nuxt](https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxtdotjs&logoColor=white)](https://nuxt.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
-[![Vue](https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white)](https://vuejs.org/)
 
-Castium est une plateforme multimédia personnelle qui centralise films, musiques, podcasts, radio, TV, photos et vidéos dans une interface web unique.
+<p align="center">
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License" />
+  </a>
+  <a href="https://nuxt.com/">
+    <img src="https://img.shields.io/badge/Nuxt-4-00DC82?logo=nuxtdotjs&logoColor=white" alt="Nuxt 4" />
+  </a>
+  <a href="https://supabase.com/">
+    <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" />
+  </a>
+  <a href="https://vuejs.org/">
+    <img src="https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white" alt="Vue 3" />
+  </a>
+</p>
+
+<p align="center" style="padding: 12px 0;">
+  <span style="font-size: 1.15em; font-weight: 600; color: white;">
+    Castium est une plateforme multimédia personnelle qui centralise films, musiques, podcasts, radio, TV, photos et vidéos dans une interface web unique.
+  </span>
+</p>
+
+<p align="center">
+  <img src="documentation/screenshots/landing.png" alt="Landing page" width="700" />
+</p>
+
+<table align="center">
+  <tr>
+    <td>
+      <img src="documentation/screenshots/films.png" alt="Movies" width="300"/>
+    </td>
+    <td>
+      <img src="documentation/screenshots/music.png" alt="Music" width="300"/>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="documentation/screenshots/radio.png" alt="Radio" width="300"/>
+    </td>
+    <td>
+      <img src="documentation/screenshots/settings.png" alt="Settings" width="300"/>
+    </td>
+  </tr>
+</table>
 
 ## Aperçu
 
@@ -63,9 +103,13 @@ Sur la partie UX/front:
 
 ```bash
 git clone <url-du-repo>
+
 cd Castium/castium
+
 pnpm install
+
 cp .env.example .env
+
 pnpm dev
 ```
 
@@ -108,15 +152,6 @@ pnpm build            # Build production
 pnpm preview          # Preview production
 pnpm lint             # Lint
 pnpm test             # Tous les tests
-```
-![Landing](documentation/screenshots/landing.png)
-
-```md
-![Landing](documentation/screenshots/landing.png)
-![Films](documentation/screenshots/films.png)
-![Music](documentation/screenshots/music.png)
-![Radio](documentation/screenshots/radio.png)
-![Paramètres](documentation/screenshots/settings.png)
 ```
 
 ## Licence
