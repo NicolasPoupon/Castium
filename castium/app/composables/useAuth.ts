@@ -82,7 +82,6 @@ export const useAuth = () => {
             const {
                 data: { session: currentSession },
             } = await supabase.auth.getSession()
-
             session.value = currentSession
             user.value = currentSession?.user ?? null
 

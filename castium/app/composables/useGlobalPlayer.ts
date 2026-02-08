@@ -40,6 +40,11 @@ export interface GlobalPlaybackState {
     error: string | null
 }
 
+interface AddToQueueOptions {
+    playNext?: boolean
+    playNow?: boolean
+}
+
 // Global singleton state
 const audioElement = ref<HTMLAudioElement | null>(null)
 const objectUrl = ref<string | null>(null)
@@ -310,6 +315,47 @@ export function useGlobalPlayer() {
         }
     }
 
+    // Add a track to the current queue.
+    // If nothing is playing yet, starts playback immediately.
+    const addToQueue = async (
+        track: MediaTrack,
+        options: AddToQueueOptions = {}
+    ): Promise<void> => {
+        const { playNext = false, playNow = false } = options
+
+        if (!playbackState.value.currentTrack) {
+            await playTrack(track, [track], 0)
+            return
+        }
+
+        const baseQueue =
+            playbackState.value.queue.length > 0
+                ? [...playbackState.value.queue]
+                : playbackState.value.currentTrack
+                  ? [playbackState.value.currentTrack]
+                  : []
+
+        // Avoid duplicates by id in queue
+        if (baseQueue.some((q) => q.id === track.id)) {
+            return
+        }
+
+        const currentIndex = Math.max(0, playbackState.value.queueIndex)
+        const insertIndex = playNext ? Math.min(baseQueue.length, currentIndex + 1) : baseQueue.length
+        baseQueue.splice(insertIndex, 0, track)
+
+        if (playNow) {
+            await playTrack(track, baseQueue, insertIndex)
+            return
+        }
+
+        playbackState.value.queue = baseQueue
+        // Keep the current playing track index stable if we inserted before it
+        if (insertIndex <= playbackState.value.queueIndex) {
+            playbackState.value.queueIndex += 1
+        }
+    }
+
     // Previous track
     const previousTrack = async () => {
         const { queue, queueIndex, currentTime } = playbackState.value
@@ -405,6 +451,7 @@ export function useGlobalPlayer() {
         setPlaybackSpeed,
         nextTrack,
         previousTrack,
+        addToQueue,
         toggleShuffle,
         toggleRepeat,
 
