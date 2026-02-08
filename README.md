@@ -1,4 +1,4 @@
-<p align="center"style="padding: 12px 0;">
+<p align="center"style="padding: 28px 0;">
   <img src="documentation/branding/Logo.svg" alt="Castium" width="220" />
 </p>
 
