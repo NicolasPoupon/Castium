@@ -45,11 +45,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
         const loggedIn = isAuthenticated.value
 
-        // If user is logged in and tries to access auth pages (except callback), redirect to app
+        // If user is logged in and tries to access auth pages (except callback & reset-password), redirect to app
         if (
             loggedIn &&
             to.path.startsWith('/auth/') &&
             to.path !== '/auth/callback' &&
+            to.path !== '/auth/reset-password' &&
             !to.path.includes('/auth/spotify')
         ) {
             return navigateTo('/app/movies')

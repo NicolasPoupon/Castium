@@ -12,6 +12,9 @@ const { t } = useI18n()
 const router = useRouter()
 const { signIn, signInWithGoogle, loading, isAuthenticated } = useAuth()
 
+// Inline error message for failed login attempts
+const errorMessage = ref('')
+
 // Redirect if already authenticated
 watch(isAuthenticated, (authenticated) => {
     if (authenticated) {
@@ -46,13 +49,10 @@ const providers = [
         label: 'Google',
         icon: 'i-simple-icons-google',
         onClick: async () => {
+            errorMessage.value = ''
             const { error } = await signInWithGoogle()
             if (error) {
-                toast.add({
-                    title: t('auth.login.errors.google'),
-                    description: error.message,
-                    color: 'error',
-                })
+                errorMessage.value = error.message || t('auth.login.errors.google')
             }
         },
     },
@@ -68,14 +68,19 @@ const schema = z.object({
 type Schema = z.output<typeof schema>
 
 async function onSubmit(payload: FormSubmitEvent<Schema>) {
+    errorMessage.value = ''
     const { error } = await signIn(payload.data.email, payload.data.password)
 
     if (error) {
-        toast.add({
-            title: t('auth.login.errors.title'),
-            description: error.message || t('auth.login.errors.invalid'),
-            color: 'error',
-        })
+        // Map Supabase error messages to user-friendly translated messages
+        const msg = error.message || ''
+        if (msg.toLowerCase().includes('email not confirmed')) {
+            errorMessage.value = t('auth.login.errors.emailNotConfirmed')
+        } else if (msg.toLowerCase().includes('invalid login credentials') || msg.toLowerCase().includes('invalid email or password')) {
+            errorMessage.value = t('auth.login.errors.invalid')
+        } else {
+            errorMessage.value = msg || t('auth.login.errors.invalid')
+        }
     } else {
         toast.add({
             title: t('auth.login.success'),
@@ -91,6 +96,23 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
     <div class="flex flex-col items-center justify-center gap-4 p-4 bg-gray-900 min-h-screen">
         <Navbar mode="auth" />
         <UPageCard class="w-full max-w-md">
+            <!-- Error bubble -->
+            <Transition name="fade">
+                <div
+                    v-if="errorMessage"
+                    class="mb-4 flex items-start gap-3 rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-500"
+                >
+                    <UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 shrink-0 mt-0.5" />
+                    <span>{{ errorMessage }}</span>
+                    <button
+                        class="ml-auto shrink-0 hover:text-red-400 transition-colors"
+                        @click="errorMessage = ''"
+                    >
+                        <UIcon name="i-heroicons-x-mark" class="w-4 h-4" />
+                    </button>
+                </div>
+            </Transition>
+
             <UAuthForm
                 :schema="schema"
                 :title="t('auth.login.title')"
@@ -102,10 +124,24 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
                 @submit="onSubmit"
             />
         </UPageCard>
-        <div class="text-center">
+        <div class="flex flex-col items-center gap-1">
+            <UButton variant="link" color="neutral" to="/auth/forgot-password" class="text-sm">
+                {{ t('auth.login.forgotPassword') }}
+            </UButton>
             <UButton variant="link" color="neutral" to="/auth/signup" class="text-sm">
                 {{ t('auth.login.noAccount') }}
             </UButton>
         </div>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

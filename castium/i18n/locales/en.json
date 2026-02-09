@@ -114,9 +114,12 @@
             "noAccount": "No account yet? Sign up",
             "success": "Login successful",
             "successDescription": "You are now logged in.",
+            "forgotPassword": "Forgot your password?",
             "errors": {
                 "title": "Login failed",
-                "invalid": "Invalid email or password"
+                "invalid": "Invalid email or password",
+                "emailNotConfirmed": "Please confirm your email address before logging in. Check your inbox.",
+                "google": "Failed to log in with Google"
             }
         },
         "signUp": {
@@ -129,6 +132,61 @@
             "loading": "Verifying authentication...",
             "success": "Authentication successful",
             "error": "Authentication error"
+        },
+        "forgotPassword": {
+            "title": "Forgot Password",
+            "description": "Enter your email address and we'll send you a reset link.",
+            "fields": {
+                "email": {
+                    "label": "Email",
+                    "placeholder": "Enter your email",
+                    "error": {
+                        "required": "Email is required",
+                        "invalid": "Invalid email"
+                    }
+                }
+            },
+            "submit": "Send reset link",
+            "backToLogin": "Back to login",
+            "success": "Email sent",
+            "successDescription": "A reset link has been sent to your email address. Check your inbox.",
+            "errors": {
+                "title": "Error",
+                "invalid": "Unable to send reset email"
+            }
+        },
+        "resetPassword": {
+            "title": "Reset Password",
+            "description": "Enter your new password.",
+            "fields": {
+                "password": {
+                    "label": "New password",
+                    "placeholder": "Enter your new password",
+                    "error": {
+                        "required": "Password is required",
+                        "min": "Must be at least 8 characters"
+                    }
+                },
+                "confirmPassword": {
+                    "label": "Confirm password",
+                    "placeholder": "Confirm your new password",
+                    "error": {
+                        "required": "Confirmation is required",
+                        "match": "Passwords do not match"
+                    }
+                }
+            },
+            "submit": "Reset password",
+            "backToLogin": "Back to login",
+            "loading": "Verifying reset link...",
+            "requestNewLink": "Request a new link",
+            "success": "Password reset",
+            "successDescription": "Your password has been reset successfully.",
+            "errors": {
+                "title": "Error",
+                "invalid": "Unable to reset password",
+                "expired": "This reset link is invalid or has expired. Please request a new one."
+            }
         }
     },
     "navbar": {
@@ -143,7 +201,8 @@
         },
         "user": {
             "settings": "Settings",
-            "logout": "Log out"
+            "logout": "Log out",
+            "logoutError": "Logout error"
         }
     },
     "settings": {

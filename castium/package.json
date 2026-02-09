@@ -16,7 +16,8 @@
         "test:unit": "vitest --run tests/unit",
         "test:integration": "vitest --run tests/integration",
         "test:functional": "vitest --run tests/functional",
-        "test:component": "vitest --run tests/component"
+        "test:component": "vitest --run tests/component",
+        "test:coverage": "vitest --run --coverage"
     },
     "dependencies": {
         "@nuxtjs/i18n": "^10.2.0",
@@ -35,6 +36,7 @@
         "@nuxt/ui": "^4.2.0",
         "@tailwindcss/postcss": "^4.1.17",
         "@vitejs/plugin-vue": "^6.0.2",
+        "@vitest/coverage-v8": "^2.1.9",
         "@vue/test-utils": "^2.4.6",
         "autoprefixer": "^10.4.22",
         "baseline-browser-mapping": "^2.9.18",

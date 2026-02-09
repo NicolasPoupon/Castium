@@ -19,6 +19,17 @@ export default defineConfig({
                 singleFork: true,
             },
         },
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'text-summary', 'html', 'lcov'],
+            reportsDirectory: './coverage',
+            include: ['app/**/*.{ts,vue}'],
+            exclude: [
+                'app/**/*.d.ts',
+                'app/**/*.test.ts',
+                'app/**/*.spec.ts',
+            ],
+        },
     },
     resolve: {
         alias: {

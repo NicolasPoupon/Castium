@@ -94,7 +94,10 @@ export const useAuth = () => {
                 session.value = newSession
                 user.value = newSession?.user ?? null
 
-                if (event === 'SIGNED_IN' && newSession?.user) {
+                if (event === 'PASSWORD_RECOVERY') {
+                    // User clicked reset link — redirect to reset password page
+                    await navigateTo('/auth/reset-password')
+                } else if (event === 'SIGNED_IN' && newSession?.user) {
                     // Small delay to let the trigger create the profile
                     await new Promise((resolve) => setTimeout(resolve, 500))
                     profile.value = await fetchProfile(newSession.user.id)
@@ -195,9 +198,10 @@ export const useAuth = () => {
     const signOut = async () => {
         try {
             loading.value = true
-            const { error } = await supabase.auth.signOut()
+            const { error } = await supabase.auth.signOut({ scope: 'local' })
 
-            if (error) throw error
+            // Ignore "session missing" errors — the session is already gone
+            if (error && error.name !== 'AuthSessionMissingError') throw error
 
             // Clear local composables state before resetting user
             // This ensures folder handles and tracks are cleared per user
