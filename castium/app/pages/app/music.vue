@@ -182,8 +182,23 @@ const filteredSpotifyPlaylistTracks = computed(() => {
     return spotifyPlaylistTracks.value
 })
 
+const getSpotifyTrackUri = (track: any): string | null => {
+    if (!track?.id) return null
+    if (typeof track.uri === 'string' && track.uri.startsWith('spotify:')) return track.uri
+    return `spotify:track:${track.id}`
+}
+
 const getPlayableSpotifyTracks = (tracks: any[]) =>
-    tracks.filter((track) => !!track?.id && !!track?.uri)
+    tracks
+        .map((track) => {
+            const uri = getSpotifyTrackUri(track)
+            if (!uri || !track?.id) return null
+            return {
+                id: track.id as string,
+                uri,
+            }
+        })
+        .filter((track): track is { id: string; uri: string } => !!track)
 
 const ensureSpotifyWebPlayer = async () => {
     try {
@@ -406,7 +421,8 @@ const handlePlaySpotifySearchTrack = async (trackId: string) => {
 }
 
 const handleQueueSpotifySearchTrack = async (track: any) => {
-    if (!track?.uri) {
+    const trackUri = getSpotifyTrackUri(track)
+    if (!trackUri) {
         toast.add({
             title: 'Titre indisponible',
             description: 'Ce titre ne peut pas être ajouté à la file Spotify.',
@@ -419,7 +435,7 @@ const handleQueueSpotifySearchTrack = async (track: any) => {
     if (!canPlay) return
 
     try {
-        await queueSpotifyTrack(track.uri)
+        await queueSpotifyTrack(trackUri)
         toast.add({
             title: 'Ajouté à la file Spotify',
             description: track.name || 'Titre',
@@ -1544,7 +1560,7 @@ onUnmounted(() => {
                                     >
                                         <button
                                             class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!track.uri || !track.id"
+                                            :disabled="!track.id"
                                             @click="track.id && handlePlaySpotifySearchTrack(track.id)"
                                         >
                                             <UIcon name="i-heroicons-play-solid" class="w-4 h-4 ml-0.5" />
@@ -1572,14 +1588,14 @@ onUnmounted(() => {
 
                                         <button
                                             class="px-2 py-1 rounded border border-gray-600 text-xs text-gray-200 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!track.uri"
+                                            :disabled="!track.id"
                                             @click="handleQueueSpotifySearchTrack(track)"
                                         >
                                             Ajouter file
                                         </button>
 
                                         <span
-                                            v-if="!track.uri"
+                                            v-if="!track.id"
                                             class="text-[11px] text-amber-300 bg-amber-500/15 border border-amber-400/30 rounded px-2 py-0.5"
                                         >
                                             Non lisible
@@ -1654,7 +1670,7 @@ onUnmounted(() => {
                                     >
                                         <button
                                             class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!item?.track?.uri || !item?.track?.id"
+                                            :disabled="!item?.track?.id"
                                             @click="item?.track?.id && handlePlaySpotifyTrack(item.track.id)"
                                         >
                                             <UIcon name="i-heroicons-play-solid" class="w-4 h-4 ml-0.5" />
@@ -1684,7 +1700,7 @@ onUnmounted(() => {
                                         </div>
 
                                         <span
-                                            v-if="!item?.track?.uri"
+                                            v-if="!item?.track?.id"
                                             class="text-[11px] text-amber-300 bg-amber-500/15 border border-amber-400/30 rounded px-2 py-0.5"
                                         >
                                             Non lisible
