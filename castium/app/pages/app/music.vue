@@ -1559,9 +1559,8 @@ onUnmounted(() => {
                                         class="flex items-center gap-3 rounded-md p-2 hover:bg-gray-700/40 transition-colors"
                                     >
                                         <button
-                                            class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!track.id"
-                                            @click="track.id && handlePlaySpotifySearchTrack(track.id)"
+                                            class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center"
+                                            @click.stop="track.id && handlePlaySpotifySearchTrack(track.id)"
                                         >
                                             <UIcon name="i-heroicons-play-solid" class="w-4 h-4 ml-0.5" />
                                         </button>
@@ -1587,9 +1586,8 @@ onUnmounted(() => {
                                         </div>
 
                                         <button
-                                            class="px-2 py-1 rounded border border-gray-600 text-xs text-gray-200 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!track.id"
-                                            @click="handleQueueSpotifySearchTrack(track)"
+                                            class="px-2 py-1 rounded border border-gray-600 text-xs text-gray-200 hover:bg-gray-700"
+                                            @click.stop="handleQueueSpotifySearchTrack(track)"
                                         >
                                             Ajouter file
                                         </button>
@@ -1669,9 +1667,10 @@ onUnmounted(() => {
                                         class="flex items-center gap-3 rounded-md p-2 hover:bg-gray-700/40 transition-colors"
                                     >
                                         <button
-                                            class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!item?.track?.id"
-                                            @click="item?.track?.id && handlePlaySpotifyTrack(item.track.id)"
+                                            class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center"
+                                            @click.stop="
+                                                item?.track?.id && handlePlaySpotifyTrack(item.track.id)
+                                            "
                                         >
                                             <UIcon name="i-heroicons-play-solid" class="w-4 h-4 ml-0.5" />
                                         </button>
