@@ -114,9 +114,12 @@
             "noAccount": "Nie masz jeszcze konta? Zarejestruj się",
             "success": "Logowanie udane",
             "successDescription": "Jesteś teraz zalogowany.",
+            "forgotPassword": "Zapomniałeś hasła?",
             "errors": {
                 "title": "Logowanie nie powiodło się",
-                "invalid": "Nieprawidłowy email lub hasło"
+                "invalid": "Nieprawidłowy email lub hasło",
+                "emailNotConfirmed": "Potwierdź swój adres email przed zalogowaniem. Sprawdź skrzynkę odbiorczą.",
+                "google": "Logowanie przez Google nie powiodło się"
             }
         },
         "signUp": {
@@ -129,6 +132,61 @@
             "loading": "Weryfikacja uwierzytelnienia...",
             "success": "Uwierzytelnienie udane",
             "error": "Błąd uwierzytelniania"
+        },
+        "forgotPassword": {
+            "title": "Zapomniałem hasła",
+            "description": "Wpisz swój adres email, a wyślemy Ci link do resetowania.",
+            "fields": {
+                "email": {
+                    "label": "Email",
+                    "placeholder": "Wpisz swój email",
+                    "error": {
+                        "required": "Email jest wymagany",
+                        "invalid": "Nieprawidłowy email"
+                    }
+                }
+            },
+            "submit": "Wyślij link resetujący",
+            "backToLogin": "Powrót do logowania",
+            "success": "Email wysłany",
+            "successDescription": "Link do resetowania został wysłany na Twój adres email. Sprawdź skrzynkę odbiorczą.",
+            "errors": {
+                "title": "Błąd",
+                "invalid": "Nie można wysłać emaila resetującego"
+            }
+        },
+        "resetPassword": {
+            "title": "Resetuj hasło",
+            "description": "Wpisz nowe hasło.",
+            "fields": {
+                "password": {
+                    "label": "Nowe hasło",
+                    "placeholder": "Wpisz nowe hasło",
+                    "error": {
+                        "required": "Hasło jest wymagane",
+                        "min": "Musi mieć co najmniej 8 znaków"
+                    }
+                },
+                "confirmPassword": {
+                    "label": "Potwierdź hasło",
+                    "placeholder": "Potwierdź nowe hasło",
+                    "error": {
+                        "required": "Potwierdzenie jest wymagane",
+                        "match": "Hasła nie pasują"
+                    }
+                }
+            },
+            "submit": "Resetuj hasło",
+            "backToLogin": "Powrót do logowania",
+            "loading": "Weryfikacja linku resetującego...",
+            "requestNewLink": "Poproś o nowy link",
+            "success": "Hasło zresetowane",
+            "successDescription": "Twoje hasło zostało pomyślnie zresetowane.",
+            "errors": {
+                "title": "Błąd",
+                "invalid": "Nie można zresetować hasła",
+                "expired": "Ten link resetujący jest nieprawidłowy lub wygasł. Poproś o nowy."
+            }
         }
     },
     "navbar": {
@@ -142,7 +200,8 @@
         },
         "user": {
             "settings": "Ustawienia",
-            "logout": "Wyloguj się"
+            "logout": "Wyloguj się",
+            "logoutError": "Błąd wylogowania"
         }
     },
     "settings": {
