@@ -13,8 +13,7 @@ const { colors, colorClasses } = useTheme()
 // Global player
 const {
     playTrack: globalPlayTrack,
-    addToQueue: globalAddToQueue,
-    playbackState: globalPlaybackState,
+    stop: globalStop,
 } = useGlobalPlayer()
 
 // Get theme classes for music
@@ -36,6 +35,10 @@ const {
     getPlaylistTracks: getSpotifyPlaylistTracks,
     getFeaturedPlaylists,
     search: spotifySearch,
+    ensureWebPlaybackPlayer,
+    startWebPlayback,
+    queueTrack: queueSpotifyTrack,
+    webPlaybackError: spotifyWebPlaybackError,
 } = useSpotify()
 
 // Local Music
@@ -155,9 +158,21 @@ const getSpotifyErrorMessage = (errorCode: string) => {
 }
 
 const getSpotifyApiErrorMessage = (error: any) => {
-    if (error?.status === 403) {
+    const status = error?.status || error?.statusCode
+    const message = String(
+        error?.data?.error?.message || error?.statusMessage || error?.message || ''
+    )
+
+    if (status === 403 && /premium required/i.test(message)) {
+        return 'Spotify Premium est requis pour la lecture complète.'
+    }
+    if (status === 403) {
         return "Spotify a refusé l'accès (403). Vérifie que ton compte Spotify est ajouté dans le Dashboard (Users and Access) et que les scopes sont autorisés."
     }
+    if (status === 404 && /no active device/i.test(message)) {
+        return 'Aucun appareil Spotify actif. Relance la page et réessaie.'
+    }
+    if (message) return message
     if (error?.statusMessage) return String(error.statusMessage)
     if (error?.message) return String(error.message)
     return 'Erreur Spotify inconnue.'
@@ -167,23 +182,23 @@ const filteredSpotifyPlaylistTracks = computed(() => {
     return spotifyPlaylistTracks.value
 })
 
-const spotifyTrackToMediaTrack = (track: any): MediaTrack | null => {
-    if (!track?.id || !track?.preview_url) return null
+const getPlayableSpotifyTracks = (tracks: any[]) =>
+    tracks.filter((track) => !!track?.id && !!track?.uri)
 
-    return {
-        id: `spotify-${track.id}`,
-        title: track.name || 'Unknown title',
-        artist: (track.artists || []).map((a: any) => a.name).join(', '),
-        album: track.album?.name,
-        coverArt: track.album?.images?.[0]?.url,
-        duration: track.duration_ms ? track.duration_ms / 1000 : undefined,
-        url: track.preview_url,
-        type: 'music',
+const ensureSpotifyWebPlayer = async () => {
+    try {
+        await ensureWebPlaybackPlayer()
+        return true
+    } catch (error: any) {
+        const message = getSpotifyApiErrorMessage(error)
+        spotifyApiError.value = message
+        toast.add({
+            title: 'Lecture Spotify indisponible',
+            description: message,
+            color: 'warning',
+        })
+        return false
     }
-}
-
-const spotifyPlaylistItemToMediaTrack = (item: any): MediaTrack | null => {
-    return spotifyTrackToMediaTrack(item?.track)
 }
 
 // Local music state
@@ -278,21 +293,33 @@ const handlePlaySpotifyPlaylist = async (playlistId: string) => {
         const items = await getSpotifyPlaylistTracks(playlistId, 100)
         spotifyPlaylistTracks.value = items || []
 
-        const queue = spotifyPlaylistTracks.value
-            .map(spotifyPlaylistItemToMediaTrack)
-            .filter((track): track is MediaTrack => !!track)
+        const playableTracks = getPlayableSpotifyTracks(
+            spotifyPlaylistTracks.value.map((item) => item?.track)
+        )
 
-        if (queue.length === 0) {
+        if (playableTracks.length === 0) {
             toast.add({
                 title: 'Lecture impossible',
                 description:
-                    "Cette playlist n'a pas d'extraits audio lisibles par le lecteur Castium.",
+                    "Cette playlist Spotify n'a pas de titres lisibles.",
                 color: 'warning',
             })
             return
         }
 
-        globalPlayTrack(queue[0], queue, 0)
+        const canPlay = await ensureSpotifyWebPlayer()
+        if (!canPlay) return
+
+        globalStop()
+        const playlistUri = playlist?.uri
+        if (playlistUri) {
+            await startWebPlayback({ contextUri: playlistUri })
+            return
+        }
+        await startWebPlayback({
+            trackUris: playableTracks.map((track) => track.uri),
+            startIndex: 0,
+        })
     } catch (error: any) {
         console.error('Error playing Spotify playlist:', error)
         spotifyApiError.value = getSpotifyApiErrorMessage(error)
@@ -301,22 +328,32 @@ const handlePlaySpotifyPlaylist = async (playlistId: string) => {
     }
 }
 
-const handlePlaySpotifyTrack = (trackId: string) => {
-    const queue = spotifyPlaylistTracks.value
-        .map(spotifyPlaylistItemToMediaTrack)
-        .filter((track): track is MediaTrack => !!track)
-
-    const index = queue.findIndex((track) => track.id === `spotify-${trackId}`)
+const handlePlaySpotifyTrack = async (trackId: string) => {
+    const playableTracks = getPlayableSpotifyTracks(
+        spotifyPlaylistTracks.value.map((item) => item?.track)
+    )
+    const index = playableTracks.findIndex((track) => track.id === trackId)
     if (index < 0) {
         toast.add({
-            title: 'Extrait indisponible',
-            description: "Ce titre n'a pas d'aperçu audio Spotify.",
+            title: 'Titre indisponible',
+            description: 'Ce titre ne peut pas être lu avec Spotify.',
             color: 'warning',
         })
         return
     }
 
-    globalPlayTrack(queue[index], queue, index)
+    const canPlay = await ensureSpotifyWebPlayer()
+    if (!canPlay) return
+
+    try {
+        globalStop()
+        await startWebPlayback({
+            trackUris: playableTracks.map((track) => track.uri),
+            startIndex: index,
+        })
+    } catch (error: any) {
+        spotifyApiError.value = getSpotifyApiErrorMessage(error)
+    }
 }
 
 const runSpotifySearch = async (query: string) => {
@@ -341,41 +378,56 @@ const runSpotifySearch = async (query: string) => {
     }
 }
 
-const handlePlaySpotifySearchTrack = (trackId: string) => {
-    const queue = spotifySearchResults.value
-        .map(spotifyTrackToMediaTrack)
-        .filter((track): track is MediaTrack => !!track)
-    const index = queue.findIndex((track) => track.id === `spotify-${trackId}`)
+const handlePlaySpotifySearchTrack = async (trackId: string) => {
+    const playableTracks = getPlayableSpotifyTracks(spotifySearchResults.value)
+    const index = playableTracks.findIndex((track) => track.id === trackId)
 
     if (index < 0) {
         toast.add({
-            title: 'Extrait indisponible',
-            description: "Ce titre n'a pas d'aperçu audio Spotify.",
+            title: 'Titre indisponible',
+            description: 'Ce titre ne peut pas être lu avec Spotify.',
             color: 'warning',
         })
         return
     }
 
-    globalPlayTrack(queue[index], queue, index)
+    const canPlay = await ensureSpotifyWebPlayer()
+    if (!canPlay) return
+
+    try {
+        globalStop()
+        await startWebPlayback({
+            trackUris: playableTracks.map((track) => track.uri),
+            startIndex: index,
+        })
+    } catch (error: any) {
+        spotifyApiError.value = getSpotifyApiErrorMessage(error)
+    }
 }
 
 const handleQueueSpotifySearchTrack = async (track: any) => {
-    const mediaTrack = spotifyTrackToMediaTrack(track)
-    if (!mediaTrack) {
+    if (!track?.uri) {
         toast.add({
-            title: 'Extrait indisponible',
-            description: "Ce titre n'a pas d'aperçu audio Spotify.",
+            title: 'Titre indisponible',
+            description: 'Ce titre ne peut pas être ajouté à la file Spotify.',
             color: 'warning',
         })
         return
     }
 
-    await globalAddToQueue(mediaTrack, { playNext: false })
-    toast.add({
-        title: 'Ajouté à la file',
-        description: mediaTrack.title,
-        color: 'success',
-    })
+    const canPlay = await ensureSpotifyWebPlayer()
+    if (!canPlay) return
+
+    try {
+        await queueSpotifyTrack(track.uri)
+        toast.add({
+            title: 'Ajouté à la file Spotify',
+            description: track.name || 'Titre',
+            color: 'success',
+        })
+    } catch (error: any) {
+        spotifyApiError.value = getSpotifyApiErrorMessage(error)
+    }
 }
 
 const connectSpotify = () => {
@@ -768,6 +820,12 @@ onMounted(() => {
 watch(spotifyAuthenticated, (isAuth) => {
     if (isAuth) {
         loadSpotifyPlaylists()
+    }
+})
+
+watch(spotifyWebPlaybackError, (message) => {
+    if (message) {
+        spotifyApiError.value = message
     }
 })
 
@@ -1486,7 +1544,7 @@ onUnmounted(() => {
                                     >
                                         <button
                                             class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!track.preview_url || !track.id"
+                                            :disabled="!track.uri || !track.id"
                                             @click="track.id && handlePlaySpotifySearchTrack(track.id)"
                                         >
                                             <UIcon name="i-heroicons-play-solid" class="w-4 h-4 ml-0.5" />
@@ -1514,17 +1572,17 @@ onUnmounted(() => {
 
                                         <button
                                             class="px-2 py-1 rounded border border-gray-600 text-xs text-gray-200 hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!track.preview_url"
+                                            :disabled="!track.uri"
                                             @click="handleQueueSpotifySearchTrack(track)"
                                         >
                                             Ajouter file
                                         </button>
 
                                         <span
-                                            v-if="!track.preview_url"
+                                            v-if="!track.uri"
                                             class="text-[11px] text-amber-300 bg-amber-500/15 border border-amber-400/30 rounded px-2 py-0.5"
                                         >
-                                            Pas d'aperçu
+                                            Non lisible
                                         </span>
                                     </div>
                                 </div>
@@ -1596,7 +1654,7 @@ onUnmounted(() => {
                                     >
                                         <button
                                             class="w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                                            :disabled="!item?.track?.preview_url || !item?.track?.id"
+                                            :disabled="!item?.track?.uri || !item?.track?.id"
                                             @click="item?.track?.id && handlePlaySpotifyTrack(item.track.id)"
                                         >
                                             <UIcon name="i-heroicons-play-solid" class="w-4 h-4 ml-0.5" />
@@ -1626,10 +1684,10 @@ onUnmounted(() => {
                                         </div>
 
                                         <span
-                                            v-if="!item?.track?.preview_url"
+                                            v-if="!item?.track?.uri"
                                             class="text-[11px] text-amber-300 bg-amber-500/15 border border-amber-400/30 rounded px-2 py-0.5"
                                         >
-                                            Pas d'aperçu
+                                            Non lisible
                                         </span>
                                     </div>
                                 </div>

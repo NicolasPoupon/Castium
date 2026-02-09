@@ -11,14 +11,72 @@ interface SpotifyStoredTokens {
     expiresAt: number | null
 }
 
+interface SpotifyWebPlaybackError {
+    message: string
+}
+
+interface SpotifyWebPlaybackDevice {
+    device_id: string
+}
+
+interface SpotifyWebPlaybackPlayerInit {
+    name: string
+    getOAuthToken: (callback: (token: string) => void) => void
+    volume?: number
+}
+
+interface SpotifyWebPlaybackPlayer {
+    connect(): Promise<boolean>
+    disconnect(): void
+    addListener(
+        event:
+            | 'ready'
+            | 'not_ready'
+            | 'initialization_error'
+            | 'authentication_error'
+            | 'account_error'
+            | 'playback_error',
+        callback: (payload: any) => void
+    ): boolean
+    activateElement?: () => Promise<void> | void
+}
+
+interface SpotifyStartPlaybackOptions {
+    contextUri?: string
+    trackUris?: string[]
+    startIndex?: number
+    positionMs?: number
+}
+
+declare global {
+    interface Window {
+        Spotify?: {
+            Player: new (options: SpotifyWebPlaybackPlayerInit) => SpotifyWebPlaybackPlayer
+        }
+        onSpotifyWebPlaybackSDKReady?: () => void
+    }
+}
+
 const SPOTIFY_STORAGE_KEY = 'castium-spotify-tokens'
 const TOKEN_EXPIRY_BUFFER_MS = 60_000
+const SPOTIFY_WEB_PLAYER_NAME = 'Castium Web Player'
+
+let webPlaybackSdkPromise: Promise<void> | null = null
+let webPlaybackPlayer: SpotifyWebPlaybackPlayer | null = null
+let webPlaybackListenersBound = false
 
 export const useSpotify = () => {
     const config = useRuntimeConfig()
     const accessToken = useState<string | null>('spotify_access_token', () => null)
     const refreshToken = useState<string | null>('spotify_refresh_token', () => null)
     const expiresAt = useState<number | null>('spotify_expires_at', () => null)
+    const webPlaybackDeviceId = useState<string | null>(
+        'spotify_web_playback_device_id',
+        () => null
+    )
+    const webPlaybackReady = useState<boolean>('spotify_web_playback_ready', () => false)
+    const webPlaybackConnected = useState<boolean>('spotify_web_playback_connected', () => false)
+    const webPlaybackError = useState<string | null>('spotify_web_playback_error', () => null)
 
     const getRedirectUri = () => {
         if (config.public.spotifyRedirectUri) return config.public.spotifyRedirectUri
@@ -35,6 +93,17 @@ export const useSpotify = () => {
         accessToken.value = null
         refreshToken.value = null
         expiresAt.value = null
+        webPlaybackDeviceId.value = null
+        webPlaybackReady.value = false
+        webPlaybackConnected.value = false
+        webPlaybackError.value = null
+
+        if (webPlaybackPlayer) {
+            webPlaybackPlayer.disconnect()
+            webPlaybackPlayer = null
+            webPlaybackListenersBound = false
+        }
+
         if (import.meta.client) {
             localStorage.removeItem(SPOTIFY_STORAGE_KEY)
         }
@@ -165,6 +234,222 @@ export const useSpotify = () => {
             }
             throw error
         }
+    }
+
+    const loadWebPlaybackSdk = async () => {
+        if (import.meta.server) {
+            throw new Error('Spotify Web Playback est disponible uniquement dans le navigateur.')
+        }
+
+        if (window.Spotify?.Player) return
+        if (webPlaybackSdkPromise) {
+            await webPlaybackSdkPromise
+            return
+        }
+
+        webPlaybackSdkPromise = new Promise<void>((resolve, reject) => {
+            const existingScript = document.getElementById(
+                'spotify-web-playback-sdk'
+            ) as HTMLScriptElement | null
+            const previousReadyCallback = window.onSpotifyWebPlaybackSDKReady
+            let settled = false
+
+            const resolveOnce = () => {
+                if (settled) return
+                settled = true
+                resolve()
+            }
+
+            const rejectOnce = (reason: Error) => {
+                if (settled) return
+                settled = true
+                reject(reason)
+            }
+
+            window.onSpotifyWebPlaybackSDKReady = () => {
+                previousReadyCallback?.()
+                resolveOnce()
+            }
+
+            if (!existingScript) {
+                const script = document.createElement('script')
+                script.id = 'spotify-web-playback-sdk'
+                script.src = 'https://sdk.scdn.co/spotify-player.js'
+                script.async = true
+                script.onerror = () => {
+                    rejectOnce(new Error('Impossible de charger le SDK Spotify Web Playback.'))
+                }
+                document.head.appendChild(script)
+            } else {
+                existingScript.addEventListener(
+                    'error',
+                    () => rejectOnce(new Error('Impossible de charger le SDK Spotify Web Playback.')),
+                    { once: true }
+                )
+            }
+
+            setTimeout(() => {
+                if (window.Spotify?.Player) {
+                    resolveOnce()
+                    return
+                }
+                rejectOnce(new Error('Le SDK Spotify Web Playback a expiré au chargement.'))
+            }, 10_000)
+        })
+
+        try {
+            await webPlaybackSdkPromise
+        } catch (error) {
+            webPlaybackSdkPromise = null
+            throw error
+        }
+    }
+
+    const waitForWebPlaybackDevice = async () => {
+        if (webPlaybackDeviceId.value) return webPlaybackDeviceId.value
+
+        return await new Promise<string>((resolve, reject) => {
+            const maxAttempts = 60
+            let attempts = 0
+            const timer = setInterval(() => {
+                attempts += 1
+                if (webPlaybackDeviceId.value) {
+                    clearInterval(timer)
+                    resolve(webPlaybackDeviceId.value)
+                    return
+                }
+                if (attempts >= maxAttempts) {
+                    clearInterval(timer)
+                    reject(new Error("Le device Spotify Web n'a pas pu être initialisé."))
+                }
+            }, 100)
+        })
+    }
+
+    const transferPlaybackToDevice = async (deviceId: string) => {
+        await fetchFromSpotify('/me/player', {
+            method: 'PUT',
+            body: {
+                device_ids: [deviceId],
+                play: false,
+            },
+        })
+    }
+
+    const ensureWebPlaybackPlayer = async () => {
+        restoreStoredTokens()
+        if (!accessToken.value || isTokenExpired()) {
+            clearAuth()
+            throw new Error('Session Spotify expirée. Reconnecte ton compte.')
+        }
+
+        await loadWebPlaybackSdk()
+        if (!window.Spotify?.Player) {
+            throw new Error('Spotify Web Playback SDK indisponible.')
+        }
+
+        if (!webPlaybackPlayer) {
+            webPlaybackPlayer = new window.Spotify.Player({
+                name: SPOTIFY_WEB_PLAYER_NAME,
+                getOAuthToken: (callback) => {
+                    restoreStoredTokens()
+                    if (!accessToken.value || isTokenExpired()) {
+                        webPlaybackError.value = 'Session Spotify expirée. Reconnecte ton compte.'
+                        clearAuth()
+                        callback('')
+                        return
+                    }
+                    callback(accessToken.value)
+                },
+                volume: 0.8,
+            })
+        }
+
+        if (webPlaybackPlayer && !webPlaybackListenersBound) {
+            webPlaybackPlayer.addListener('ready', ({ device_id }: SpotifyWebPlaybackDevice) => {
+                webPlaybackDeviceId.value = device_id
+                webPlaybackReady.value = true
+                webPlaybackConnected.value = true
+                webPlaybackError.value = null
+            })
+
+            webPlaybackPlayer.addListener(
+                'not_ready',
+                ({ device_id }: SpotifyWebPlaybackDevice) => {
+                    if (webPlaybackDeviceId.value === device_id) {
+                        webPlaybackReady.value = false
+                    }
+                }
+            )
+
+            const onPlaybackError = (payload: SpotifyWebPlaybackError) => {
+                webPlaybackError.value = payload?.message || 'Erreur Spotify Web Playback.'
+            }
+            webPlaybackPlayer.addListener('initialization_error', onPlaybackError)
+            webPlaybackPlayer.addListener('authentication_error', onPlaybackError)
+            webPlaybackPlayer.addListener('account_error', onPlaybackError)
+            webPlaybackPlayer.addListener('playback_error', onPlaybackError)
+
+            webPlaybackListenersBound = true
+        }
+
+        const connected = await webPlaybackPlayer.connect()
+        webPlaybackConnected.value = connected
+        if (!connected) {
+            throw new Error('Impossible de connecter le lecteur Spotify Web.')
+        }
+
+        const deviceId = await waitForWebPlaybackDevice()
+        await transferPlaybackToDevice(deviceId)
+        return deviceId
+    }
+
+    const startWebPlayback = async (options: SpotifyStartPlaybackOptions) => {
+        const deviceId = await ensureWebPlaybackPlayer()
+        if (!options.contextUri && (!options.trackUris || options.trackUris.length === 0)) {
+            throw new Error('Aucun titre Spotify à lire.')
+        }
+
+        if (webPlaybackPlayer?.activateElement) {
+            try {
+                await webPlaybackPlayer.activateElement()
+            } catch {
+                // Some browsers reject activateElement() outside trusted gestures.
+            }
+        }
+
+        const body: Record<string, any> = {}
+        if (options.contextUri) body.context_uri = options.contextUri
+        if (options.trackUris && options.trackUris.length > 0) body.uris = options.trackUris
+        if (typeof options.startIndex === 'number' && options.startIndex >= 0) {
+            body.offset = { position: options.startIndex }
+        }
+        if (typeof options.positionMs === 'number' && options.positionMs >= 0) {
+            body.position_ms = Math.floor(options.positionMs)
+        }
+
+        await fetchFromSpotify('/me/player/play', {
+            method: 'PUT',
+            query: { device_id: deviceId },
+            body,
+        })
+
+        webPlaybackError.value = null
+    }
+
+    const queueTrack = async (trackUri: string) => {
+        if (!trackUri) {
+            throw new Error('URI Spotify du titre manquante.')
+        }
+
+        const deviceId = await ensureWebPlaybackPlayer()
+        await fetchFromSpotify('/me/player/queue', {
+            method: 'POST',
+            query: {
+                uri: trackUri,
+                device_id: deviceId,
+            },
+        })
     }
 
     const getCurrentUser = async () => {
@@ -306,8 +591,15 @@ export const useSpotify = () => {
         getAvailableDevices,
         playTrack,
         getTrackInfo,
+        ensureWebPlaybackPlayer,
+        startWebPlayback,
+        queueTrack,
         clearAuth,
         isAuthenticated,
         accessToken,
+        webPlaybackDeviceId,
+        webPlaybackReady,
+        webPlaybackConnected,
+        webPlaybackError,
     }
 }
