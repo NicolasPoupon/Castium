@@ -76,14 +76,12 @@ export const useAuth = () => {
     // Initialize auth state
     const initAuth = async () => {
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:entry',message:'initAuth called',data:{initialized:initialized.value},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
         // #endregion
         if (initialized.value) return
 
         try {
             loading.value = true
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:beforeGetSession',message:'before getSession',data:{},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
             // #endregion
             const {
                 data: { session: currentSession },
@@ -115,7 +113,6 @@ export const useAuth = () => {
             initialized.value = true
         } catch (error: any) {
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:catch',message:'initAuth error',data:{name:error?.name,message:error?.message},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
             // #endregion
             console.error('Error initializing auth:', error)
         } finally {
