@@ -53,9 +53,9 @@ jobs:
         uses: davelosert/vitest-coverage-report-action@v2
         with:
           working-directory: ./castium
-          json-summary-path: ./castium/coverage/coverage-summary.json
-          json-final-path: ./castium/coverage/coverage-final.json
-          vite-config-path: ./castium/vitest.config.mts
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
+          vite-config-path: vitest.config.mts
           name: Castium Coverage
 
       # ─── Upload HTML Coverage Report as Artifact ─────────
