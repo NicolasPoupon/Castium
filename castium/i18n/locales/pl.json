@@ -3,8 +3,132 @@
         "hero": {
             "titleMain": "Twoje multimedialne uniwersum",
             "titleHighlight": "zebrane w jednym miejscu",
-            "description": "Castium to nowoczesna, osobista platforma, która w jednym eleganckim interfejsie gromadzi Twoje filmy, seriale, muzykę, podcasty i treści osobiste, dostępne z dowolnego miejsca.",
-            "cta": "Zapisz się do bety"
+            "description": "Castium to nowoczesna, osobista platforma, która w jednym eleganckim interfejsie gromadzi Twoje filmy, seriale, muzykę, podcasty, radio, zdjęcia i osobiste wideo.",
+            "cta": "Zacznij za darmo",
+            "discover": "Odkryj",
+            "badge": "Otwarta Beta — Darmowy dostęp"
+        },
+        "stats": {
+            "categories": "Kategorie mediów",
+            "formats": "Obsługiwane formaty",
+            "price": "Zawsze za darmo",
+            "ads": "Reklamy"
+        },
+        "showcase": {
+            "title": "Każde medium, swój własny świat",
+            "description": "Od wideo po podcasty, od muzyki po telewizję na żywo — każda kategoria ma dedykowany, zoptymalizowany interfejs.",
+            "features": {
+                "films": {
+                    "tag": "Filmy i Seriale",
+                    "title": "Twoja osobista biblioteka filmowa",
+                    "description": "Importuj swoją kolekcję i pozwól Castium zrobić resztę. Plakaty HD, opisy, obsada, gatunki — wszystko automatycznie z TMDB.",
+                    "bullets": {
+                        "1": "Automatyczne metadane: plakaty, streszczenia, aktorzy, oceny",
+                        "2": "Śledzenie postępu i inteligentne wznawianie odtwarzania",
+                        "3": "Ulubione, osobiste oceny i zarządzanie playlistami"
+                    }
+                },
+                "music": {
+                    "tag": "Muzyka",
+                    "title": "Twoje utwory, Twoje playlisty, Twój styl",
+                    "description": "Pełnofunkcyjny odtwarzacz audio z obsługą lokalną i chmurową. Twórz playlisty, dodawaj ulubione i słuchaj bez przerw.",
+                    "bullets": {
+                        "1": "Stały globalny odtwarzacz z Picture-in-Picture",
+                        "2": "Import lokalny lub chmurowy — kompatybilny ze wszystkimi formatami",
+                        "3": "Playlisty, ulubione, historia i ciągłe odtwarzanie"
+                    }
+                },
+                "podcasts": {
+                    "tag": "Podcasty",
+                    "title": "Wszystkie Twoje podcasty w jednym miejscu",
+                    "description": "Importuj lokalne lub chmurowe podcasty. Wznawiaj tam, gdzie skończyłeś dzięki automatycznemu śledzeniu postępu.",
+                    "bullets": {
+                        "1": "Ciągłe odtwarzanie z zapamiętywaniem pozycji",
+                        "2": "Organizacja według folderów i kategorii",
+                        "3": "Kompatybilność z plikami lokalnymi i chmurą"
+                    }
+                },
+                "tv": {
+                    "tag": "TV na żywo",
+                    "title": "Telewizja bez dekodera, bez limitów",
+                    "description": "Dostęp do tysięcy darmowych kanałów IPTV z całego świata. Dodaj własne strumienie i dostosuj doświadczenie TV.",
+                    "bullets": {
+                        "1": "Tysiące darmowych kanałów IPTV z całego świata",
+                        "2": "Obsługa własnych strumieni (M3U, bezpośredni URL)",
+                        "3": "Ulubione i natychmiastowe wyszukiwanie wg kraju i kategorii"
+                    }
+                },
+                "radio": {
+                    "tag": "Radio",
+                    "title": "Światowe radio na wyciągnięcie ręki",
+                    "description": "Tysiące stacji radiowych z całego świata, darmowo dostępnych. Dodaj własne strumienie i znajdź ulubione stacje.",
+                    "bullets": {
+                        "1": "Dostęp do tysięcy międzynarodowych stacji radiowych",
+                        "2": "Własne strumienie i ulubione stacje",
+                        "3": "Odtwarzanie w tle z globalnym odtwarzaczem"
+                    }
+                },
+                "photos": {
+                    "tag": "Zdjęcia",
+                    "title": "Twoje zdjęcia, pięknie zaprezentowane",
+                    "description": "Przeglądaj lokalne i chmurowe zdjęcia w nowoczesnej galerii z pokazem slajdów, zoomem i płynną nawigacją.",
+                    "bullets": {
+                        "1": "Nowoczesna galeria z widokiem siatki i pokazem slajdów",
+                        "2": "Obsługa lokalnych i chmurowych zdjęć",
+                        "3": "Ulubione, sortowanie i organizacja folderów"
+                    }
+                },
+                "lectures": {
+                    "tag": "Osobiste Wideo",
+                    "title": "Twoje osobiste wideo, jakość kinowa",
+                    "description": "Filmy rodzinne, tutoriale, nagrania — importuj je i ciesz się profesjonalnym odtwarzaniem.",
+                    "bullets": {
+                        "1": "Odtwarzacz wideo HD z napisami i Picture-in-Picture",
+                        "2": "Import folderów lokalnych z automatycznym wykrywaniem",
+                        "3": "Śledzenie postępu i wznawianie odtwarzania"
+                    }
+                },
+                "settings": {
+                    "tag": "Personalizacja",
+                    "title": "Twoja aplikacja, Twoje zasady",
+                    "description": "Wielojęzyczny interfejs, konfigurowalne motywy kolorów dla każdej kategorii, zarządzanie kontem i bezpieczeństwem.",
+                    "bullets": {
+                        "1": "3 obsługiwane języki: francuski, angielski, polski",
+                        "2": "Konfigurowalne kolory dla każdej kategorii",
+                        "3": "Pełne zarządzanie kontem, hasłem i danymi"
+                    }
+                }
+            }
+        },
+        "selling": {
+            "title": "Dlaczego Castium?",
+            "description": "Platforma zaprojektowana dla Ciebie, bez kompromisów w kwestii prywatności czy jakości.",
+            "points": {
+                "privacy": {
+                    "title": "Prywatność szanowana",
+                    "description": "Żadnego śledzenia, żadnych reklam, żadnej odsprzedaży danych. Twoje treści należą do Ciebie, kropka."
+                },
+                "sync": {
+                    "title": "Synchronizacja wszędzie",
+                    "description": "Komputer, telefon, tablet, telewizor — Twoja mediateka na wszystkich urządzeniach, natychmiast."
+                },
+                "auto": {
+                    "title": "Inteligentna automatyzacja",
+                    "description": "Metadane, plakaty, opisy — wszystko pobierane automatycznie. Zero wysiłku z Twojej strony."
+                },
+                "interface": {
+                    "title": "Wyjątkowy interfejs",
+                    "description": "Nowoczesny i minimalistyczny design inspirowany najlepszymi aplikacjami. Płynne i intuicyjne doświadczenie."
+                },
+                "local": {
+                    "title": "Obsługa plików lokalnych",
+                    "description": "Dostęp do plików bezpośrednio na urządzeniu przez File System Access API."
+                },
+                "free": {
+                    "title": "100% Za darmo",
+                    "description": "Bez subskrypcji, bez freemium, bez haczyku. Castium jest darmowe i takie pozostanie."
+                }
+            }
         },
         "features": {
             "title": "Prosto. Szybko. Potężnie.",
@@ -37,13 +161,14 @@
             }
         },
         "beta": {
-            "badge": "Wkrótce dostępne w wersji beta!",
-            "title": "Castium już wkrótce",
-            "description": "Dopinamy ostatnie szczegóły eleganckiej, nowoczesnej platformy stworzonej z myślą o długim użytkowaniu. Dołącz i bądź wśród pierwszych, którzy przetestują Castium.",
+            "badge": "Otwarta Beta",
+            "title": "Dołącz do Castium już dziś",
+            "description": "Elegancka, nowoczesna platforma stworzona na lata. Załóż darmowe konto i zacznij centralizować swoje media.",
+            "ctaButton": "Załóż darmowe konto",
             "emailPlaceholder": "Wpisz swój adres e-mail",
             "emailLabel": "Adres e-mail",
             "cta": "Zapisz się",
-            "helper": "Uzyskaj wcześniejszy dostęp do wersji beta"
+            "helper": "Darmowa rejestracja • Bez karty kredytowej • Natychmiastowy dostęp"
         }
     },
     "common": {

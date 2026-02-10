@@ -34,6 +34,18 @@ export default defineNuxtConfig({
     css: ['~/assets/css/main.css'],
     modules: ['@nuxtjs/i18n', '@nuxt/ui', '@nuxt/fonts'],
     routeRules: {},
+    hooks: {
+        'app:templates': (app) => {
+            // Workaround for Nuxt 4.3.0 bug: #build/route-rules.mjs is imported
+            // by nuxt runtime but no template generates it
+            if (!app.templates.some((t: any) => t.filename === 'route-rules.mjs')) {
+                app.templates.push({
+                    filename: 'route-rules.mjs',
+                    getContents: () => 'export default () => ({})',
+                })
+            }
+        },
+    },
     runtimeConfig: {
         spotifyClientSecret: process.env.SPOTIFY_CLIENT_SECRET,
         youtubeClientSecret: process.env.YOUTUBE_CLIENT_SECRET,
