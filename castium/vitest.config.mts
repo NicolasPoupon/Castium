@@ -36,7 +36,7 @@ export default defineConfig({
             '@': resolve(__dirname, './app'),
             '~': resolve(__dirname, './app'),
             '#build': resolve(__dirname, './.nuxt'),
-            '#imports': resolve(__dirname, './.nuxt'),
+            '#imports': resolve(__dirname, './tests/mocks/imports.ts'),
         },
     },
 })

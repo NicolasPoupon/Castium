@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/260</span>
+                <span class='fraction'>0/263</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/260</span>
+                <span class='fraction'>0/263</span>
             </div>
         
             
@@ -410,7 +410,16 @@
 <a name='L345'></a><a href='#L345'>345</a>
 <a name='L346'></a><a href='#L346'>346</a>
 <a name='L347'></a><a href='#L347'>347</a>
-<a name='L348'></a><a href='#L348'>348</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L348'></a><a href='#L348'>348</a>
+<a name='L349'></a><a href='#L349'>349</a>
+<a name='L350'></a><a href='#L350'>350</a>
+<a name='L351'></a><a href='#L351'>351</a>
+<a name='L352'></a><a href='#L352'>352</a>
+<a name='L353'></a><a href='#L353'>353</a>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -487,23 +496,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -512,6 +505,7 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -520,6 +514,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -834,10 +852,16 @@ export interface UserProfile {
 &nbsp;
     // Initialize auth state
 <span class="cstat-no" title="statement not covered" >    const initAuth = async () =&gt; {</span>
+        // #region agent log
+<span class="cstat-no" title="statement not covered" >        fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:entry',message:'initAuth called',data:{initialized:initialized.value},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=&gt;{});</span>
+        // #endregion
 <span class="cstat-no" title="statement not covered" >        if (initialized.value) return</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >        try {</span>
 <span class="cstat-no" title="statement not covered" >            loading.value = true</span>
+            // #region agent log
+<span class="cstat-no" title="statement not covered" >            fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:beforeGetSession',message:'before getSession',data:{},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=&gt;{});</span>
+            // #endregion
 <span class="cstat-no" title="statement not covered" >            const {</span>
 <span class="cstat-no" title="statement not covered" >                data: { session: currentSession },</span>
 <span class="cstat-no" title="statement not covered" >            } = await supabase.auth.getSession()</span>
@@ -866,7 +890,10 @@ export interface UserProfile {
 <span class="cstat-no" title="statement not covered" >            })</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >            initialized.value = true</span>
-<span class="cstat-no" title="statement not covered" >        } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >        } catch (error: any) {</span>
+            // #region agent log
+<span class="cstat-no" title="statement not covered" >            fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:catch',message:'initAuth error',data:{name:error?.name,message:error?.message},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=&gt;{});</span>
+            // #endregion
 <span class="cstat-no" title="statement not covered" >            console.error('Error initializing auth:', error)</span>
 <span class="cstat-no" title="statement not covered" >        } finally {</span>
 <span class="cstat-no" title="statement not covered" >            loading.value = false</span>
@@ -1111,7 +1138,7 @@ export interface UserProfile {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-02-10T00:52:02.299Z
+                at 2026-02-10T02:06:04.768Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
