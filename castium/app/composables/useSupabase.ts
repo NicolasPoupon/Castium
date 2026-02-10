@@ -17,6 +17,9 @@ export const useSupabase = (): SupabaseClient => {
         )
     }
 
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useSupabase.ts:createClient',message:'creating Supabase client',data:{},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
+    // #endregion
     supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
         auth: {
             persistSession: true,
