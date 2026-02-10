@@ -492,7 +492,7 @@ const currentSelection = computed(() => {
                             </span>
                         </div>
 
-                        <div class="relative flex-1 min-w-[200px] max-w-md">
+                        <div class="relative flex-1 min-w-0">
                             <UIcon
                                 name="i-heroicons-magnifying-glass"
                                 class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"

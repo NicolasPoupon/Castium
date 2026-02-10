@@ -460,7 +460,7 @@ const handleDeleteAccount = async () => {
                     </div>
                 </template>
 
-                <div v-if="!showPasswordSection" class="flex items-center justify-between">
+                <div v-if="!showPasswordSection" class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <p class="text-gray-400">{{ t('settings.password.description') }}</p>
                     <UButton
                         icon="i-heroicons-pencil-square"
@@ -611,7 +611,7 @@ const handleDeleteAccount = async () => {
                         </h2>
                     </div>
                 </template>
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <p class="text-gray-400">
                         {{ t('settings.language.description') }}
                     </p>
@@ -630,7 +630,7 @@ const handleDeleteAccount = async () => {
                         {{ t('settings.session.title') }}
                     </h2>
                 </template>
-                <div class="flex items-center justify-between">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <p class="text-gray-400">
                         {{ t('settings.session.description') }}
                     </p>
@@ -1032,7 +1032,7 @@ const handleDeleteAccount = async () => {
 
                 <!-- Delete all data -->
                 <div class="border-t border-gray-700 pt-6 mb-6">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <h3 class="text-lg font-medium text-white">
                                 {{ t('settings.data.deleteAllTitle') }}
@@ -1055,7 +1055,7 @@ const handleDeleteAccount = async () => {
 
                 <!-- Delete account -->
                 <div class="border-t border-gray-700 pt-6">
-                    <div class="flex items-center justify-between">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
                             <h3 class="text-lg font-medium text-red-400">
                                 {{ t('settings.data.deleteAccountTitle') }}

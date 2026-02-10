@@ -197,18 +197,18 @@ const userMenuItems = computed(() => [
                     </svg>
                 </NuxtLink>
             </div>
-            <div class="flex-1 flex justify-center">
+            <div class="flex-1 flex justify-center overflow-hidden">
                 <!-- Custom tabs with theme colors -->
                 <nav
                     v-if="mode === 'app'"
-                    class="flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 theme-transition"
+                    class="flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 theme-transition overflow-x-auto scrollbar-hide"
                 >
                     <NuxtLink
                         v-for="item in items"
                         :key="item.value"
                         :to="item.to"
                         :class="[
-                            'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 btn-press border',
+                            'flex items-center gap-2 px-2 md:px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 btn-press border flex-shrink-0',
                             activeTab === item.value
                                 ? `text-white ${currentTheme.border} bg-transparent`
                                 : 'text-gray-400 border-transparent hover:text-white hover:border-gray-600',
@@ -244,7 +244,7 @@ const userMenuItems = computed(() => [
                                 size="sm"
                                 @error="($event.target as HTMLImageElement).style.display = 'none'"
                             />
-                            <span class="text-white text-sm font-medium">
+                            <span class="hidden md:inline text-white text-sm font-medium">
                                 {{ userName }}
                             </span>
                             <UIcon name="i-heroicons-chevron-down" class="w-4 h-4 text-gray-400" />

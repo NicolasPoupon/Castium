@@ -22,7 +22,7 @@ const releaseYear = computed(() => {
 </script>
 
 <template>
-    <div class="relative w-full h-[70vh] overflow-hidden">
+    <div class="relative w-full h-[50vh] md:h-[70vh] overflow-hidden">
         <div
             class="absolute inset-0 bg-cover bg-center"
             :style="{ backgroundImage: `url(${backdropUrl})` }"
@@ -36,9 +36,9 @@ const releaseYear = computed(() => {
         </div>
 
         <div
-            class="relative z-10 h-full flex flex-col justify-end p-8 md:p-12 lg:p-16 max-w-7xl mx-auto"
+            class="relative z-10 h-full flex flex-col justify-end p-4 md:p-12 lg:p-16 max-w-7xl mx-auto"
         >
-            <h1 class="text-4xl md:text-6xl font-bold text-white mb-4">
+            <h1 class="text-2xl md:text-4xl lg:text-6xl font-bold text-white mb-2 md:mb-4">
                 {{ title }}
             </h1>
 

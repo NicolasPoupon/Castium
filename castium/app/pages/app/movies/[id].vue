@@ -46,7 +46,7 @@ const goBack = () => router.back()
         </div>
 
         <div v-else-if="movie" class="">
-            <div class="relative w-full h-[60vh] overflow-hidden">
+            <div class="relative w-full h-[40vh] md:h-[60vh] overflow-hidden">
                 <div
                     class="absolute inset-0 bg-cover bg-center"
                     :style="{ backgroundImage: `url(${backdropUrl})` }"
@@ -79,7 +79,7 @@ const goBack = () => router.back()
                                     @click="goBack"
                                 />
 
-                                <h1 class="text-5xl font-bold text-white mb-2">
+                                <h1 class="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-2">
                                     {{ title }}
                                 </h1>
 
