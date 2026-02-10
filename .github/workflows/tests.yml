@@ -1,39 +1,87 @@
-name: Frontend Tests
+name: Tests & Coverage
 
 on:
-  # Trigger the workflow on every push (all branches)
   push:
-    branches:
-      - '**'
+    branches: ['**']
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
 
 jobs:
   test:
-    # Use the latest Ubuntu GitHub Actions runner
+    name: Tests & Coverage
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repository
+      # ─── Setup ───────────────────────────────────────────
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Set up Node.js (runtime required for pnpm and tests)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      # 3. Install pnpm
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      # 4. Install project dependencies
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ hashFiles('castium/pnpm-lock.yaml') }}
+          restore-keys: pnpm-
+
       - name: Install dependencies
         working-directory: ./castium
         run: pnpm install
 
-      # 5. Run the test suite (using the "test" script from package.json)
-      - name: Run tests
+      # ─── Tests with Coverage + JUnit report ──────────────
+      - name: Run tests with coverage
         working-directory: ./castium
-        run: pnpm test
+        run: npx vitest --run --coverage --reporter=default --reporter=junit --outputFile.junit=coverage/junit.xml
+
+      # ─── Vitest Coverage Report as PR Comment ────────────
+      - name: Coverage Report (PR comment)
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: ./castium
+          json-summary-path: ./castium/coverage/coverage-summary.json
+          json-final-path: ./castium/coverage/coverage-final.json
+          vite-config-path: ./castium/vitest.config.mts
+          name: Castium Coverage
+
+      # ─── Upload HTML Coverage Report as Artifact ─────────
+      - name: Upload coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: ./castium/coverage/lcov-report/
+          retention-days: 7
+
+      # ─── Test Results with Annotations ───────────────────
+      - name: Test Results Summary
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Vitest Results
+          path: castium/coverage/junit.xml
+          reporter: java-junit
+          fail-on-error: true
+
+      # ─── Upload HTML Coverage Report ─────────────────────
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: castium/coverage/
+          retention-days: 30
