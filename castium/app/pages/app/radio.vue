@@ -220,7 +220,7 @@ const getStationGradient = (name: string): string => {
                 <!-- Filters -->
                 <div class="flex flex-wrap gap-4 items-center mb-8">
                     <!-- Search -->
-                    <div class="relative flex-1 min-w-[200px] max-w-md">
+                    <div class="relative flex-1 min-w-0">
                         <UIcon
                             name="i-heroicons-magnifying-glass"
                             class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
@@ -240,7 +240,7 @@ const getStationGradient = (name: string): string => {
                     <select
                         v-model="selectedCountry"
                         :class="[
-                            'px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all min-w-[180px]',
+                            'w-full sm:w-auto px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:border-transparent transition-all',
                             `focus:${theme.ring}`,
                         ]"
                     >
@@ -405,7 +405,7 @@ const getStationGradient = (name: string): string => {
                     </div>
 
                     <!-- Stations list (modern radio style) -->
-                    <div v-else class="grid gap-3">
+                    <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         <div
                             v-for="station in filteredStations.slice(0, 100)"
                             :key="station.id"
