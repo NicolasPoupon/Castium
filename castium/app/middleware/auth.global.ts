@@ -30,14 +30,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
     try {
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth.global.ts:middleware',message:'middleware run',data:{toPath:to.path},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
         // #endregion
         const { isAuthenticated, initialized, initAuth } = useAuth()
 
         // Ensure auth is initialized
         if (!initialized.value) {
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth.global.ts:callInitAuth',message:'calling initAuth from middleware',data:{},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
             // #endregion
             await initAuth()
         }
@@ -65,7 +63,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
         // If user is not logged in and tries to access /app routes, redirect to login
         if (!loggedIn && isAppRoute) {
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'auth.global.ts:navigateTo',message:'navigateTo /auth/login',data:{reason:'isAppRoute'},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
             // #endregion
             return navigateTo('/auth/login')
         }
