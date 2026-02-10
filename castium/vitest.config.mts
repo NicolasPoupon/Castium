@@ -19,13 +19,24 @@ export default defineConfig({
                 singleFork: true,
             },
         },
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'text-summary', 'html', 'lcov', 'json-summary', 'json'],
+            reportsDirectory: './coverage',
+            include: ['app/**/*.{ts,vue}'],
+            exclude: [
+                'app/**/*.d.ts',
+                'app/**/*.test.ts',
+                'app/**/*.spec.ts',
+            ],
+        },
     },
     resolve: {
         alias: {
             '@': resolve(__dirname, './app'),
             '~': resolve(__dirname, './app'),
             '#build': resolve(__dirname, './.nuxt'),
-            '#imports': resolve(__dirname, './.nuxt'),
+            '#imports': resolve(__dirname, './tests/mocks/imports.ts'),
         },
     },
 })

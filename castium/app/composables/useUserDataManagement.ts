@@ -169,24 +169,8 @@ export function useUserDataManagement() {
         if (!user.value) return false
 
         try {
-            // Delete all categories
-            await deleteDataByCategory('lectures')
-            await deleteDataByCategory('music')
-            await deleteDataByCategory('radio')
-            await deleteDataByCategory('tv')
-            await deleteDataByCategory('podcasts')
-            await deleteDataByCategory('photos')
-
-            // Delete any remaining custom_streams
-            await safeDelete('custom_streams')
-
-            // Clear all IndexedDB databases
-            await clearIndexedDB(DB_NAME)
-            await clearIndexedDB(MUSIC_DB_NAME)
-            await clearIndexedDB(PODCAST_DB_NAME)
-            await clearIndexedDB(PHOTOS_DB_NAME)
-
-            // Clear all profile data related to local storage
+            // === LECTURES ===
+            await safeDelete('videos')
             await clearProfileData({
                 video_folder_path: null,
                 video_files: null,
@@ -199,6 +183,45 @@ export function useUserDataManagement() {
                 cloud_video_watching: {},
                 cloud_video_favorites: [],
             })
+
+            // === MUSIC ===
+            await deleteMusicData()
+
+            // === RADIO ===
+            await safeDelete('radio_favorites')
+            await supabase
+                .from('custom_streams')
+                .delete()
+                .eq('user_id', user.value.id)
+                .eq('type', 'radio')
+
+            // === TV ===
+            await safeDelete('iptv_favorites')
+            await supabase
+                .from('custom_streams')
+                .delete()
+                .eq('user_id', user.value.id)
+                .eq('type', 'tv')
+
+            // === PODCASTS ===
+            await safeDelete('local_podcasts')
+            await safeDelete('cloud_podcasts')
+
+            // === PHOTOS ===
+            await safeDelete('cloud_photo_folder_items')
+            await safeDelete('cloud_photo_folders')
+            await safeDelete('cloud_liked_photos')
+            await safeDelete('local_liked_photos')
+            await safeDelete('cloud_photos')
+
+            // Delete any remaining custom_streams
+            await safeDelete('custom_streams')
+
+            // Clear all IndexedDB databases
+            await clearIndexedDB(DB_NAME)
+            await clearIndexedDB(MUSIC_DB_NAME)
+            await clearIndexedDB(PODCAST_DB_NAME)
+            await clearIndexedDB(PHOTOS_DB_NAME)
 
             console.log('[UserData] Deleted all user data')
 

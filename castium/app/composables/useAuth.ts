@@ -75,10 +75,16 @@ export const useAuth = () => {
 
     // Initialize auth state
     const initAuth = async () => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:entry',message:'initAuth called',data:{initialized:initialized.value},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+        // #endregion
         if (initialized.value) return
 
         try {
             loading.value = true
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:beforeGetSession',message:'before getSession',data:{},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+            // #endregion
             const {
                 data: { session: currentSession },
             } = await supabase.auth.getSession()
@@ -94,7 +100,10 @@ export const useAuth = () => {
                 session.value = newSession
                 user.value = newSession?.user ?? null
 
-                if (event === 'SIGNED_IN' && newSession?.user) {
+                if (event === 'PASSWORD_RECOVERY') {
+                    // User clicked reset link — redirect to reset password page
+                    await navigateTo('/auth/reset-password')
+                } else if (event === 'SIGNED_IN' && newSession?.user) {
                     // Small delay to let the trigger create the profile
                     await new Promise((resolve) => setTimeout(resolve, 500))
                     profile.value = await fetchProfile(newSession.user.id)
@@ -104,7 +113,10 @@ export const useAuth = () => {
             })
 
             initialized.value = true
-        } catch (error) {
+        } catch (error: any) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/4ad510bf-c1d6-40db-ba0b-8358497276ed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'useAuth.ts:initAuth:catch',message:'initAuth error',data:{name:error?.name,message:error?.message},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+            // #endregion
             console.error('Error initializing auth:', error)
         } finally {
             loading.value = false
@@ -195,9 +207,10 @@ export const useAuth = () => {
     const signOut = async () => {
         try {
             loading.value = true
-            const { error } = await supabase.auth.signOut()
+            const { error } = await supabase.auth.signOut({ scope: 'local' })
 
-            if (error) throw error
+            // Ignore "session missing" errors — the session is already gone
+            if (error && error.name !== 'AuthSessionMissingError') throw error
 
             // Clear local composables state before resetting user
             // This ensures folder handles and tracks are cleared per user

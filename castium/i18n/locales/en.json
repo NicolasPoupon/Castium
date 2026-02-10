@@ -3,8 +3,132 @@
         "hero": {
             "titleMain": "Your multimedia universe",
             "titleHighlight": "brought together in one place",
-            "description": "Castium is a personal and modern platform that centralizes your movies, series, music, podcasts and personal content in a single elegant interface, accessible from anywhere.",
-            "cta": "Sign up for the beta"
+            "description": "Castium is a personal and modern platform that centralizes your movies, series, music, podcasts, radio, photos and personal videos in a single elegant interface.",
+            "cta": "Get started for free",
+            "discover": "Discover",
+            "badge": "Open Beta — Free access"
+        },
+        "stats": {
+            "categories": "Media categories",
+            "formats": "Supported formats",
+            "price": "Free forever",
+            "ads": "Advertisements"
+        },
+        "showcase": {
+            "title": "Every media, its own universe",
+            "description": "From videos to podcasts, music to live TV — each category benefits from a dedicated, optimized interface.",
+            "features": {
+                "films": {
+                    "tag": "Movies & Series",
+                    "title": "Your personal cinema library, elevated",
+                    "description": "Import your collection and let Castium handle the rest. HD posters, descriptions, cast, genres — everything is fetched automatically via TMDB.",
+                    "bullets": {
+                        "1": "Automatic metadata: posters, synopsis, actors, ratings",
+                        "2": "Progress tracking and smart resume playback",
+                        "3": "Favorites, personal ratings and playlists management"
+                    }
+                },
+                "music": {
+                    "tag": "Music",
+                    "title": "Your tracks, your playlists, your style",
+                    "description": "Full-featured audio player with local and cloud support. Create playlists, bookmark favorites and listen without interruption.",
+                    "bullets": {
+                        "1": "Persistent global player with Picture-in-Picture",
+                        "2": "Local or cloud import — compatible with all formats",
+                        "3": "Playlists, favorites, history and continuous playback"
+                    }
+                },
+                "podcasts": {
+                    "tag": "Podcasts",
+                    "title": "All your podcasts in one place",
+                    "description": "Import your local or cloud podcasts. Resume where you left off with automatic progress tracking.",
+                    "bullets": {
+                        "1": "Continuous playback with position memory",
+                        "2": "Organization by folders and categories",
+                        "3": "Compatible with local files and cloud storage"
+                    }
+                },
+                "tv": {
+                    "tag": "Live TV",
+                    "title": "Television without a box, without limits",
+                    "description": "Access thousands of free IPTV channels from around the world. Add your own streams and customize your TV experience.",
+                    "bullets": {
+                        "1": "Thousands of free worldwide IPTV channels",
+                        "2": "Custom stream support (M3U, direct URL)",
+                        "3": "Favorites and instant search by country and category"
+                    }
+                },
+                "radio": {
+                    "tag": "Radio",
+                    "title": "World radio at your fingertips",
+                    "description": "Thousands of radio stations from around the world, freely accessible. Add your own streams and find your favorite stations.",
+                    "bullets": {
+                        "1": "Access thousands of international radio stations",
+                        "2": "Custom streams and favorite stations",
+                        "3": "Background playback with the global player"
+                    }
+                },
+                "photos": {
+                    "tag": "Photos",
+                    "title": "Your photos, beautifully presented",
+                    "description": "Browse your local and cloud photos in a modern gallery with slideshow, zoom and smooth navigation.",
+                    "bullets": {
+                        "1": "Modern gallery with grid view and slideshow",
+                        "2": "Support for local and cloud photo storage",
+                        "3": "Favorites, sorting and folder organization"
+                    }
+                },
+                "lectures": {
+                    "tag": "Personal Videos",
+                    "title": "Your personal videos, cinema-quality",
+                    "description": "Family videos, tutorials, recordings — import them and enjoy a professional playback experience.",
+                    "bullets": {
+                        "1": "HD video player with subtitles and Picture-in-Picture",
+                        "2": "Local folder import with automatic detection",
+                        "3": "Progress tracking and resume playback"
+                    }
+                },
+                "settings": {
+                    "tag": "Customization",
+                    "title": "Your app, your rules",
+                    "description": "Multilingual interface, customizable color themes per category, account and security management — everything is configurable.",
+                    "bullets": {
+                        "1": "3 supported languages: French, English, Polish",
+                        "2": "Customizable colors for each category",
+                        "3": "Full account, password and data management"
+                    }
+                }
+            }
+        },
+        "selling": {
+            "title": "Why choose Castium?",
+            "description": "A platform designed for you, with no compromise on privacy or quality.",
+            "points": {
+                "privacy": {
+                    "title": "Privacy respected",
+                    "description": "No tracking, no ads, no data reselling. Your content stays yours, period."
+                },
+                "sync": {
+                    "title": "Synced everywhere",
+                    "description": "PC, mobile, tablet, TV — find your media library on all your devices, instantly."
+                },
+                "auto": {
+                    "title": "Smart automation",
+                    "description": "Metadata, posters, descriptions — everything is fetched automatically. Zero effort on your part."
+                },
+                "interface": {
+                    "title": "Award-worthy interface",
+                    "description": "Modern and minimalist design inspired by the best apps. A smooth and intuitive experience."
+                },
+                "local": {
+                    "title": "Local files supported",
+                    "description": "Access your files directly on your device through the File System Access API."
+                },
+                "free": {
+                    "title": "100% Free",
+                    "description": "No subscription, no freemium, no catch. Castium is free and will stay that way."
+                }
+            }
         },
         "features": {
             "title": "Simple. Fast. Powerful.",
@@ -37,13 +161,14 @@
             }
         },
         "beta": {
-            "badge": "Coming soon in beta!",
-            "title": "Castium is coming soon",
-            "description": "We’re putting the finishing touches on an elegant, modern platform built to last. Join us and be among the first to try Castium.",
+            "badge": "Open Beta",
+            "title": "Join Castium today",
+            "description": "An elegant, modern platform built to last. Create your free account and start centralizing all your media.",
+            "ctaButton": "Create my free account",
             "emailPlaceholder": "Enter your email address",
             "emailLabel": "Email address",
             "cta": "Sign up",
-            "helper": "Get early access to the beta"
+            "helper": "Free signup • No credit card required • Instant access"
         }
     },
     "common": {
@@ -114,9 +239,12 @@
             "noAccount": "No account yet? Sign up",
             "success": "Login successful",
             "successDescription": "You are now logged in.",
+            "forgotPassword": "Forgot your password?",
             "errors": {
                 "title": "Login failed",
-                "invalid": "Invalid email or password"
+                "invalid": "Invalid email or password",
+                "emailNotConfirmed": "Please confirm your email address before logging in. Check your inbox.",
+                "google": "Failed to log in with Google"
             }
         },
         "signUp": {
@@ -129,6 +257,61 @@
             "loading": "Verifying authentication...",
             "success": "Authentication successful",
             "error": "Authentication error"
+        },
+        "forgotPassword": {
+            "title": "Forgot Password",
+            "description": "Enter your email address and we'll send you a reset link.",
+            "fields": {
+                "email": {
+                    "label": "Email",
+                    "placeholder": "Enter your email",
+                    "error": {
+                        "required": "Email is required",
+                        "invalid": "Invalid email"
+                    }
+                }
+            },
+            "submit": "Send reset link",
+            "backToLogin": "Back to login",
+            "success": "Email sent",
+            "successDescription": "A reset link has been sent to your email address. Check your inbox.",
+            "errors": {
+                "title": "Error",
+                "invalid": "Unable to send reset email"
+            }
+        },
+        "resetPassword": {
+            "title": "Reset Password",
+            "description": "Enter your new password.",
+            "fields": {
+                "password": {
+                    "label": "New password",
+                    "placeholder": "Enter your new password",
+                    "error": {
+                        "required": "Password is required",
+                        "min": "Must be at least 8 characters"
+                    }
+                },
+                "confirmPassword": {
+                    "label": "Confirm password",
+                    "placeholder": "Confirm your new password",
+                    "error": {
+                        "required": "Confirmation is required",
+                        "match": "Passwords do not match"
+                    }
+                }
+            },
+            "submit": "Reset password",
+            "backToLogin": "Back to login",
+            "loading": "Verifying reset link...",
+            "requestNewLink": "Request a new link",
+            "success": "Password reset",
+            "successDescription": "Your password has been reset successfully.",
+            "errors": {
+                "title": "Error",
+                "invalid": "Unable to reset password",
+                "expired": "This reset link is invalid or has expired. Please request a new one."
+            }
         }
     },
     "navbar": {
@@ -143,7 +326,8 @@
         },
         "user": {
             "settings": "Settings",
-            "logout": "Log out"
+            "logout": "Log out",
+            "logoutError": "Logout error"
         }
     },
     "settings": {

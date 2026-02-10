@@ -888,10 +888,10 @@ onUnmounted(() => {
         <div class="pt-24 pb-32">
             <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
                 <!-- Tab Navigation -->
-                <div class="flex items-center gap-4 mb-8">
+                <div class="flex items-center gap-2 md:gap-4 mb-8">
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
+                            'px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press text-sm md:text-base',
                             activeTab === 'local'
                                 ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
                                 : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
@@ -899,11 +899,11 @@ onUnmounted(() => {
                         @click="activeTab = 'local'"
                     >
                         <UIcon name="i-heroicons-folder" class="w-5 h-5 icon-bounce" />
-                        {{ t('music.tabs.local') }}
+                        <span class="hidden sm:inline">{{ t('music.tabs.local') }}</span>
                     </button>
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
+                            'px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press text-sm md:text-base',
                             activeTab === 'upload'
                                 ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
                                 : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
@@ -911,11 +911,11 @@ onUnmounted(() => {
                         @click="activeTab = 'upload'"
                     >
                         <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5 icon-bounce" />
-                        {{ t('music.tabs.upload') || 'Cloud' }}
+                        <span class="hidden sm:inline">{{ t('music.tabs.upload') || 'Cloud' }}</span>
                     </button>
                     <button
                         :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
+                            'px-3 py-2 md:px-6 md:py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press text-sm md:text-base',
                             activeTab === 'spotify'
                                 ? 'bg-green-600 text-white shadow-lg shadow-green-500/25'
                                 : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
@@ -923,7 +923,7 @@ onUnmounted(() => {
                         @click="activeTab = 'spotify'"
                     >
                         <UIcon name="i-heroicons-musical-note" class="w-5 h-5 icon-bounce" />
-                        Spotify
+                        <span class="hidden sm:inline">Spotify</span>
                     </button>
                 </div>
 
@@ -994,9 +994,9 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Music library -->
-                    <div v-else class="flex gap-6">
+                    <div v-else class="flex flex-col md:flex-row gap-6">
                         <!-- Sidebar: Playlists -->
-                        <aside class="w-64 flex-shrink-0">
+                        <aside class="w-full md:w-64 flex-shrink-0">
                             <div
                                 class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30"
                             >
@@ -1222,7 +1222,7 @@ onUnmounted(() => {
                             >
                                 <!-- Header row -->
                                 <div
-                                    class="grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-700/50"
+                                    class="grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-700/50"
                                 >
                                     <span class="w-10 text-center">#</span>
                                     <span>{{ t('music.local.columnTitle') }}</span>
@@ -1232,7 +1232,7 @@ onUnmounted(() => {
                                     <span class="w-16 text-center">
                                         <UIcon name="i-heroicons-clock" class="w-4 h-4" />
                                     </span>
-                                    <span class="w-24"></span>
+                                    <span class="w-24 hidden md:block"></span>
                                 </div>
 
                                 <!-- Track rows -->
@@ -1240,7 +1240,7 @@ onUnmounted(() => {
                                     v-for="(track, index) in filteredTracks"
                                     :key="track.filePath"
                                     :class="[
-                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-all',
+                                        'group grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-all',
                                         track.isAvailable === false
                                             ? 'opacity-50 cursor-not-allowed'
                                             : 'cursor-pointer',
@@ -1355,7 +1355,7 @@ onUnmounted(() => {
 
                                     <!-- Actions -->
                                     <div
-                                        class="w-24 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        class="w-24 hidden md:flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
                                         <!-- Available track actions -->
                                         <template v-if="track.isAvailable !== false">
@@ -1737,9 +1737,9 @@ onUnmounted(() => {
                         @change="handleCloudFilesSelected"
                     />
 
-                    <div class="flex gap-6">
+                    <div class="flex flex-col md:flex-row gap-6">
                         <!-- Sidebar: Playlists -->
-                        <aside class="w-64 flex-shrink-0">
+                        <aside class="w-full md:w-64 flex-shrink-0">
                             <div
                                 class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30"
                             >

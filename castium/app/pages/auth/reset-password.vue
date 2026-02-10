@@ -9,10 +9,50 @@ definePageMeta({
 const toast = useToast()
 const { t } = useI18n()
 const router = useRouter()
+const supabase = useSupabase()
 const { updatePassword, loading } = useAuth()
 
 const password = ref('')
 const confirmPassword = ref('')
+const sessionReady = ref(false)
+const sessionError = ref('')
+
+// Wait for the recovery session to be established from URL tokens
+onMounted(async () => {
+    try {
+        // Give Supabase time to process the hash/code tokens
+        const { data, error } = await supabase.auth.getSession()
+
+        if (error) {
+            console.error('Reset password session error:', error)
+            sessionError.value = error.message
+            return
+        }
+
+        if (data.session) {
+            sessionReady.value = true
+        } else {
+            // Tokens may not have been processed yet — listen for the event
+            const { data: listener } = supabase.auth.onAuthStateChange((event, newSession) => {
+                if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && newSession)) {
+                    sessionReady.value = true
+                    listener.subscription.unsubscribe()
+                }
+            })
+
+            // Timeout: if no session after 5s, show error
+            setTimeout(() => {
+                if (!sessionReady.value) {
+                    sessionError.value = t('auth.resetPassword.errors.expired')
+                    listener.subscription.unsubscribe()
+                }
+            }, 5000)
+        }
+    } catch (e: any) {
+        console.error('Reset password init error:', e)
+        sessionError.value = e.message
+    }
+})
 
 const schema = z
     .object({
@@ -85,7 +125,24 @@ async function onSubmit() {
                 </p>
             </div>
 
-            <UForm :schema="schema" :state="{ password, confirmPassword }" @submit="onSubmit">
+            <!-- Loading: waiting for recovery session -->
+            <div v-if="!sessionReady && !sessionError" class="flex flex-col items-center gap-4 py-8">
+                <UIcon name="i-heroicons-arrow-path" class="w-8 h-8 text-castium-green animate-spin" />
+                <p class="text-gray-500 text-sm">{{ t('auth.resetPassword.loading') }}</p>
+            </div>
+
+            <!-- Error: invalid or expired link -->
+            <div v-else-if="sessionError" class="space-y-4">
+                <div class="flex items-start gap-3 rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-500">
+                    <UIcon name="i-heroicons-exclamation-circle" class="w-5 h-5 shrink-0 mt-0.5" />
+                    <span>{{ sessionError }}</span>
+                </div>
+                <UButton variant="outline" block to="/auth/forgot-password" class="mt-4">
+                    {{ t('auth.resetPassword.requestNewLink') }}
+                </UButton>
+            </div>
+
+            <UForm v-else :schema="schema" :state="{ password, confirmPassword }" @submit="onSubmit">
                 <UFormGroup
                     :label="t('auth.resetPassword.fields.password.label')"
                     name="password"

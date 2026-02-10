@@ -51,8 +51,8 @@ watch(tmdbLanguage, loadMovies)
         <div v-else>
             <MoviesHeroSection v-if="heroMovie" :movie="heroMovie" />
 
-            <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-12">
-                <div class="mb-8">
+            <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-8 space-y-6 md:space-y-12">
+                <div class="mb-4 md:mb-8">
                     <UInput
                         v-model="searchQuery"
                         icon="i-heroicons-magnifying-glass"
@@ -64,7 +64,7 @@ watch(tmdbLanguage, loadMovies)
                 </div>
 
                 <section v-if="trendingMovies.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-3 md:mb-6">
                         {{ t('movies.hero.trendingTitle') }}
                     </h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -77,7 +77,7 @@ watch(tmdbLanguage, loadMovies)
                 </section>
 
                 <section v-if="popularMovies.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-3 md:mb-6">
                         {{ t('movies.hero.popularTitle') }}
                     </h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -90,7 +90,7 @@ watch(tmdbLanguage, loadMovies)
                 </section>
 
                 <section v-if="topRatedMovies.length > 0">
-                    <h2 class="text-2xl font-bold text-white mb-6">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-3 md:mb-6">
                         {{ t('movies.hero.topRatedTitle') }}
                     </h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">

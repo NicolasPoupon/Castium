@@ -3,8 +3,132 @@
         "hero": {
             "titleMain": "Votre univers multimédia",
             "titleHighlight": "réuni au même endroit",
-            "description": "Castium est une plateforme personnelle et moderne qui centralise vos films, séries, musiques, podcasts et contenus personnels dans une seule interface élégante, accessible depuis n'importe où.",
-            "cta": "Inscrivez-vous pour la bêta"
+            "description": "Castium est une plateforme personnelle et moderne qui centralise vos films, séries, musiques, podcasts, radios, photos et vidéos personnelles dans une seule interface élégante.",
+            "cta": "Commencer gratuitement",
+            "discover": "Découvrir",
+            "badge": "Beta ouverte — Accès gratuit"
+        },
+        "stats": {
+            "categories": "Catégories média",
+            "formats": "Formats supportés",
+            "price": "Gratuit pour toujours",
+            "ads": "Publicités"
+        },
+        "showcase": {
+            "title": "Chaque média, son univers",
+            "description": "Des vidéos aux podcasts, de la musique à la TV en direct — chaque catégorie bénéficie d'une interface dédiée et optimisée.",
+            "features": {
+                "films": {
+                    "tag": "Films & Séries",
+                    "title": "Votre cinémathèque personnelle, sublimée",
+                    "description": "Importez votre collection et laissez Castium faire le reste. Affiches HD, descriptions, casting, genres — tout est récupéré automatiquement via TMDB.",
+                    "bullets": {
+                        "1": "Métadonnées automatiques : affiches, synopsis, acteurs, notes",
+                        "2": "Suivi de progression et reprise de lecture intelligente",
+                        "3": "Gestion de favoris, notes personnelles et listes de lecture"
+                    }
+                },
+                "music": {
+                    "tag": "Musique",
+                    "title": "Vos morceaux, vos playlists, votre style",
+                    "description": "Lecteur audio complet avec prise en charge locale et cloud. Créez vos playlists, marquez vos favoris et écoutez sans interruption.",
+                    "bullets": {
+                        "1": "Lecteur global persistent avec Picture-in-Picture",
+                        "2": "Import local ou cloud — compatible avec tous les formats",
+                        "3": "Playlists, favoris, historique et lecture continue"
+                    }
+                },
+                "podcasts": {
+                    "tag": "Podcasts",
+                    "title": "Tous vos podcasts au même endroit",
+                    "description": "Importez vos podcasts locaux ou depuis le cloud. Reprenez là où vous vous êtes arrêté avec le suivi de progression automatique.",
+                    "bullets": {
+                        "1": "Lecture continue avec mémorisation de la position",
+                        "2": "Organisation par dossiers et catégories",
+                        "3": "Compatible fichiers locaux et stockage cloud"
+                    }
+                },
+                "tv": {
+                    "tag": "TV en direct",
+                    "title": "La télévision sans box, sans limites",
+                    "description": "Accédez à des milliers de chaînes IPTV gratuites du monde entier. Ajoutez vos propres flux et personnalisez votre expérience TV.",
+                    "bullets": {
+                        "1": "Des milliers de chaînes IPTV gratuites mondiales",
+                        "2": "Ajout de flux personnalisés (M3U, URL directe)",
+                        "3": "Favoris et recherche instantanée par pays et catégorie"
+                    }
+                },
+                "radio": {
+                    "tag": "Radio",
+                    "title": "La radio mondiale à portée de clic",
+                    "description": "Des milliers de stations radio du monde entier accessibles gratuitement. Ajoutez vos propres flux et retrouvez vos stations favorites.",
+                    "bullets": {
+                        "1": "Accès à des milliers de stations radio internationales",
+                        "2": "Flux personnalisés et stations favorites",
+                        "3": "Lecture en arrière-plan avec le lecteur global"
+                    }
+                },
+                "photos": {
+                    "tag": "Photos",
+                    "title": "Vos photos, magnifiquement présentées",
+                    "description": "Parcourez vos photos locales et cloud dans une galerie moderne avec diaporama, zoom et navigation fluide.",
+                    "bullets": {
+                        "1": "Galerie moderne avec vue grille et diaporama",
+                        "2": "Support des photos locales et stockage cloud",
+                        "3": "Favoris, tri et organisation par dossiers"
+                    }
+                },
+                "lectures": {
+                    "tag": "Vidéos personnelles",
+                    "title": "Vos vidéos personnelles, comme au cinéma",
+                    "description": "Vidéos familiales, tutoriels, enregistrements — importez-les et profitez d'une expérience de lecture professionnelle.",
+                    "bullets": {
+                        "1": "Lecteur vidéo HD avec sous-titres et Picture-in-Picture",
+                        "2": "Import de dossiers locaux avec détection automatique",
+                        "3": "Suivi de progression et reprise de lecture"
+                    }
+                },
+                "settings": {
+                    "tag": "Personnalisation",
+                    "title": "Votre app, vos règles",
+                    "description": "Interface multilingue, thèmes de couleurs personnalisables par catégorie, gestion du compte et de la sécurité — tout est paramétrable.",
+                    "bullets": {
+                        "1": "3 langues supportées : français, anglais, polonais",
+                        "2": "Couleurs personnalisables pour chaque catégorie",
+                        "3": "Gestion complète du compte, mot de passe et données"
+                    }
+                }
+            }
+        },
+        "selling": {
+            "title": "Pourquoi choisir Castium ?",
+            "description": "Une plateforme pensée pour vous, sans compromis sur la vie privée ni la qualité.",
+            "points": {
+                "privacy": {
+                    "title": "Vie privée respectée",
+                    "description": "Aucun tracking, aucune publicité, aucune revente de données. Votre contenu reste le vôtre, point final."
+                },
+                "sync": {
+                    "title": "Synchronisé partout",
+                    "description": "PC, mobile, tablette, TV — retrouvez votre médiathèque sur tous vos appareils, instantanément."
+                },
+                "auto": {
+                    "title": "Intelligence automatique",
+                    "description": "Métadonnées, affiches, descriptions — tout est récupéré automatiquement. Zéro effort de votre part."
+                },
+                "interface": {
+                    "title": "Interface primée",
+                    "description": "Design moderne et minimaliste inspiré des meilleures apps. Une expérience fluide et intuitive."
+                },
+                "local": {
+                    "title": "Fichiers locaux supportés",
+                    "description": "Accédez directement à vos fichiers sur votre appareil grâce à la File System Access API."
+                },
+                "free": {
+                    "title": "100% Gratuit",
+                    "description": "Pas d'abonnement, pas de freemium, pas de piège. Castium est gratuit et le restera."
+                }
+            }
         },
         "features": {
             "title": "Simple. Rapide. Puissant.",
@@ -37,13 +161,14 @@
             }
         },
         "beta": {
-            "badge": "Bientôt disponible en version bêta !",
-            "title": "Castium arrive bientôt",
-            "description": "Nous mettons la touche finale à une plateforme élégante, moderne, et pensée pour durer. Rejoignez-nous et soyez parmi les premiers à tester Castium.",
+            "badge": "Beta ouverte",
+            "title": "Rejoignez Castium aujourd'hui",
+            "description": "Plateforme élégante, moderne, et pensée pour durer. Créez votre compte gratuitement et commencez à centraliser tous vos médias.",
+            "ctaButton": "Créer mon compte gratuit",
             "emailPlaceholder": "Entrez votre adresse email",
             "emailLabel": "Adresse email",
             "cta": "S'inscrire",
-            "helper": "Accédez à la version bêta en avant-première"
+            "helper": "Inscription gratuite • Aucune carte bancaire requise • Accès immédiat"
         }
     },
     "common": {
@@ -112,9 +237,12 @@
             "noAccount": "Pas encore de compte ? Inscrivez-vous",
             "success": "Connexion réussie",
             "successDescription": "Vous êtes maintenant connecté.",
+            "forgotPassword": "Mot de passe oublié ?",
             "errors": {
                 "title": "Échec de la connexion",
-                "invalid": "Email ou mot de passe invalide"
+                "invalid": "Email ou mot de passe invalide",
+                "emailNotConfirmed": "Veuillez confirmer votre adresse email avant de vous connecter. Vérifiez votre boîte de réception.",
+                "google": "Échec de la connexion avec Google"
             }
         },
         "signUp": {
@@ -127,6 +255,61 @@
             "loading": "Vérification de l'authentification...",
             "success": "Authentification réussie",
             "error": "Erreur d'authentification"
+        },
+        "forgotPassword": {
+            "title": "Mot de passe oublié",
+            "description": "Entrez votre adresse email et nous vous enverrons un lien de réinitialisation.",
+            "fields": {
+                "email": {
+                    "label": "Email",
+                    "placeholder": "Entrez votre email",
+                    "error": {
+                        "required": "L'email est obligatoire",
+                        "invalid": "Email invalide"
+                    }
+                }
+            },
+            "submit": "Envoyer le lien de réinitialisation",
+            "backToLogin": "Retour à la connexion",
+            "success": "Email envoyé",
+            "successDescription": "Un lien de réinitialisation a été envoyé à votre adresse email. Vérifiez votre boîte de réception.",
+            "errors": {
+                "title": "Erreur",
+                "invalid": "Impossible d'envoyer l'email de réinitialisation"
+            }
+        },
+        "resetPassword": {
+            "title": "Réinitialiser le mot de passe",
+            "description": "Entrez votre nouveau mot de passe.",
+            "fields": {
+                "password": {
+                    "label": "Nouveau mot de passe",
+                    "placeholder": "Entrez votre nouveau mot de passe",
+                    "error": {
+                        "required": "Le mot de passe est obligatoire",
+                        "min": "Doit contenir au moins 8 caractères"
+                    }
+                },
+                "confirmPassword": {
+                    "label": "Confirmer le mot de passe",
+                    "placeholder": "Confirmez votre nouveau mot de passe",
+                    "error": {
+                        "required": "La confirmation est obligatoire",
+                        "match": "Les mots de passe ne correspondent pas"
+                    }
+                }
+            },
+            "submit": "Réinitialiser le mot de passe",
+            "backToLogin": "Retour à la connexion",
+            "loading": "Vérification du lien de réinitialisation...",
+            "requestNewLink": "Demander un nouveau lien",
+            "success": "Mot de passe réinitialisé",
+            "successDescription": "Votre mot de passe a été réinitialisé avec succès.",
+            "errors": {
+                "title": "Erreur",
+                "invalid": "Impossible de réinitialiser le mot de passe",
+                "expired": "Ce lien de réinitialisation est invalide ou a expiré. Veuillez en demander un nouveau."
+            }
         }
     },
     "navbar": {
@@ -141,7 +324,8 @@
         },
         "user": {
             "settings": "Paramètres",
-            "logout": "Se déconnecter"
+            "logout": "Se déconnecter",
+            "logoutError": "Erreur de déconnexion"
         }
     },
     "settings": {
