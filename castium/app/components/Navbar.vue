@@ -164,17 +164,142 @@ const userMenuItems = computed(() => [
         },
     ],
 ])
+
+// Drag-to-scroll for the nav on small screens
+const navScroll = ref<HTMLElement | null>(null)
+const headerScroll = ref<HTMLElement | null>(null)
+
+onMounted(async () => {
+    // Wait for the DOM to settle so refs are populated
+    await nextTick()
+
+    // --- Nav scroll (center tabs) ---
+    if (navScroll.value) {
+        let isDown = false
+        let startX = 0
+        let scrollLeft = 0
+
+        const onPointerDown = (e: PointerEvent) => {
+            isDown = true
+            navScroll.value?.classList.add('dragging')
+            startX = e.pageX - (navScroll.value?.getBoundingClientRect().left || 0)
+            scrollLeft = navScroll.value?.scrollLeft || 0
+            ;(e.target as Element).setPointerCapture?.(e.pointerId)
+        }
+
+        const onPointerMove = (e: PointerEvent) => {
+            if (!isDown || !navScroll.value) return
+            // Prevent vertical scroll while dragging horizontally
+            e.preventDefault()
+            const x = e.pageX - (navScroll.value.getBoundingClientRect().left || 0)
+            const walk = (x - startX) * 1 // scroll speed
+            navScroll.value.scrollLeft = scrollLeft - walk
+        }
+
+        const onPointerUp = (e: PointerEvent) => {
+            isDown = false
+            navScroll.value?.classList.remove('dragging')
+            ;(e.target as Element).releasePointerCapture?.(e.pointerId)
+        }
+
+        // Attach pointer + touch + mouse handlers
+        navScroll.value.addEventListener('pointerdown', onPointerDown)
+        navScroll.value.addEventListener('touchstart', onPointerDown, { passive: true })
+        navScroll.value.addEventListener('mousedown', onPointerDown)
+
+        window.addEventListener('pointermove', onPointerMove)
+        window.addEventListener('touchmove', onPointerMove, { passive: false })
+        window.addEventListener('mousemove', onPointerMove)
+
+        window.addEventListener('pointerup', onPointerUp)
+        window.addEventListener('touchend', onPointerUp)
+        window.addEventListener('mouseup', onPointerUp)
+
+        onUnmounted(() => {
+            if (!navScroll.value) return
+            navScroll.value.removeEventListener('pointerdown', onPointerDown)
+            navScroll.value.removeEventListener('touchstart', onPointerDown)
+            navScroll.value.removeEventListener('mousedown', onPointerDown)
+
+            window.removeEventListener('pointermove', onPointerMove)
+            window.removeEventListener('touchmove', onPointerMove)
+            window.removeEventListener('mousemove', onPointerMove)
+
+            window.removeEventListener('pointerup', onPointerUp)
+            window.removeEventListener('touchend', onPointerUp)
+            window.removeEventListener('mouseup', onPointerUp)
+        })
+    }
+
+    // --- Header scroll (entire top bar: logo + tabs + user) ---
+    if (headerScroll.value) {
+        let isDownH = false
+        let startXH = 0
+        let scrollLeftH = 0
+
+        const onHeaderDown = (e: PointerEvent) => {
+            isDownH = true
+            headerScroll.value?.classList.add('dragging')
+            startXH = e.pageX - (headerScroll.value?.getBoundingClientRect().left || 0)
+            scrollLeftH = headerScroll.value?.scrollLeft || 0
+            ;(e.target as Element).setPointerCapture?.(e.pointerId)
+        }
+
+        const onHeaderMove = (e: PointerEvent) => {
+            if (!isDownH || !headerScroll.value) return
+            e.preventDefault()
+            const x = e.pageX - (headerScroll.value.getBoundingClientRect().left || 0)
+            const walk = (x - startXH) * 1
+            headerScroll.value.scrollLeft = scrollLeftH - walk
+        }
+
+        const onHeaderUp = (e: PointerEvent) => {
+            isDownH = false
+            headerScroll.value?.classList.remove('dragging')
+            ;(e.target as Element).releasePointerCapture?.(e.pointerId)
+        }
+
+        headerScroll.value.addEventListener('pointerdown', onHeaderDown)
+        headerScroll.value.addEventListener('touchstart', onHeaderDown, { passive: true })
+        headerScroll.value.addEventListener('mousedown', onHeaderDown)
+
+        window.addEventListener('pointermove', onHeaderMove)
+        window.addEventListener('touchmove', onHeaderMove, { passive: false })
+        window.addEventListener('mousemove', onHeaderMove)
+
+        window.addEventListener('pointerup', onHeaderUp)
+        window.addEventListener('touchend', onHeaderUp)
+        window.addEventListener('mouseup', onHeaderUp)
+
+        onUnmounted(() => {
+            if (!headerScroll.value) return
+            headerScroll.value.removeEventListener('pointerdown', onHeaderDown)
+            headerScroll.value.removeEventListener('touchstart', onHeaderDown)
+            headerScroll.value.removeEventListener('mousedown', onHeaderDown)
+
+            window.removeEventListener('pointermove', onHeaderMove)
+            window.removeEventListener('touchmove', onHeaderMove)
+            window.removeEventListener('mousemove', onHeaderMove)
+
+            window.removeEventListener('pointerup', onHeaderUp)
+            window.removeEventListener('touchend', onHeaderUp)
+            window.removeEventListener('mouseup', onHeaderUp)
+        })
+    }
+})
 </script>
 
 <template>
     <header class="fixed inset-x-0 top-0 z-50 bg-black/20 backdrop-blur-md py-2 theme-transition">
         <div
-            class="flex items-center justify-between gap-3 h-[--header-height] mx-auto px-2 md:px-4 lg:px-6"
+            ref="headerScroll"
+            class="flex items-center justify-between gap-3 h-[--header-height] mx-auto px-2 md:px-4 lg:px-6 overflow-x-auto whitespace-nowrap max-w-full flex-nowrap"
+            style="touch-action: pan-x; -webkit-overflow-scrolling: touch; overflow-y: hidden;"
         >
-            <div class="flex items-center justify-start gap-4">
+            <div class="inline-flex items-center justify-start gap-4 flex-shrink-0">
                 <NuxtLink
                     to="/"
-                    class="transition-all duration-300 hover:scale-105"
+                    class="hidden sm:inline-flex transition-all duration-300 hover:scale-105"
                     :class="currentTheme.text"
                 >
                     <svg
@@ -197,18 +322,20 @@ const userMenuItems = computed(() => [
                     </svg>
                 </NuxtLink>
             </div>
-            <div class="flex-1 flex justify-center">
+            <div class="inline-flex items-center justify-center flex-shrink-0">
                 <!-- Custom tabs with theme colors -->
                 <nav
                     v-if="mode === 'app'"
-                    class="flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 theme-transition"
+                    ref="navScroll"
+                    class="w-full max-w-full flex items-center gap-1 bg-gray-800/50 rounded-lg p-1 theme-transition overflow-x-auto whitespace-nowrap md:overflow-visible md:whitespace-normal"
+                    style="touch-action: pan-x; -webkit-overflow-scrolling: touch; overflow-y: hidden;"
                 >
                     <NuxtLink
                         v-for="item in items"
                         :key="item.value"
                         :to="item.to"
                         :class="[
-                            'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 btn-press border',
+                            'inline-flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 btn-press border flex-shrink-0',
                             activeTab === item.value
                                 ? `text-white ${currentTheme.border} bg-transparent`
                                 : 'text-gray-400 border-transparent hover:text-white hover:border-gray-600',
@@ -217,7 +344,7 @@ const userMenuItems = computed(() => [
                         <UIcon
                             :name="item.icon"
                             :class="[
-                                'w-4 h-4 transition-colors duration-300',
+                                'w-5 h-5 sm:w-4 sm:h-4 transition-colors duration-300',
                                 activeTab === item.value
                                     ? currentTheme.text
                                     : getTabColor(item.value),
@@ -228,7 +355,7 @@ const userMenuItems = computed(() => [
                 </nav>
             </div>
 
-            <div class="flex items-center gap-6">
+            <div class="inline-flex items-center gap-6 flex-shrink-0">
                 <!-- User Profile Dropdown (app mode only) - Client-side only to avoid hydration mismatch -->
                 <ClientOnly>
                     <UDropdownMenu v-if="mode === 'app'" :items="userMenuItems">
@@ -265,3 +392,24 @@ const userMenuItems = computed(() => [
         </div>
     </header>
 </template>
+
+<style scoped>
+/* Improve touch scrolling feel and drag cursor */
+nav.dragging {
+    cursor: grabbing;
+    user-select: none;
+}
+nav::-webkit-scrollbar {
+    height: 6px;
+}
+nav::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+}
+
+/* Ensure smooth touch panning */
+nav {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+}
+</style>

@@ -430,10 +430,10 @@ onUnmounted(() => {
                         <!-- Filter bar -->
                         <div class="flex flex-col sm:flex-row gap-4 mb-6">
                             <!-- View mode buttons -->
-                            <div class="flex gap-2">
+                            <div class="flex gap-2 flex-wrap items-center">
                                 <button
                                     :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
+                                        'px-2 py-1 rounded-lg text-xs sm:px-3 sm:py-1.5 sm:text-sm font-medium transition-all btn-press',
                                         localViewMode === 'all'
                                             ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
                                             : 'bg-gray-800/60 text-gray-400 hover:text-white',
@@ -444,7 +444,7 @@ onUnmounted(() => {
                                 </button>
                                 <button
                                     :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
+                                        'px-2 py-1 rounded-lg text-xs sm:px-3 sm:py-1.5 sm:text-sm font-medium transition-all btn-press',
                                         localViewMode === 'inProgress'
                                             ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
                                             : 'bg-gray-800/60 text-gray-400 hover:text-white',
@@ -455,7 +455,7 @@ onUnmounted(() => {
                                 </button>
                                 <button
                                     :class="[
-                                        'px-3 py-1.5 rounded-lg text-sm font-medium transition-all btn-press',
+                                        'px-2 py-1 rounded-lg text-xs sm:px-3 sm:py-1.5 sm:text-sm font-medium transition-all btn-press',
                                         localViewMode === 'liked'
                                             ? `bg-${themeColor}-500/20 ${theme.textLight} ring-1 ring-${themeColor}-500/50`
                                             : 'bg-gray-800/60 text-gray-400 hover:text-white',
@@ -518,22 +518,22 @@ onUnmounted(() => {
                                         <!-- Cover/Icon -->
                                         <div
                                             :class="[
-                                                'w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110',
+                                                'w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110',
                                                 theme.bg,
                                             ]"
                                         >
                                             <UIcon
                                                 name="i-heroicons-microphone"
-                                                class="w-8 h-8 text-white/80"
+                                                class="w-6 h-6 sm:w-8 sm:h-8 text-white/80"
                                             />
                                         </div>
 
                                         <!-- Info -->
                                         <div class="flex-1 min-w-0">
-                                            <h3 class="text-white font-medium truncate">
+                                            <h3 class="text-white font-medium truncate text-sm sm:text-base md:text-lg">
                                                 {{ podcast.title || podcast.fileName }}
                                             </h3>
-                                            <p class="text-gray-400 text-sm truncate">
+                                            <p class="text-gray-400 text-xs sm:text-sm truncate">
                                                 {{ podcast.album || t('podcasts.unknownShow') }}
                                             </p>
 
@@ -573,7 +573,7 @@ onUnmounted(() => {
 
                                         <!-- Actions -->
                                         <div
-                                            class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                                             @click.stop
                                         >
                                             <button
@@ -797,22 +797,22 @@ onUnmounted(() => {
                                     <!-- Cover/Icon -->
                                     <div
                                         :class="[
-                                            'w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110',
-                                            theme.bg,
-                                        ]"
-                                    >
-                                        <UIcon
-                                            name="i-heroicons-microphone"
-                                            class="w-8 h-8 text-white/80"
-                                        />
-                                    </div>
+                                                'w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110',
+                                                theme.bg,
+                                            ]"
+                                        >
+                                            <UIcon
+                                                name="i-heroicons-microphone"
+                                                class="w-6 h-6 sm:w-8 sm:h-8 text-white/80"
+                                            />
+                                        </div>
 
                                     <!-- Info -->
                                     <div class="flex-1 min-w-0">
-                                        <h3 class="text-white font-medium truncate">
+                                        <h3 class="text-white font-medium truncate text-xs sm:text-sm md:text-base lg:text-lg">
                                             {{ podcast.title || podcast.fileName }}
                                         </h3>
-                                        <p class="text-gray-400 text-sm truncate">
+                                        <p class="text-gray-400 text-xs sm:text-xs md:text-sm truncate">
                                             {{ podcast.album || t('podcasts.unknownShow') }}
                                         </p>
 
@@ -852,7 +852,7 @@ onUnmounted(() => {
 
                                     <!-- Actions -->
                                     <div
-                                        class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        class="flex items-center gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                                         @click.stop
                                     >
                                         <button
