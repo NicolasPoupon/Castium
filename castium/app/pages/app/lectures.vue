@@ -106,7 +106,7 @@ const {
 } = useVideoUpload()
 
 // Active tab: 'local', 'youtube', or 'upload'
-const activeTab = ref<'local' | 'youtube' | 'upload'>('local')
+const activeTab = ref<'local' | 'upload'>('local')
 
 // YouTube state
 const selectedPlaylist = ref<string | null>(null)
@@ -769,44 +769,34 @@ watch(activeTab, async (tab) => {
 
         <div class="pt-24 pb-12">
             <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-                <!-- Tab Navigation -->
-                <div class="flex items-center gap-4 mb-8">
-                    <button
-                        :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
-                            activeTab === 'local'
-                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
-                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white',
-                        ]"
-                        @click="activeTab = 'local'"
-                    >
-                        <UIcon name="i-heroicons-folder" class="w-5 h-5 icon-bounce" />
-                        {{ t('lectures.tabs.local') }}
-                    </button>
-                    <button
-                        :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
-                            activeTab === 'youtube'
-                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
-                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white',
-                        ]"
-                        @click="activeTab = 'youtube'"
-                    >
-                        <UIcon name="i-heroicons-play" class="w-5 h-5 icon-bounce" />
-                        YouTube
-                    </button>
-                    <button
-                        :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
-                            activeTab === 'upload'
-                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
-                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white',
-                        ]"
-                        @click="activeTab = 'upload'"
-                    >
-                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5 icon-bounce" />
-                        {{ t('lectures.tabs.upload') }}
-                    </button>
+                <!-- Tab Navigation (responsive / scrollable on small screens) -->
+                <div class="overflow-x-auto whitespace-nowrap -mx-2 px-2 mb-8" style="touch-action: pan-x; -webkit-overflow-scrolling: touch;">
+                    <div class="inline-flex items-center gap-2">
+                        <button
+                            :class="[
+                                'inline-flex flex-shrink-0 items-center gap-2 rounded-lg font-semibold transition-all btn-press px-3 py-2 text-xs sm:px-6 sm:py-3 sm:text-sm',
+                                activeTab === 'local'
+                                    ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white',
+                            ]"
+                            @click="activeTab = 'local'"
+                        >
+                            <UIcon name="i-heroicons-folder" class="w-4 h-4 sm:w-5 sm:h-5 icon-bounce" />
+                            <span class="hidden sm:inline">{{ t('lectures.tabs.local') }}</span>
+                        </button>
+                        <button
+                            :class="[
+                                'inline-flex flex-shrink-0 items-center gap-2 rounded-lg font-semibold transition-all btn-press px-3 py-2 text-xs sm:px-6 sm:py-3 sm:text-sm',
+                                activeTab === 'upload'
+                                    ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60 hover:text-white',
+                            ]"
+                            @click="activeTab = 'upload'"
+                        >
+                            <UIcon name="i-heroicons-cloud-arrow-up" class="w-4 h-4 sm:w-5 sm:h-5 icon-bounce" />
+                            <span class="hidden sm:inline">{{ t('lectures.tabs.upload') }}</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- LOCAL VIDEOS TAB -->
@@ -1310,7 +1300,7 @@ watch(activeTab, async (tab) => {
                 </div>
 
                 <!-- YOUTUBE TAB -->
-                <div v-else-if="activeTab === 'youtube'">
+                <div v-if="false">
                     <!-- Not connected state -->
                     <div
                         v-if="!youtubeAuthenticated"

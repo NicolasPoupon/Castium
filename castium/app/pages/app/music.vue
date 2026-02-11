@@ -813,44 +813,46 @@ onUnmounted(() => {
 
         <div class="pt-24 pb-32">
             <div class="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-                <!-- Tab Navigation -->
-                <div class="flex items-center gap-4 mb-8">
-                    <button
-                        :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
-                            activeTab === 'local'
-                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
-                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
-                        ]"
-                        @click="activeTab = 'local'"
-                    >
-                        <UIcon name="i-heroicons-folder" class="w-5 h-5 icon-bounce" />
-                        {{ t('music.tabs.local') }}
-                    </button>
-                    <button
-                        :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
-                            activeTab === 'upload'
-                                ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
-                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
-                        ]"
-                        @click="activeTab = 'upload'"
-                    >
-                        <UIcon name="i-heroicons-cloud-arrow-up" class="w-5 h-5 icon-bounce" />
-                        {{ t('music.tabs.upload') || 'Cloud' }}
-                    </button>
-                    <button
-                        :class="[
-                            'px-6 py-3 rounded-lg font-semibold transition-all flex items-center gap-2 btn-press',
-                            activeTab === 'spotify'
-                                ? 'bg-green-600 text-white shadow-lg shadow-green-500/25'
-                                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
-                        ]"
-                        @click="activeTab = 'spotify'"
-                    >
-                        <UIcon name="i-heroicons-musical-note" class="w-5 h-5 icon-bounce" />
-                        Spotify
-                    </button>
+                <!-- Tab Navigation (responsive / scrollable on small screens) -->
+                <div class="overflow-x-auto whitespace-nowrap -mx-2 px-2 mb-8" style="touch-action: pan-x; -webkit-overflow-scrolling: touch;">
+                    <div class="inline-flex items-center gap-2">
+                        <button
+                            :class="[
+                                'inline-flex flex-shrink-0 items-center gap-2 rounded-lg font-semibold transition-all btn-press px-3 py-2 text-xs sm:px-6 sm:py-3 sm:text-sm',
+                                activeTab === 'local'
+                                    ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
+                            ]"
+                            @click="activeTab = 'local'"
+                        >
+                            <UIcon name="i-heroicons-folder" class="w-4 h-4 sm:w-5 sm:h-5 icon-bounce" />
+                            <span class="hidden sm:inline">{{ t('music.tabs.local') }}</span>
+                        </button>
+                        <button
+                            :class="[
+                                'inline-flex flex-shrink-0 items-center gap-2 rounded-lg font-semibold transition-all btn-press px-3 py-2 text-xs sm:px-6 sm:py-3 sm:text-sm',
+                                activeTab === 'upload'
+                                    ? `${theme.bg} text-white shadow-lg shadow-${themeColor}-500/25`
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
+                            ]"
+                            @click="activeTab = 'upload'"
+                        >
+                            <UIcon name="i-heroicons-cloud-arrow-up" class="w-4 h-4 sm:w-5 sm:h-5 icon-bounce" />
+                            <span class="hidden sm:inline">{{ t('music.tabs.upload') || 'Cloud' }}</span>
+                        </button>
+                        <button
+                            :class="[
+                                'inline-flex flex-shrink-0 items-center gap-2 rounded-lg font-semibold transition-all btn-press px-3 py-2 text-xs sm:px-6 sm:py-3 sm:text-sm',
+                                activeTab === 'spotify'
+                                    ? 'bg-green-600 text-white shadow-lg shadow-green-500/25'
+                                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-700/60',
+                            ]"
+                            @click="activeTab = 'spotify'"
+                        >
+                            <UIcon name="i-heroicons-musical-note" class="w-4 h-4 sm:w-5 sm:h-5 icon-bounce" />
+                            <span class="hidden sm:inline">Spotify</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- LOCAL MUSIC TAB -->
@@ -920,9 +922,9 @@ onUnmounted(() => {
                     </div>
 
                     <!-- Music library -->
-                    <div v-else class="flex gap-6">
+                    <div v-else class="flex flex-col md:flex-row gap-6">
                         <!-- Sidebar: Playlists -->
-                        <aside class="w-64 flex-shrink-0">
+                        <aside class="w-full md:w-64 flex-shrink-0">
                             <div
                                 class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30"
                             >
@@ -1664,9 +1666,9 @@ onUnmounted(() => {
                         @change="handleCloudFilesSelected"
                     />
 
-                    <div class="flex gap-6">
+                    <div class="flex flex-col md:flex-row gap-6">
                         <!-- Sidebar: Playlists -->
-                        <aside class="w-64 flex-shrink-0">
+                        <aside class="w-full md:w-64 flex-shrink-0">
                             <div
                                 class="bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 sticky top-24 border border-gray-700/30"
                             >
