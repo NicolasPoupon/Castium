@@ -79,10 +79,73 @@ export const useCloudPodcasts = () => {
     const supabase = useSupabase()
     const { user } = useAuth()
 
+    // Global player sync: listen to global player events so that playing via the global
+    // player still updates podcast progress and "podcasts en cours" state.
+    const { onTrackChange, onPlayStateChange, playbackState: globalPlaybackState } = useGlobalPlayer()
+
+    let _syncInterval: number | null = null
+    const _clearSyncInterval = () => {
+        if (_syncInterval !== null) {
+            clearInterval(_syncInterval)
+            _syncInterval = null
+        }
+    }
+
+    // Called when global player track changes
+    const _onGlobalTrackChange = (track: any | null) => {
+        // If a cloud podcast starts playing, bind it to our playbackState so saveProgress works
+        if (track && track.type === 'podcast' && track.isCloud) {
+            const matching = podcasts.value.find((p) => p.id === track.id)
+            if (matching) {
+                playbackState.value.currentPodcast = matching
+                playbackState.value.duration = track.duration || matching.duration || 0
+                playbackState.value.currentTime = globalPlaybackState.value.currentTime || matching.currentTime || 0
+                playbackState.value.isPlaying = globalPlaybackState.value.isPlaying
+            }
+        } else {
+            // Stop syncing if another type starts or playback stopped
+            playbackState.value.currentPodcast = null
+            playbackState.value.isPlaying = false
+            _clearSyncInterval()
+        }
+    }
+
+    // Called when global player play/pause state changes
+    const _onGlobalPlayStateChange = (isPlaying: boolean) => {
+        playbackState.value.isPlaying = isPlaying
+
+        if (playbackState.value.currentPodcast) {
+            // Start periodic sync of currentTime -> saveProgress while playing
+            if (isPlaying) {
+                _clearSyncInterval()
+                _syncInterval = setInterval(() => {
+                    // Pull current time from global player and update our state
+                    playbackState.value.currentTime = globalPlaybackState.value.currentTime || playbackState.value.currentTime
+                    playbackState.value.duration = globalPlaybackState.value.duration || playbackState.value.duration
+                    // Save progress every 10s
+                    saveProgress()
+                }, 10000) as unknown as number
+            } else {
+                // Paused/stopped -> pull latest time from global player and persist immediately
+                playbackState.value.currentTime = globalPlaybackState.value.currentTime || playbackState.value.currentTime
+                playbackState.value.duration = globalPlaybackState.value.duration || playbackState.value.duration
+                saveProgress()
+                _clearSyncInterval()
+            }
+        }
+    }
+
+    // Subscribe (and keep unsubscribe refs so we can cleanup)
+    const _unsubscribeOnTrack = onTrackChange(_onGlobalTrackChange)
+    const _unsubscribeOnPlayState = onPlayStateChange(_onGlobalPlayStateChange)
+
     // Update filtered lists
     const updateFilteredLists = () => {
         likedPodcasts.value = podcasts.value.filter((p) => p.isLiked)
-        inProgressPodcasts.value = podcasts.value.filter((p) => p.currentTime > 0 && !p.isCompleted)
+        // In-progress: progress > 0 and < 100 and not completed
+        inProgressPodcasts.value = podcasts.value.filter(
+            (p) => p.progress > 0 && p.progress < 100 && !p.isCompleted
+        )
     }
 
     // Initialize audio element
@@ -630,6 +693,19 @@ export const useCloudPodcasts = () => {
         if (audioElement.value) {
             audioElement.value.pause()
             audioElement.value.src = ''
+        }
+
+        // Stop syncing with global player
+        _clearSyncInterval()
+        try {
+            _unsubscribeOnTrack()
+        } catch (e) {
+            // ignore if already unsubscribed
+        }
+        try {
+            _unsubscribeOnPlayState()
+        } catch (e) {
+            // ignore if already unsubscribed
         }
     }
 

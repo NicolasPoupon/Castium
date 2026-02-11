@@ -11,7 +11,7 @@ const { t } = useI18n()
 const { colors, colorClasses } = useTheme()
 
 // Global player
-const { playTrack: globalPlayTrack, stop: globalStop } = useGlobalPlayer()
+const { playTrack: globalPlayTrack, addToQueue: globalAddToQueue, playbackState: globalPlaybackState, stop: globalStop } = useGlobalPlayer()
 
 // Get theme classes for podcasts
 const themeColor = computed(() => colors.value.podcasts as ThemeColor)
@@ -244,15 +244,21 @@ const cloudPodcastToMediaTrack = (podcast: any): MediaTrack => {
 
 // Play handlers - use global player
 const handlePlay = async (podcast: any, isLocal: boolean) => {
+    let mediaTrack: MediaTrack
     if (isLocal) {
-        // For local podcasts, we need to get the file handle
-        // The global player will create its own objectUrl
-        const mediaTrack = localPodcastToMediaTrack(podcast)
-        await globalPlayTrack(mediaTrack, [], 0)
+        mediaTrack = localPodcastToMediaTrack(podcast)
     } else {
-        const mediaTrack = cloudPodcastToMediaTrack(podcast)
-        await globalPlayTrack(mediaTrack, [], 0)
+        mediaTrack = cloudPodcastToMediaTrack(podcast)
     }
+
+    // If nothing is playing, start playback and set queue
+    if (!globalPlaybackState.value.currentTrack) {
+        await globalPlayTrack(mediaTrack, [mediaTrack], 0)
+        return
+    }
+
+    // Otherwise, add to queue and play now
+    await globalAddToQueue(mediaTrack, { playNow: true })
 }
 
 // Like handlers

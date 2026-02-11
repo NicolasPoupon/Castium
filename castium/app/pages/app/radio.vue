@@ -470,42 +470,43 @@ const getStationGradient = (name: string): string => {
                                     </div>
                                 </div>
 
-                                <!-- Favorite button -->
-                                <button
-                                    class="p-2 rounded-full hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100 btn-press"
-                                    @click.stop="toggleFavorite(station)"
-                                >
-                                    <UIcon
-                                        :name="
-                                            station.isFavorite
-                                                ? 'i-heroicons-heart-solid'
-                                                : 'i-heroicons-heart'
-                                        "
-                                        :class="[
-                                            'w-5 h-5',
-                                            station.isFavorite ? 'text-red-400' : 'text-gray-400',
-                                        ]"
-                                    />
-                                </button>
-
-                                <!-- Live indicator -->
-                                <div
-                                    :class="[
-                                        'flex items-center gap-1.5 px-2 py-1 rounded-full',
-                                        `bg-${themeColor}-500/20`,
-                                    ]"
-                                >
-                                    <span
-                                        :class="[
-                                            'w-2 h-2 rounded-full animate-pulse pulse-glow',
-                                            theme.bg,
-                                        ]"
-                                    ></span>
-                                    <span
-                                        :class="['text-xs uppercase font-medium', theme.textLight]"
+                                <!-- Like button always visible, then Live badge -->
+                                <div class="flex flex-wrap items-center gap-2 min-w-0">
+                                    <button
+                                        class="p-2 rounded-full hover:bg-gray-700 transition-colors btn-press"
+                                        @click.stop="toggleFavorite(station)"
                                     >
-                                        Live
-                                    </span>
+                                        <UIcon
+                                            :name="
+                                                station.isFavorite
+                                                    ? 'i-heroicons-heart-solid'
+                                                    : 'i-heroicons-heart'
+                                            "
+                                            :class="[
+                                                'w-5 h-5',
+                                                station.isFavorite ? 'text-red-400' : 'text-gray-400',
+                                            ]"
+                                        />
+                                    </button>
+                                    <div
+                                        :class="[
+                                            'flex items-center gap-1.5 px-2 py-1 rounded-full',
+                                            `bg-${themeColor}-500/20`,
+                                        ]"
+                                        style="min-width: 48px;"
+                                    >
+                                        <span
+                                            :class="[
+                                                'w-2 h-2 rounded-full animate-pulse pulse-glow',
+                                                theme.bg,
+                                            ]"
+                                        ></span>
+                                        <span
+                                            :class="['text-xs uppercase font-medium', theme.textLight]"
+                                        >
+                                            Live
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

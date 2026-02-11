@@ -89,6 +89,57 @@ export const useLocalPodcasts = () => {
     const supabase = useSupabase()
     const { user } = useAuth()
 
+    // Sync with global player so playing via global player updates local progress
+    const { onTrackChange, onPlayStateChange, playbackState: globalPlaybackState } = useGlobalPlayer()
+
+    let _syncIntervalLocal: number | null = null
+    const _clearSyncIntervalLocal = () => {
+        if (_syncIntervalLocal !== null) {
+            clearInterval(_syncIntervalLocal)
+            _syncIntervalLocal = null
+        }
+    }
+
+    const _onGlobalTrackChangeLocal = (track: any | null) => {
+        if (track && track.type === 'podcast' && !track.isCloud) {
+            const matching = podcasts.value.find((p) => p.id === track.id)
+            if (matching) {
+                playbackState.value.currentPodcast = matching
+                playbackState.value.duration = track.duration || matching.duration || 0
+                playbackState.value.currentTime = globalPlaybackState.value.currentTime || matching.currentTime || 0
+                playbackState.value.isPlaying = globalPlaybackState.value.isPlaying
+            }
+        } else {
+            playbackState.value.currentPodcast = null
+            playbackState.value.isPlaying = false
+            _clearSyncIntervalLocal()
+        }
+    }
+
+    const _onGlobalPlayStateChangeLocal = (isPlaying: boolean) => {
+        playbackState.value.isPlaying = isPlaying
+        if (playbackState.value.currentPodcast) {
+            if (isPlaying) {
+                _clearSyncIntervalLocal()
+                _syncIntervalLocal = setInterval(() => {
+                    playbackState.value.currentTime = globalPlaybackState.value.currentTime || playbackState.value.currentTime
+                    playbackState.value.duration = globalPlaybackState.value.duration || playbackState.value.duration
+                    // Auto-save via existing saveProgress
+                    saveProgress()
+                }, 10000) as unknown as number
+            } else {
+                // On pause, pull latest time then save immediately
+                playbackState.value.currentTime = globalPlaybackState.value.currentTime || playbackState.value.currentTime
+                playbackState.value.duration = globalPlaybackState.value.duration || playbackState.value.duration
+                saveProgress()
+                _clearSyncIntervalLocal()
+            }
+        }
+    }
+
+    const _unsubscribeGlobalTrackLocal = onTrackChange(_onGlobalTrackChangeLocal)
+    const _unsubscribeGlobalPlayStateLocal = onPlayStateChange(_onGlobalPlayStateChangeLocal)
+
     // Check if File System Access API is available
     const isFileSystemAPISupported = computed(() => {
         if (typeof window === 'undefined') return false
@@ -644,6 +695,19 @@ export const useLocalPodcasts = () => {
                 URL.revokeObjectURL(p.objectUrl)
             }
         })
+
+        // Stop syncing with global player
+        _clearSyncIntervalLocal()
+        try {
+            _unsubscribeGlobalTrackLocal()
+        } catch (e) {
+            // ignore
+        }
+        try {
+            _unsubscribeGlobalPlayStateLocal()
+        } catch (e) {
+            // ignore
+        }
     }
 
     return {
