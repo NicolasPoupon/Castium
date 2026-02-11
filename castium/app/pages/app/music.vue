@@ -1166,7 +1166,7 @@ onUnmounted(() => {
                                     v-for="(track, index) in filteredTracks"
                                     :key="track.filePath"
                                     :class="[
-                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-all',
+                                        'group grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-all',
                                         track.isAvailable === false
                                             ? 'opacity-50 cursor-not-allowed'
                                             : 'cursor-pointer',
@@ -1203,7 +1203,7 @@ onUnmounted(() => {
                                                 {{ index + 1 }}
                                             </span>
                                             <button
-                                                class="hidden group-hover:block text-white"
+                                                class="block sm:hidden sm:group-hover:block hidden sm:block sm:group-hover:block md:hidden lg:block lg:group-hover:block text-white sm:text-white md:text-white"
                                                 @click.stop="handlePlayTrack(track, index)"
                                             >
                                                 <UIcon
@@ -1940,7 +1940,7 @@ onUnmounted(() => {
                                     v-for="(track, index) in filteredCloudTracks"
                                     :key="track.id"
                                     :class="[
-                                        'group grid grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-colors cursor-pointer',
+                                        'group grid grid-cols-[auto_1fr_auto] md:grid-cols-[auto_1fr_1fr_auto_auto] gap-4 items-center px-4 py-2 transition-colors cursor-pointer',
                                         cloudPlaybackState.currentTrack?.id === track.id
                                             ? 'bg-blue-600/20'
                                             : 'hover:bg-gray-700/30',
