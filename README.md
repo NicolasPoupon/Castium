@@ -20,7 +20,7 @@
 
 <p align="center" style="padding: 12px 0;">
   <span style="font-size: 1.15em; font-weight: 600; color: white;">
-    Castium est une plateforme multimédia personnelle qui centralise films, musiques, podcasts, radio, TV, photos et vidéos dans une interface web unique.
+    Castium is a personal multimedia platform that centralizes movies, music, podcasts, radio, TV, photos and videos in a single web interface.
   </span>
 </p>
 
@@ -47,62 +47,62 @@
   </tr>
 </table>
 
-## Aperçu
+## Overview
 
-- Frontend Nuxt 4 + Vue 3 + Tailwind.
-- Authentification et stockage avec Supabase.
-- Intégrations Spotify, YouTube et TMDB.
-- Interface multilingue (`fr`, `en`, `pl`).
-- Gestion des thèmes/couleurs par catégorie.
+- Frontend: Nuxt 4 + Vue 3 + Tailwind.
+- Authentication and storage with Supabase.
+- Spotify, YouTube and TMDB integrations.
+- Multilingual interface (`fr`, `en`, `pl`).
+- Theme/color management per category.
 
-## Détail Frontend
+## Frontend Details
 
-Castium est construit comme une SPA Nuxt (`ssr: false`) orientée composants/composables:
+Castium is built as a Nuxt SPA (`ssr: false`) focused on components/composables:
 
 - `castium/app/pages/`:
-  pages fonctionnelles par domaine (`movies`, `music`, `podcasts`, `radio`, `tv`, `lectures`, `photos`, `settings`).
+  functional pages per domain (`movies`, `music`, `podcasts`, `radio`, `tv`, `lectures`, `photos`, `settings`).
 - `castium/app/components/`:
-  UI réutilisable (navigation, cartes, lecteur global, sections landing).
+  reusable UI (navigation, cards, global player, landing sections).
 - `castium/app/composables/`:
-  logique métier isolée par feature (`useTMDB`, `useSpotify`, `useYouTube`, `useLocalMusic`, `useCloudPhotos`, etc.).
+  business logic isolated by feature (`useTMDB`, `useSpotify`, `useYouTube`, `useLocalMusic`, `useCloudPhotos`, etc.).
 - `castium/app/layouts/default.vue`:
-  layout principal avec shell d'application.
+  main layout with application shell.
 - `castium/app/middleware/auth.global.ts`:
-  protection des routes authentifiées.
+  authenticated route protection.
 - `castium/i18n/locales/*.json`:
-  internationalisation complète (FR/EN/PL, stratégie sans préfixe d'URL).
+  full internationalization (FR/EN/PL, prefix-free URL strategy).
 
-Sur la partie UX/front:
+On the UX/frontend side:
 
-- Théming par catégorie via `useTheme`.
-- Player global partagé entre pages (`useGlobalPlayer` + `GlobalPlayer.vue`).
-- Intégration Nuxt UI + Tailwind pour un rendu cohérent et responsive.
-- Persistance locale ciblée (tokens OAuth, préférences, progression vidéo) via `localStorage`.
+- Per-category theming via `useTheme`.
+- Global player shared across pages (`useGlobalPlayer` + `GlobalPlayer.vue`).
+- Nuxt UI + Tailwind integration for consistent and responsive rendering.
+- Targeted local persistence (OAuth tokens, preferences, video progress) via `localStorage`.
 
-## Fonctionnalités principales
+## Main Features
 
-- Films et séries avec métadonnées (TMDB).
-- Musique locale/cloud + connexion Spotify.
-- Podcasts, radio et TV (incluant flux personnalisés M3U8).
-- Lectures/vidéos avec intégration YouTube.
-- Photos locales/cloud.
-- Gestion du profil, mot de passe, suppression de données et compte.
+- Movies and TV shows with metadata (TMDB).
+- Local/cloud music + Spotify connection.
+- Podcasts, radio and TV (including custom M3U8 streams).
+- Lectures/videos with YouTube integration.
+- Local/cloud photos.
+- Profile management, password, data deletion and account.
 
-## Structure du repo
+## Repository Structure
 
 ```text
 .
-├─ castium/                 # Application Nuxt
-├─ supabase/                # Migrations SQL + fonctions backend
+├─ castium/                 # Nuxt application
+├─ supabase/                # SQL migrations + backend functions
 └─ documentation/
-   ├─ screenshots/          # Captures d'écran pour le README
+   ├─ screenshots/          # Screenshots for the README
    └─ tests/
 ```
 
-## Démarrage rapide
+## Quick Start
 
 ```bash
-git clone <url-du-repo>
+git clone <repo-url>
 
 cd Castium/castium
 
@@ -113,11 +113,11 @@ cp .env.example .env
 pnpm dev
 ```
 
-Application dispo sur `http://localhost:3000`.
+Application available at `http://localhost:3000`.
 
-## Variables d'environnement
+## Environment Variables
 
-Variables importantes (selon les fonctionnalités activées):
+Key variables (depending on the features enabled):
 
 ```bash
 # Supabase
@@ -141,19 +141,19 @@ NUXT_PUBLIC_YOUTUBE_CLIENT_ID=
 NUXT_PUBLIC_YOUTUBE_REDIRECT_URI=http://localhost:3000/auth/youtube/callback
 ```
 
-## Scripts utiles
+## Useful Scripts
 
-Depuis le dossier `castium/`:
+From the `castium/` folder:
 
 ```bash
-pnpm dev              # Développement
-pnpm dev:https        # Développement HTTPS (certificats locaux)
-pnpm build            # Build production
-pnpm preview          # Preview production
+pnpm dev              # Development
+pnpm dev:https        # HTTPS development (local certificates)
+pnpm build            # Production build
+pnpm preview          # Production preview
 pnpm lint             # Lint
-pnpm test             # Tous les tests
+pnpm test             # All tests
 ```
 
-## Licence
+## License
 
-Ce projet est sous licence MIT. Voir [`LICENSE`](LICENSE).
+This project is licensed under the MIT License. See [`LICENSE`](LICENSE).

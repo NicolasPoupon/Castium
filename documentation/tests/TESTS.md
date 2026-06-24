@@ -1,102 +1,102 @@
-## Stratégie de tests pour Castium
+## Testing Strategy for Castium
 
-Ce document explique **où sont les tests**, **comment en ajouter**, **comment les lancer** et **quels outils** sont utilisés.
-
----
-
-### Outils utilisés
-
-- **Vitest**  
-  - Framework de tests pour projets Vite/Nuxt, équivalent moderne de Jest.  
-  - Gère les tests unitaires, d’intégration, de composants et fonctionnels.
-
-- **Vue Test Utils**  
-  - Bibliothèque officielle de tests pour **Vue 3**.  
-  - Permet de monter des composants (`mount`) et de simuler des interactions (clics, saisie, etc.).
-
-- **jsdom**  
-  - Fournit un **DOM simulé** côté Node.js pour pouvoir tester les composants Vue et leurs interactions sans navigateur réel.
-
-- **GitHub Actions**  
-  - CI (Intégration Continue) qui exécute les tests automatiquement **à chaque push** grâce au workflow `.github/workflows/tests.yml` (à la racine du dépôt).
+This document explains **where the tests are**, **how to add new ones**, **how to run them**, and **which tools** are used.
 
 ---
 
-## Structure des tests
+### Tools Used
 
-Tous les tests liés à `castium` sont dans le dossier :
+- **Vitest**
+  - Testing framework for Vite/Nuxt projects, modern equivalent of Jest.
+  - Handles unit, integration, component and functional tests.
+
+- **Vue Test Utils**
+  - Official testing library for **Vue 3**.
+  - Allows mounting components (`mount`) and simulating interactions (clicks, input, etc.).
+
+- **jsdom**
+  - Provides a **simulated DOM** on the Node.js side to test Vue components and their interactions without a real browser.
+
+- **GitHub Actions**
+  - CI (Continuous Integration) that runs tests automatically **on every push** via the `.github/workflows/tests.yml` workflow (at the root of the repository).
+
+---
+
+## Test Structure
+
+All tests related to `castium` are in the folder:
 
 - `castium/tests/`
-  - `unit/` → tests **unitaires**
-  - `integration/` → tests **d’intégration**
-  - `component/` → tests de **composants Vue**
-  - `functional/` → tests **fonctionnels** (scénarios utilisateur)
-  - `test-setup.ts` → configuration partagée (Vue Test Utils, etc.)
+  - `unit/` → **unit** tests
+  - `integration/` → **integration** tests
+  - `component/` → **Vue component** tests
+  - `functional/` → **functional** tests (user scenarios)
+  - `test-setup.ts` → shared configuration (Vue Test Utils, etc.)
 
-Exemples actuels :
+Current examples:
 
-- **Unitaire** : `tests/unit/math.unit.test.ts`
-- **Intégration** : `tests/integration/math.integration.test.ts`
-- **Composant** : `tests/component/TestButton.spec.ts`
-- **Fonctionnel** : `tests/functional/LoginForm.functional.test.ts`
+- **Unit**: `tests/unit/math.unit.test.ts`
+- **Integration**: `tests/integration/math.integration.test.ts`
+- **Component**: `tests/component/TestButton.spec.ts`
+- **Functional**: `tests/functional/LoginForm.functional.test.ts`
 
 ---
 
-## Types de tests
+## Test Types
 
-### Tests unitaires
+### Unit Tests
 
-- **But** : tester **une fonction isolée**, sans dépendances externes.  
-- Exemple actuel : `sum` dans `app/utils/math.ts`.
-- Fichier : `tests/unit/math.unit.test.ts`
+- **Goal**: test **an isolated function**, without external dependencies.
+- Current example: `sum` in `app/utils/math.ts`.
+- File: `tests/unit/math.unit.test.ts`
 
-Un test unitaire typique ressemble à :
+A typical unit test looks like:
 
 ```ts
 import { describe, it, expect } from 'vitest';
 import { sum } from '@/utils/math';
 
 describe('sum (unit)', () => {
-    it('additionne deux nombres', () => {
+    it('adds two numbers', () => {
         expect(sum(2, 3)).toBe(5);
     });
 });
 ```
 
-### Tests d’intégration
+### Integration Tests
 
-- **But** : vérifier que **plusieurs fonctions / modules fonctionnent bien ensemble**.  
-- Exemple actuel : `average` + `sum` dans `app/utils/math.ts`.  
-- Fichier : `tests/integration/math.integration.test.ts`
+- **Goal**: verify that **multiple functions / modules work well together**.
+- Current example: `average` + `sum` in `app/utils/math.ts`.
+- File: `tests/integration/math.integration.test.ts`
 
-On y teste le **comportement global** plutôt que chaque fonction isolée.
+These tests focus on **overall behavior** rather than each isolated function.
 
-### Tests de composants
+### Component Tests
 
-- **But** : tester un **composant Vue** en isolation (render, props, événements).  
-- Exemple actuel : `TestButton.vue` dans `app/components/TestButton.vue`.  
-- Fichier : `tests/component/TestButton.spec.ts`
+- **Goal**: test a **Vue component** in isolation (render, props, events).
+- Current example: `TestButton.vue` in `app/components/TestButton.vue`.
+- File: `tests/component/TestButton.spec.ts`
 
-On utilise **Vue Test Utils** :
+Using **Vue Test Utils**:
 
 ```ts
 import { mount } from '@vue/test-utils';
 import TestButton from '@/components/TestButton.vue';
 
 const wrapper = mount(TestButton, {
-    props: { label: 'Cliquer ici' },
+    props: { label: 'Click here' },
 });
 
-expect(wrapper.text()).toContain('Cliquer ici');
+expect(wrapper.text()).toContain('Click here');
 ```
 
-### Tests fonctionnels
+### Functional Tests
 
-- **But** : simuler un **scénario utilisateur complet** sur un composant (voire plus tard sur une page).  
-- Exemple actuel : `LoginForm.vue` dans `app/components/LoginForm.vue`.  
-- Fichier : `tests/functional/LoginForm.functional.test.ts`
+- **Goal**: simulate a **complete user scenario** on a component (and later on a page).
+- Current example: `LoginForm.vue` in `app/components/LoginForm.vue`.
+- File: `tests/functional/LoginForm.functional.test.ts`
 
-On simule la saisie et la soumission d’un formulaire :
+Simulating form input and submission:
 
 ```ts
 const wrapper = mount(LoginForm);
@@ -107,39 +107,39 @@ await wrapper.trigger('submit.prevent');
 
 ---
 
-## Comment lancer les tests
+## How to Run Tests
 
-Depuis le dossier `castium` :
+From the `castium` folder:
 
-### Tout lancer
+### Run all tests
 
 ```bash
 npm test
 ```
 
-### Par type de test
+### By test type
 
-Ces scripts sont définis dans `castium/package.json` :
+These scripts are defined in `castium/package.json`:
 
-- **Tests unitaires uniquement**
+- **Unit tests only**
 
 ```bash
 npm run test:unit
 ```
 
-- **Tests d’intégration uniquement**
+- **Integration tests only**
 
 ```bash
 npm run test:integration
 ```
 
-- **Tests fonctionnels uniquement**
+- **Functional tests only**
 
 ```bash
 npm run test:functional
 ```
 
-- **Tests de composants uniquement**
+- **Component tests only**
 
 ```bash
 npm run test:component
@@ -147,74 +147,71 @@ npm run test:component
 
 ---
 
-## Comment ajouter un nouveau test
+## How to Add a New Test
 
-### 1. Choisir le bon dossier
+### 1. Choose the right folder
 
-- **Fonction pure utilitaire** → `tests/unit/`
-- **Plusieurs fonctions/modules ensemble** → `tests/integration/`
-- **Composant Vue isolé** → `tests/component/`
-- **Scénario utilisateur (formulaire, flow simple)** → `tests/functional/`
+- **Pure utility function** → `tests/unit/`
+- **Multiple functions/modules together** → `tests/integration/`
+- **Isolated Vue component** → `tests/component/`
+- **User scenario (form, simple flow)** → `tests/functional/`
 
-### 2. Créer un fichier de test
+### 2. Create a test file
 
-Respecte une **naming convention claire** :
+Follow a **clear naming convention**:
 
-- `*.unit.test.ts` pour les tests unitaires.
-- `*.integration.test.ts` pour les tests d’intégration.
-- `*.spec.ts` pour les tests de composants.
-- `*.functional.test.ts` pour les tests fonctionnels.
+- `*.unit.test.ts` for unit tests.
+- `*.integration.test.ts` for integration tests.
+- `*.spec.ts` for component tests.
+- `*.functional.test.ts` for functional tests.
 
-Exemple pour un nouveau composant `UserCard.vue` :
+Example for a new `UserCard.vue` component:
 
-- Composant : `app/components/UserCard.vue`
-- Test : `tests/component/UserCard.spec.ts`
+- Component: `app/components/UserCard.vue`
+- Test: `tests/component/UserCard.spec.ts`
 
-### 3. Utiliser les helpers Vitest
+### 3. Use Vitest helpers
 
-- `describe` : groupe de tests.
-- `it` / `test` : cas de test individuel.
-- `expect` : assertions.
-- `beforeEach`, `afterEach`, etc. si besoin de setup/cleanup.
+- `describe`: test group.
+- `it` / `test`: individual test case.
+- `expect`: assertions.
+- `beforeEach`, `afterEach`, etc. if setup/cleanup is needed.
 
 ---
 
-## Intégration Continue (CI) avec GitHub Actions
+## Continuous Integration (CI) with GitHub Actions
 
-Le fichier à la racine du dépôt :
+The file at the root of the repository:
 
 - `.github/workflows/tests.yml`
 
-### Comportement
+### Behavior
 
-- Se déclenche **automatiquement à chaque `git push`** sur n’importe quelle branche.
-- Exécute :
-  1. Checkout du dépôt.
-  2. Installation de Node.js.
+- Triggers **automatically on every `git push`** on any branch.
+- Runs:
+  1. Repository checkout.
+  2. Node.js installation.
   3. `npm install`
   4. `npm test`
 
-### Objectif
+### Goal
 
-- Garantir que :
-  - Les tests passent avant une revue de code ou un merge.
-  - Les régressions sont détectées **dès le push**.
+- Ensure that:
+  - Tests pass before a code review or merge.
+  - Regressions are detected **as soon as code is pushed**.
 
 ---
 
-## Résumé visuel
+## Visual Summary
 
-- **Où coder les tests ?**
-  - `tests/unit` → logique très locale.
-  - `tests/integration` → plusieurs modules ensemble.
-  - `tests/component` → composants Vue.
-  - `tests/functional` → scénarios utilisateur.
+- **Where to write tests?**
+  - `tests/unit` → very local logic.
+  - `tests/integration` → multiple modules together.
+  - `tests/component` → Vue components.
+  - `tests/functional` → user scenarios.
 
-- **Comment les lancer ?**
-  - Local : `npm test` ou `npm run test:<type>`.
-  - Distant : GitHub Actions les lance à chaque `push`.
+- **How to run them?**
+  - Locally: `npm test` or `npm run test:<type>`.
+  - Remote: GitHub Actions runs them on every `push`.
 
-Tu peux t’inspirer des fichiers déjà présents comme **modèle** quand tu crées de nouveaux tests.  
-Si tu veux que je t’aide à écrire un test précis (composant réel, page Nuxt, etc.), indique simplement le fichier cible et le type de test souhaité. 
-
-
+You can use the existing files as a **template** when creating new tests.
